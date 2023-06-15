@@ -68,6 +68,7 @@ namespace Anketa_4_core.Data.AnketaModels
         public Comp_Answers AnswerID { get; set; }
         public int MarkAnswer { get; set; }
         public bool IsCorrect { get; set; }
+        public DateTime DateTimeAnswer { get; set; }
 
     }
 
@@ -75,7 +76,12 @@ namespace Anketa_4_core.Data.AnketaModels
 
     #region Кеттел
 
+    public class KettelMain
+    {
+        [Key]
+        public int ID { get; set; }
 
+    }
 
     #endregion
 }
