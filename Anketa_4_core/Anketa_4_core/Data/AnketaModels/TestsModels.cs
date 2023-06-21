@@ -101,6 +101,7 @@ namespace Anketa_4_core.Data.AnketaModels
         public int ID { get; set; }
         public string AnswerNumber { get; set; }
         public string AnswerText { get; set; }
+        public bool isCorrect { get; set; }
         public KT_Questions Question { get; set; }
     }
 
@@ -132,11 +133,13 @@ namespace Anketa_4_core.Data.AnketaModels
         public int Score { get; set; }
     }
 
-    public class TestableAnswers
+    public class KT_TestableAnswers
     {
         [Key] 
         public int ID { get; set; }
         public KT_Main MainInfo { get; set; }
+        public KT_Answers Answer { get; set; }
+
     }
 
     #endregion
