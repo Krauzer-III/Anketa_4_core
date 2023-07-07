@@ -1,17 +1,64 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection.Metadata.Ecma335;
 
 namespace Anketa_4_core.Data.AnketaModels
 {
-    /// <summary>
-    /// Тип теста: 360градусов, Кеттел, Мотивация, Мотивация 2
-    /// </summary>
-    public class TestType
+    public class Test360
     {
         [Key]
-        public int Id { get; set; }
-        public string TypeName { get; set; }
+        public int ID { get; set; }
+        public DateTime DatetimeTest { get; set; }
+        public AccessForTestables Access { get; set; }
+        public RespondentRole Role { get; set; }
+        public int Q01 { get; set; }
+        public int Q02 { get; set; }
+        public int Q03 { get; set; }
+        public int Q04 { get; set; }
+        public int Q05 { get; set; }
+        public int Q06 { get; set; }
+        public int Q07 { get; set; }
+        public int Q08 { get; set; }
+        public int Q09 { get; set; }
+        public int Q10 { get; set; }
+        public int Q11 { get; set; }
+        public int Q12 { get; set; }
+        public int Q13 { get; set; }
+        public int Q14 { get; set; }
+        public int Q15 { get; set; }
     }
+
+    public class MotivationTest
+    {
+        [Key]
+        public int ID { get; set; }
+        public bool IsAgree { get; set; }
+        public DateTime DatetimeTest { get; set; }
+        public AccessForTestables Access { get; set; }
+        public string RecomendPosition { get; set; }
+        public string Recomendator { get; set; }
+        public string Q1 { get; set; }
+        public string Q2 { get; set; }
+        public string Q3 { get; set; }
+        public string Q4 { get; set; }
+        public string Q5 { get; set; }
+        public string Q6 { get; set; }
+        public string Q7 { get; set; }
+        public string Q8 { get; set; }
+        public string Q9 { get; set; }
+        /// <summary>
+        /// Вопрос ДА/НЕТ
+        /// </summary>
+        public string QYN { get; set; }
+        public int M1 { get; set; }
+        public int M2 { get; set; }
+        public int M3 { get; set; }
+        public int M4 { get; set; }
+        public int M5 { get; set; }
+        public int M6 { get; set; }
+        public bool isChecked { get; set; }
+    }
+
 
     public class RespondentRole
     {
@@ -19,6 +66,8 @@ namespace Anketa_4_core.Data.AnketaModels
         public int ID { get; set; }
         [Required]
         public string Name { get; set; }
+        [DefaultValue(false)]
+        public bool isYouself { get; set; }
     }
 
     #region Компетенции
