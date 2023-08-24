@@ -10,25 +10,23 @@ namespace Anketa_4_core.Data
         public DbSet<Testable> Testables { get; set; }
         public DbSet<Filial> Filials { get; set; }
         public DbSet<ReservLevel> ReservLevels { get; set; }
-        public DbSet<AccessForTestables> AccessForTestables { get; set; }
+        public DbSet<AccessForTestable> AccessForTestables { get; set; }
+        public DbSet<TestPeriod> TestPeriods { get; set; }
         public DbSet<News> News { get; set; }
         public DbSet<Test360> Test360 { get; set; }
         public DbSet<MotivationTest> MotivationTests { get; set; }
         public DbSet<RespondentRole> RespondentRoles { get; set; }
-        public DbSet<Comp_Blocks> Comp_Blocks { get; set; }
-        public DbSet<Comp_Questions> Comp_Questions { get; set; }
-        public DbSet<Comp_Answers> Comp_Answers { get; set; }
-        public DbSet<Comp_Level> Comp_Levels { get; set; }
-        public DbSet<Comp_TestableAnswers> Comp_TestableAnswers { get; set; }
+        public DbSet<Comp_Block> Comp_Blocks { get; set; }
+        public DbSet<Comp_Question> Comp_Questions { get; set; }
+        public DbSet<Comp_Answer> Comp_Answers { get; set; }
+        public DbSet<Comp_TestableAnswer> Comp_TestableAnswers { get; set; }
         public DbSet<KT_Main> KT_Mains { get; set; }
-        public DbSet<KT_Questions> KT_Questions { get; set; }
-        public DbSet<KT_Answers> KT_Answers { get; set; }
-        public DbSet<KT_Categories> KT_Categories { get; set; }
-        public DbSet<KT_Levels> KT_Levels { get; set; }
-        public DbSet<KT_Key> KT_Keys { get; set; }
+        public DbSet<KT_Question> KT_Questions { get; set; }
+        public DbSet<KT_Answer> KT_Answers { get; set; }
+        public DbSet<KT_Category> KT_Categories { get; set; }
+        public DbSet<KT_Mark> KT_Marks { get; set; }
+        public DbSet<KT_KeyForCategory> KT_Keys { get; set; }
         public DbSet<KT_TestableAnswers> KT_TestableAnswers { get; set; }
-        public DbSet<TestType> TestTypes { get; set; }
-        public DbSet<ResultModels> ResultModels { get; set; }
     }
 
 }

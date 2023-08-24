@@ -1,0 +1,10 @@
+﻿.icon-menu {
+    background-image: url(menu.svg);
+    display: inline-block;
+    width: 2em;
+    height: 2em;
+    vertical-align: middle;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100%;
+}

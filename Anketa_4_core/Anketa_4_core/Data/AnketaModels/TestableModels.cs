@@ -10,7 +10,6 @@ namespace Anketa_4_core.Data.AnketaModels
         [Required]
         public string Code { get; set; }
         [Required]
-        public DateTime DateCreate { get; set; }
         public int YearTraining { get; set; }
         [Required]
         [DefaultValue(false)]
@@ -36,7 +35,7 @@ namespace Anketa_4_core.Data.AnketaModels
         public string ReservLevelName { get; set; }
     }
 
-    public class Group
+    public class TestPeriod
     {
         [Key]   
         public int ID { get; set; }
@@ -44,12 +43,12 @@ namespace Anketa_4_core.Data.AnketaModels
         public string GroupName { get; set;}
     }
 
-    public class AccessForTestables
+    public class AccessForTestable
     {
         [Key]
         public int ID { get; set; }
         [Required]
-        public Group Group { get; set; }
+        public TestPeriod TestPeriod { get; set; }
         [Required]
         public Testable Testable { get; set; }
         [Required]
@@ -67,4 +66,7 @@ namespace Anketa_4_core.Data.AnketaModels
         public string Body { get; set; }
         public DateTime DateNews { get; set; }
     }
+
+
+
 }

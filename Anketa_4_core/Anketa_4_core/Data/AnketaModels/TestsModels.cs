@@ -9,23 +9,10 @@ namespace Anketa_4_core.Data.AnketaModels
         [Key]
         public int ID { get; set; }
         public DateTime DatetimeTest { get; set; }
-        public AccessForTestables Access { get; set; }
+        public AccessForTestable AccessTest { get; set; }
         public RespondentRole Role { get; set; }
-        public int Q01 { get; set; }
-        public int Q02 { get; set; }
-        public int Q03 { get; set; }
-        public int Q04 { get; set; }
-        public int Q05 { get; set; }
-        public int Q06 { get; set; }
-        public int Q07 { get; set; }
-        public int Q08 { get; set; }
-        public int Q09 { get; set; }
-        public int Q10 { get; set; }
-        public int Q11 { get; set; }
-        public int Q12 { get; set; }
-        public int Q13 { get; set; }
-        public int Q14 { get; set; }
-        public int Q15 { get; set; }
+        public bool IsSelfMark { get; set; }
+        public string results { get; set; }
     }
 
     public class MotivationTest
@@ -34,29 +21,8 @@ namespace Anketa_4_core.Data.AnketaModels
         public int ID { get; set; }
         public bool IsAgree { get; set; }
         public DateTime DatetimeTest { get; set; }
-        public AccessForTestables Access { get; set; }
-        public string RecomendPosition { get; set; }
-        public string Recomendator { get; set; }
-        public string Q1 { get; set; }
-        public string Q2 { get; set; }
-        public string Q3 { get; set; }
-        public string Q4 { get; set; }
-        public string Q5 { get; set; }
-        public string Q6 { get; set; }
-        public string Q7 { get; set; }
-        public string Q8 { get; set; }
-        public string Q9 { get; set; }
-        /// <summary>
-        /// Вопрос ДА/НЕТ
-        /// </summary>
-        public string QYN { get; set; }
-        public int M1 { get; set; }
-        public int M2 { get; set; }
-        public int M3 { get; set; }
-        public int M4 { get; set; }
-        public int M5 { get; set; }
-        public int M6 { get; set; }
-        public bool isChecked { get; set; }
+        public AccessForTestable AccessTest { get; set; }
+        public string Results { get; set; }
     }
 
 
@@ -67,57 +33,48 @@ namespace Anketa_4_core.Data.AnketaModels
         [Required]
         public string Name { get; set; }
         [DefaultValue(false)]
-        public bool isYouself { get; set; }
+        public bool isSelfMark { get; set; }
     }
 
     #region Компетенции
 
-    public class Comp_Blocks
+    public class Comp_Block
     {
         [Key]
         public int ID { get; set; }
         [Required]
         public string BlockName { get; set; }
         public string WordInReport { get; set; }
+        public int Year { get; set; }
+
     }
 
-    public class Comp_Questions
+    public class Comp_Question
     {
         [Key]
         public int ID { get; set; }
-        public int YearTraining { get; set; }
         public int QuestionNumber { get; set; }
         public string QuestionText { get; set; }
+        public Comp_Block Block { get; set; }
     }
 
-    public class Comp_Answers
+    public class Comp_Answer
     {
         [Key]
         public int ID { get; set; }
-        public string AnswerText { get; set; }
-        public string AnswerNumber { get; set; }
-        public int AnswerKey { get; set; }
+        public Comp_Question Question { get; set; }
+        public string Text { get; set; }
+        public string Number { get; set; }
+        public int Correct_Answer { get; set; }
     }
 
-    public class Comp_Level
+    public class Comp_TestableAnswer
     {
         [Key]
         public int ID { get; set; }
-        public string LevelName { get; set; }
-        public int BallFrom { get; set; }
-        public int BallTo { get; set; }
-        public int LevelNumber { get; set; }
-        public int Year { get; set; }
-    }
-
-    public class Comp_TestableAnswers
-    {
-        [Key]
-        public int ID { get; set; }
-        public AccessForTestables Access { get; set; }
-        public Comp_Answers Answer { get; set; }
-        public int MarkAnswer { get; set; }
-        public bool IsCorrect { get; set; }
+        public AccessForTestable Access { get; set; }
+        public Comp_Answer Answer { get; set; }
+        public int Mark { get; set; }
         public DateTime DateTimeAnswer { get; set; }
 
     }
@@ -132,53 +89,52 @@ namespace Anketa_4_core.Data.AnketaModels
         public int ID { get; set; }
         public int Years { get; set; }
         public string Gender { get; set; }
-        public DateTime DateTest { get; set; }
-        public AccessForTestables Acces { get; set; }
+        public AccessForTestable Access { get; set; }
     }
 
-    public class KT_Questions
+    public class KT_Question
     {
         [Key]
         public int ID { get; set; }
-        public int QuestionNumber { get; set; }
-        public string QuestionText { get; set; }
+        public int Number { get; set; }
+        public string Text { get; set; }
     }
 
-    public class KT_Answers
+    public class KT_Answer
     {
         [Key]
         public int ID { get; set; }
         public string AnswerNumber { get; set; }
         public string AnswerText { get; set; }
-        public bool isCorrect { get; set; }
-        public KT_Questions Question { get; set; }
+        public KT_Question Question { get; set; }
     }
 
-    public class KT_Categories
+    public class KT_Category
     {
         [Key]
         public int ID { get; set; }
         public string CategoryName { get; set; }
     }
 
-    public class KT_Levels
+    public class KT_Mark
     {
         [Key]
         public int ID { get; set; }
-        public KT_Categories Category { get; set; }
+        public KT_Category Category { get; set; }
         public int ScoreFrom { get; set; }
         public int ScoreTo { get; set; }
-        public int Level { get; set; }
-        public string LiterForLevel { get; set; }
-        public string LiterForLevelWordInReport { get; set; }
+        public int Mark { get; set; }
+        public string WordInReport { get; set; }
+        public string LevelWord { get; set; }
+        public string LevelWordInReport { get; set; }
     }
 
-    public class KT_Key
+    public class KT_KeyForCategory
     {
         [Key]
         public int ID { get; set; }
-        public KT_Categories Category { get; set; }
-        public KT_Answers Answer { get; set; }
+        public KT_Category Category { get; set; }
+        public KT_Answer Answer { get; set; }
         public int Score { get; set; }
     }
 
@@ -187,8 +143,60 @@ namespace Anketa_4_core.Data.AnketaModels
         [Key] 
         public int ID { get; set; }
         public KT_Main MainInfo { get; set; }
-        public KT_Answers Answer { get; set; }
+        public KT_Answer Answer { get; set; }
+        public DateTime DateTimeAnswer { get; set; }
 
+
+    }
+
+    #endregion
+
+
+    public class TestResult
+    {
+        [Key]
+        public int ID { get; set; }
+        public AccessForTestable Access { get; set; }
+        public string Results { get; set; }
+    }
+
+
+
+    #region JSON classes
+
+    public class Test360_Result
+    {
+        public int q01 { get; set; }
+        public int q02 { get; set; }
+        public int q03 { get; set; }
+        public int q04 { get; set; }
+        public int q05 { get; set; }
+        public int q06 { get; set; }
+        public int q07 { get; set; }
+        public int q08 { get; set; }
+        public int q09 { get; set; }
+        public int q10 { get; set; }
+        public int q11 { get; set; }
+        public int q12 { get; set; }
+        public int q13 { get; set; }
+        public int q14 { get; set; }
+        public int q15 { get; set; }
+    }
+
+    public class Motivation_Result
+    {
+      public string RecomendPosition {get; set;}
+      public string Recomendator {get; set;}
+      public string Question_01 {get; set;}
+      public string Question_02 {get; set;}
+      public string Question_03 {get; set;}
+      public string Question_04 {get; set;}
+      public string Question_05 {get; set;}
+      public string Question_06 {get; set;}
+      public string Question_07 {get; set;}
+      public string Question_08 {get; set;}
+      public string Question_09 {get; set;}
+      public string Question_YES_NO {get; set;}
     }
 
     #endregion
