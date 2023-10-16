@@ -2,6 +2,7 @@
 using Anketa_4_core.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Anketa_4_core.Models.AnketaModels.MVC_Models;
 
 namespace Anketa_4_core.Data
 {
@@ -27,6 +28,17 @@ namespace Anketa_4_core.Data
         public DbSet<KT_Mark> KT_Marks { get; set; }
         public DbSet<KT_KeyForCategory> KT_Keys { get; set; }
         public DbSet<KT_TestableAnswers> KT_TestableAnswers { get; set; }
+        public DbSet<TestableUser> TestableUsers { get; set; }
+        public DbSet<TestResult> TestResults { get; set; }
+
+        public AnketaContext(DbContextOptions<AnketaContext> options)
+            : base(options) { }
+
+        public AnketaContext()
+            : base() { }
+
+        public DbSet<Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_TestableView>? MVC_TestableView { get; set; }
+
     }
 
 }

@@ -1,4 +1,4 @@
-﻿namespace Anketa_4_core.Data.AnketaModels.MVC_Models
+﻿namespace Anketa_4_core.Models.AnketaModels.MVC_Models
 {
     public class MVC_CompetentionModel_Question
     {

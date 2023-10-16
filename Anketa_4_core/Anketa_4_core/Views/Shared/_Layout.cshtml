@@ -36,7 +36,7 @@
                                     Dropdown
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#">Action</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Testable" action="Index">Action</a></li>
                                     <li><a class="dropdown-item" href="#">Another action</a></li>
                                     <li>
                                         <hr class="dropdown-divider">
@@ -46,6 +46,12 @@
                             </li>
                         </ul>
                     </div>
+                </div>
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                    <ul class="navbar-nav flex-grow-1">
+                        <!-- code omitted -->
+                        <partial name="_LoginPartial" />
+                    </ul>
                 </div>
             </div>
         </nav>

@@ -67,6 +67,14 @@ namespace Anketa_4_core.Data.AnketaModels
         public DateTime DateNews { get; set; }
     }
 
+    public class TestableUser {
+        [Key]
+        public int ID { get; set; }
+        public string LK_Data { get; set; }
+        public Testable testable { get; set; }
+        public string UserName { get; set; }
+    }
+
 
 
 }
