@@ -1,18 +1,41 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
 }
+
+.banner {
+    background: url(img/anketaBaner.svg) repeat-y;
+    height: 200px;
+    background-size: cover;
+    background-position-y: -150px;
+}
+
+    .banner > p {
+        color: white;
+        text-transform: uppercase;
+        display: inline-flex;
+        font-size: 30px;
+        font-weight: 800;
+        -webkit-text-stroke-width: 1px;
+        -webkit-text-stroke-color: #004077;
+        align-self: center;
+        position: relative;
+        top: 50%;
+        left: 50%;
+        margin-right: -50%;
+        transform: translate(-50%, -50%);
+    }

@@ -5,28 +5,43 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
 {
     public class MVC_TestableAdd
     {
+        [Display(Name = "Код Оцениваемого")]
         public string Code { get; set; }
+        [Display(Name = "Филиал")]
         public int Filial { get; set; }
+        [Display(Name = "Год резерва")]
         public int Year { get; set; }
+        [Display(Name = "Уровень резерва")]
         public int RezervLevel { get; set; }
     }
 
     public class MVC_TestableEdit
     {
+        [HiddenInput]
         public int ID { get; set; }
+        [Display(Name = "Код Оцениваемого")]
         public string Code { get; set; }
+        [Display(Name = "Филиал")]
         public int Filial { get; set; }
+        [Display(Name = "Год резерва")]
         public int Year { get; set; }
+        [Display(Name = "Уровень резерва")]
         public int RezervLevel { get; set; }
     }
 
     public class MVC_TestableDetails
     {
+        [Display(Name = "Код Оцениваемого")]
         public string Code { get; set; }
-        public string Filial { get; set; }
+        [Display(Name = "Филиал")]
+        public int Filial { get; set; }
+        [Display(Name = "Год резерва")]
         public int Year { get; set; }
-        public string RezervLevel { get; set; }
+        [Display(Name = "Уровень резерва")]
+        public int RezervLevel { get; set; }
         //TODO MVC представления тестов и периодов
+
+
     }
 
     public class MVC_TestableView

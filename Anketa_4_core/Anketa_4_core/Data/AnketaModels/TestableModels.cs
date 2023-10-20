@@ -75,6 +75,13 @@ namespace Anketa_4_core.Data.AnketaModels
         public string UserName { get; set; }
     }
 
+    public class  UserFilial
+    {
+        public string UserName { get; set; }
+        public Filial Filial { get; set; }
+
+    }
+
 
 
 }

@@ -30,6 +30,8 @@ namespace Anketa_4_core.Data
         public DbSet<KT_TestableAnswers> KT_TestableAnswers { get; set; }
         public DbSet<TestableUser> TestableUsers { get; set; }
         public DbSet<TestResult> TestResults { get; set; }
+        public DbSet<UserFilial> UserFilials { get; set; }
+
 
         public AnketaContext(DbContextOptions<AnketaContext> options)
             : base(options) { }
