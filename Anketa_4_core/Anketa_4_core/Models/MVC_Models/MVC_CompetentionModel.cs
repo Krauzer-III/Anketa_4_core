@@ -1,10 +1,14 @@
-﻿namespace Anketa_4_core.Models.AnketaModels.MVC_Models
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace Anketa_4_core.Models.AnketaModels.MVC_Models
 {
     public class MVC_CompetentionModel_Question
     {
         public int Number { get; set; }
         public string Text { get; set; }
-        public MVC_KettelModel_Answer[] Answers { get; set; }
+        [HiddenInput]
+        public int AccesForTestable { get; set; }
+        public MVC_CompetentionModel_Answer[] Answers { get; set; }
     }
 
     public class MVC_CompetentionModel_Answer
@@ -18,5 +22,7 @@
     {
         public int AnswerID { get; set; }
         public int Ball { get; set; }
+        [HiddenInput]
+        public int AccesForTestable { get; set; }
     }
 }

@@ -27,7 +27,6 @@
   <ItemGroup>
     <Folder Include="Controllers\Admin\" />
     <Folder Include="Controllers\Verificator\" />
-    <Folder Include="Controllers\Users\" />
     <Folder Include="Migrations\" />
     <Folder Include="Views\Account\" />
   </ItemGroup>
