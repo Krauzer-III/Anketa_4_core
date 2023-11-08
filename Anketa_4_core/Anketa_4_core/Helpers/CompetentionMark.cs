@@ -1,7 +1,0 @@
-﻿namespace Anketa_4_core.Helpers
-{
-    public static class CompetentionMark
-    {
-
-    }
-}

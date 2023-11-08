@@ -24,5 +24,8 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
         public int Ball { get; set; }
         [HiddenInput]
         public int AccesForTestable { get; set; }
+        [HiddenInput]
+        public int QuestionNumber { get; set; }
+
     }
 }
