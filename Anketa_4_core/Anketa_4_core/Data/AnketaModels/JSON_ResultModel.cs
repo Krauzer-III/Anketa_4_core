@@ -4,6 +4,7 @@ using System.Drawing;
 using static Anketa_4_core.Data.AnketaModels.JSON_Motivation_Result;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
+using System.Text.Json.Serialization;
 
 namespace Anketa_4_core.Data.AnketaModels
 {
@@ -19,6 +20,86 @@ namespace Anketa_4_core.Data.AnketaModels
         public JSON_Kettel KettelTest { get; set; }
         public List<JSON_Competention_Answers> CompetentionAnswers { get; set; }
         public List<JSON_Competention_Result> CompetentionResult { get; set; }
+
+
+        /// <summary>
+        /// Поиск результата по айдишнику
+        /// </summary>
+        /// <param name="accesID">ИД доступа к тестам</param>
+        public JSON_ResultModel(int accesID)
+        {
+            using (var context = new AnketaContext())
+            {
+                var tr = context.TestResults.Include(aft => aft.Access).FirstOrDefault(aft => aft.Access.ID == accesID);
+                if (tr == null)
+                {
+                    this.AccessID = accesID;
+                    this.TestableCode = context.AccessForTestables.Include(t => t.Testable).First(aft => aft.ID == accesID).Testable.Code;
+                    _JSON_ResultModel();
+                }
+                else
+                {
+                    //TODO доделать
+                }
+            }
+        }
+
+        public JSON_ResultModel(string JSONstring)
+        {
+            try
+            {
+                var @this = JsonSerializer.Deserialize<JSON_ResultModel>(JSONstring);
+                if (@this != null)
+                {
+                    this.TestableCode = @this.TestableCode;
+                    this.AccessID = @this.AccessID;
+                    this.Tests360 = @this.Tests360;
+                    this.Test360ForReportTestable = @this.Test360ForReportTestable;
+                    this.Test360ForReportRespondents = @this.Test360ForReportRespondents;
+                    this.MotivationTest = @this.MotivationTest;
+                    this.KettelTest = @this.KettelTest;
+                    this.CompetentionAnswers = @this.CompetentionAnswers;
+                    this.CompetentionResult = @this.CompetentionResult;
+                }
+                else throw new Exception("Невозможно распознать строку результатов");
+
+            }
+            catch (Exception ex)
+            {
+                //TODO Журналировать
+            }
+
+        }
+
+        /// <summary>
+        /// Заполнялка пустых значений
+        /// </summary>
+        private void _JSON_ResultModel()
+        {
+            this.Tests360 = new List<JSON_Test360>();
+            this.Test360ForReportTestable = new JSON_Test360_ToReport();
+            this.Test360ForReportRespondents = new JSON_Test360_ToReport();
+            this.MotivationTest = new JSON_Motivation_Result();
+            this.KettelTest = new JSON_Kettel();
+            this.CompetentionAnswers = new List<JSON_Competention_Answers>();
+            this.CompetentionResult = new List<JSON_Competention_Result>();
+        }
+
+        /// <summary>
+        /// Заполнялка пустых значений
+        /// </summary>
+        private void _JSON_ResultModel(TestResult @this, int accessID, string code)
+        {
+            //TODO доделать
+            this.Tests360 = new List<JSON_Test360>();
+            this.Test360ForReportTestable = new JSON_Test360_ToReport();
+            this.Test360ForReportRespondents = new JSON_Test360_ToReport();
+            this.MotivationTest = new JSON_Motivation_Result();
+            this.KettelTest = new JSON_Kettel();
+            this.CompetentionAnswers = new List<JSON_Competention_Answers>();
+            this.CompetentionResult = new List<JSON_Competention_Result>();
+        }
+
 
 
         public void Add_JSON_Test360_ToReport_Respondents(JSON_Test360 t360)
@@ -50,11 +131,18 @@ namespace Anketa_4_core.Data.AnketaModels
             KettelTest = new JSON_Kettel(main, answers);
         }
 
+        public string GetJSON() => JsonSerializer.Serialize(this);
+
+        /// <summary>
+        /// Добавить результат тестирования компетенций
+        /// </summary>
+        /// <param name="ta">Ответы, которые давал тестируемый</param>
         public void Add_JSON_Competention(Comp_TestableAnswer[] ta)
         {
             CompetentionAnswers = new List<JSON_Competention_Answers>();
             CompetentionResult = new List<JSON_Competention_Result>();
-            foreach (var a in ta.Select(x=>x.Answer.Question))
+
+            foreach (var a in ta.Select(x => x.Answer.Question).OrderBy(q => q.QuestionNumber))
             {
                 CompetentionAnswers.Add(new JSON_Competention_Answers
                 {
@@ -70,23 +158,37 @@ namespace Anketa_4_core.Data.AnketaModels
                     }).ToArray()
                 });
             }
-            using (var db = new AnketaContext())
+            using (var context = new AnketaContext())
             {
-                foreach (var block in db.Comp_Blocks)
+                var blocks = context.Comp_Blocks.Where(b => b.Year == ta[0].Answer.Question.Block.Year);
+                var list_correctAnswers_all = context.Comp_Answers.Include(x => x.Question.Block);
+                foreach (var block in blocks)
                 {
-                    int summ = 0;
-                    var list_correctAnswers = db.Comp_Answers
-                        .Include(x => x.Question.Block)
-                        .Where(x => x.Question.Block.ID == block.ID);
-                    foreach (var ans in ta.Where(x => x.Answer.Question.Block.ID == block.ID))
-                        if (ans.Mark == list_correctAnswers.First(x => x.ID == ans.Answer.ID).Correct_Answer)
-                            summ++;
-                    CompetentionResult.Add(new JSON_Competention_Result
+                    Task.Factory.StartNew(() =>
                     {
-                        Block = block.BlockName,
-                        BlockWordInReport = block.WordInReport,
-                        Ball = summ
+                        int summ = 0;
+
+                        lock (ta)
+                        {
+                            lock (list_correctAnswers_all)
+                            {
+                                var list_correctAnswers = list_correctAnswers_all.Where(x => x.Question.Block.ID == block.ID);
+                                foreach (var ans in ta.Where(x => x.Answer.Question.Block.ID == block.ID))
+                                    if (ans.Mark == list_correctAnswers.First(x => x.ID == ans.Answer.ID).Correct_Answer)
+                                        summ++;
+                            }
+                        }
+                        lock (CompetentionResult)
+                        {
+                            CompetentionResult.Add(new JSON_Competention_Result
+                            {
+                                Block = block.BlockName,
+                                BlockWordInReport = block.WordInReport,
+                                Ball = summ
+                            });
+                        }
                     });
+                    Task.WaitAll();
                 }
             }
         }
@@ -190,6 +292,7 @@ namespace Anketa_4_core.Data.AnketaModels
         public int Mark_06 { get; set; }
         public int SummBall { get; set; }
 
+        public JSON_Motivation_Result() { }
 
         public JSON_Motivation_Result(MotivationTest m)
         {
@@ -236,6 +339,14 @@ namespace Anketa_4_core.Data.AnketaModels
             public List<JSON_Kettel_Question_Answer> QA { get; set; }
             public List<JSON_Kettel_KategoryResult> Results { get; set; }
 
+            public JSON_Kettel()
+            {
+                this.ID = -1;
+                this.Years = -1;
+                this.Gender = "";
+                this.QA = new List<JSON_Kettel_Question_Answer>();
+                this.Results = new List<JSON_Kettel_KategoryResult>();
+            }
             public JSON_Kettel(KT_Main main, KT_TestableAnswers[] answers)
             {
                 ID = main.ID;
