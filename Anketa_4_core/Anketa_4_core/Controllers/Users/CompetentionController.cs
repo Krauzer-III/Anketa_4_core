@@ -63,19 +63,29 @@ namespace Anketa_4_core.Controllers.Users
                     context.SaveChanges();
 
                     int year = context.Comp_Answers.Include(a => a.Question.Block).First(a => a.ID == answers[0].AnswerID).Question.Block.Year;
-                    int questionCount = context.Comp_Questions.Include(b=>b.Block).Count(q=>q.Block.Year== year);
+                    int questionCount = context.Comp_Questions.Include(b => b.Block).Count(q => q.Block.Year == year);
                     if (answers[0].QuestionNumber < questionCount) RedirectToAction("Question", answers[0].QuestionNumber + 1);
                     else
                     {
-                        //сначала проверим есть ли результат в базе
-                        var result = context.TestResults.Include(aft => aft.Access).FirstOrDefault(r => r.Access.ID == answers[0].AccesForTestable);
-                        if (result != null)
+                        Task.Run(() =>
                         {
-                            var json = new JSON_ResultModel(result.Results);
-                            json.Add_JSON_Competention(context.Comp_TestableAnswers.Include(aft => aft.Access).Where(a => a.Access.ID == answers[0].AccesForTestable).ToArray());
-                            result.Results = json.GetJSON();
-                            context.SaveChanges();
-                        }
+                            //сначала проверим есть ли результат в базе
+                            var result = context.TestResults.Include(aft => aft.Access).FirstOrDefault(r => r.Access.ID == answers[0].AccesForTestable);
+                            if (result != null)
+                            {
+                                var json = new JSON_ResultModel(result.Results);
+                                json.Add_JSON_Competention(context.Comp_TestableAnswers.Include(aft => aft.Access).Where(a => a.Access.ID == answers[0].AccesForTestable).ToArray());
+                                result.Results = json.GetJSON();
+                                context.SaveChanges();
+                            }
+                            else
+                            {
+                                result = new TestResult
+                                {
+                                    Access=
+                                };
+                            }
+                        });
                         return View();
                     }
                 }

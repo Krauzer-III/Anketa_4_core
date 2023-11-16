@@ -1,7 +1,10 @@
-﻿namespace Anketa_4_core.Models.AnketaModels.MVC_Models
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace Anketa_4_core.Models.AnketaModels.MVC_Models
 {
     public class MVC_MotivationModel
     {
+        [HiddenInput]
         public int AccessTestID { get; set; }
         public bool IsAgree { get; set; }
         public string RecomendPosition { get; set; }
