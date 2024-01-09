@@ -41,6 +41,19 @@ namespace Anketa_4_core.Data
 
         public DbSet<Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_TestableView>? MVC_TestableView { get; set; }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                IConfigurationRoot configuration = new ConfigurationBuilder()
+                   .SetBasePath(Directory.GetCurrentDirectory())
+                   .AddJsonFile("appsettings.json")
+                   .Build();
+                var connectionString = configuration.GetConnectionString("DbCoreConnectionString");
+                optionsBuilder.UseSqlServer(connectionString);
+            }
+        }
+
     }
 
 }

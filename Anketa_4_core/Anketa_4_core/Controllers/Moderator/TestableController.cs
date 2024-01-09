@@ -1,4 +1,6 @@
-﻿using Anketa_4_core.Models.AnketaModels.MVC_Models;
+﻿using Anketa_4_core.Data;
+using Anketa_4_core.Data.AnketaModels;
+using Anketa_4_core.Models.AnketaModels.MVC_Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Anketa_4_core.Controllers.Moderator
@@ -45,5 +47,31 @@ namespace Anketa_4_core.Controllers.Moderator
                 };
             return PartialView(model);
         }
+
+        public IActionResult AddTestable() => View();
+
+        [HttpPost]
+        public IActionResult AddTestable(MVC_TestableAdd model) 
+        {
+            using(var context = new AnketaContext())
+            {
+                var filial = context.Filials.First(f=>f.ID==model.Filial);
+                var reservLevel = context.ReservLevels.First(f => f.ID == model.RezervLevel);
+                context.Testables.Add(new Testable { 
+                    Code=model.Code,
+                    filial=filial,
+                    reservLevel=reservLevel,
+                    isArchived=false,
+                    YearTraining=model.Year  
+                });
+                context.SaveChanges();
+            }
+            return RedirectToAction("Finish");
+        }
+
+
+
+
+        public IActionResult Finish() => View();
     }
 }

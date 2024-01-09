@@ -25,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\Admin\" />
     <Folder Include="Controllers\Verificator\" />
     <Folder Include="Migrations\" />
     <Folder Include="Views\Account\" />

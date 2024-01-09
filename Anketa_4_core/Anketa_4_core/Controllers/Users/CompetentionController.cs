@@ -64,7 +64,7 @@ namespace Anketa_4_core.Controllers.Users
 
                     int year = context.Comp_Answers.Include(a => a.Question.Block).First(a => a.ID == answers[0].AnswerID).Question.Block.Year;
                     int questionCount = context.Comp_Questions.Include(b => b.Block).Count(q => q.Block.Year == year);
-                    if (answers[0].QuestionNumber < questionCount) RedirectToAction("Question", answers[0].QuestionNumber + 1);
+                    if (answers[0].QuestionNumber < questionCount) return RedirectToAction("Question", answers[0].QuestionNumber + 1);
                     else
                     {
                         Task.Run(() =>
@@ -82,7 +82,7 @@ namespace Anketa_4_core.Controllers.Users
                             {
                                 result = new TestResult
                                 {
-                                    Access=
+                                    //TODO Access=
                                 };
                             }
                         });

@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Anketa_4_core.Helpers;
+using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace Anketa_4_core.Models.AnketaModels.MVC_Models
 {
-    public class MVC_MotivationModel
+    public class MVC_MotivationModel : IValidatableObject
     {
         [HiddenInput]
         public int AccessTestID { get; set; }
@@ -19,5 +21,25 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
         public string Question_08 { get; set; }
         public string Question_09 { get; set; }
         public string Question_YES_NO { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class MVC_MotivationLoginModel : IValidatableObject
+    {
+        public string Code { get; set; }
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            var errors = new List<ValidationResult>();
+
+            var result = ValidateHelper.MotivationTestReadyTesting(Code);
+            if (!result.result)
+                errors.Add(new ValidationResult(result.error));
+
+            return errors;
+        }
     }
 }

@@ -2,6 +2,7 @@
 using Anketa_4_core.Data.AnketaModels;
 using Anketa_4_core.Models.AnketaModels.MVC_Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace Anketa_4_core.Controllers.Users
@@ -13,7 +14,13 @@ namespace Anketa_4_core.Controllers.Users
             return View();
         }
 
-        public IActionResult MotivationTest(string code)
+        [HttpPost]
+        public IActionResult Index(MVC_MotivationLoginModel model)
+        {
+            return View();
+        }
+
+        public IActionResult MotivationTest()
         {
             return View();
         }
@@ -49,7 +56,7 @@ namespace Anketa_4_core.Controllers.Users
                     };
                 }
                 else RedirectToAction("Finish", false);
-                return RedirectToAction("Finish", false);
+                return RedirectToAction("Finish", true);
             }
         }
 
