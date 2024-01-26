@@ -3,6 +3,7 @@ using Anketa_4_core.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Anketa_4_core.Models.AnketaModels.MVC_Models;
+using Microsoft.EntityFrameworkCore.Design;
 
 namespace Anketa_4_core.Data
 {
@@ -39,7 +40,7 @@ namespace Anketa_4_core.Data
         public AnketaContext()
             : base() { }
 
-        public DbSet<Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_TestableView>? MVC_TestableView { get; set; }
+        public DbSet<MVC_TestableView> MVC_TestableView { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -49,11 +50,27 @@ namespace Anketa_4_core.Data
                    .SetBasePath(Directory.GetCurrentDirectory())
                    .AddJsonFile("appsettings.json")
                    .Build();
-                var connectionString = configuration.GetConnectionString("DbCoreConnectionString");
-                optionsBuilder.UseSqlServer(connectionString);
+                var connectionString = configuration.GetConnectionString("AnketaConnection");
+                optionsBuilder.UseNpgsql(connectionString);
             }
         }
 
+
+    }
+
+    public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<AnketaContext>
+    {
+        public AnketaContext CreateDbContext(string[] args)
+        {
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+            var builder = new DbContextOptionsBuilder<AnketaContext>();
+            var connectionString = configuration.GetConnectionString("AnketaConnection");
+            builder.UseNpgsql(connectionString);
+            return new AnketaContext(builder.Options);
+        }
     }
 
 }

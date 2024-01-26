@@ -1,4 +1,5 @@
 ﻿using Anketa_4_core.Data;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Build.Construction;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -16,7 +17,7 @@ namespace Anketa_4_core.Helpers
         /// <param name="selectedID">Выбранный заранее филиал филиал</param>
         /// <param name="otherAttributes">остальные аттрибуты (при необходимости)</param>
         /// <returns><select> c филиалами из базы</returns>
-        public static string DDL_Filials(this IHtmlHelper htmlHelper, 
+        public static IHtmlContent DDL_Filials(this IHtmlHelper htmlHelper, 
                                         string[] classes, 
                                         string name, 
                                         int selectedID=-1, 
@@ -33,7 +34,7 @@ namespace Anketa_4_core.Helpers
                 }
             }
             sb.AppendLine("</select>");
-            return sb.ToString();
+            return new HtmlString(sb.ToString());
         }
 
 
@@ -45,7 +46,7 @@ namespace Anketa_4_core.Helpers
         /// <param name="selectedID">Выбранный заранее филиал филиал</param>
         /// <param name="otherAttributes">остальные аттрибуты (при необходимости)</param>
         /// <returns><select> c реальными названиями филиалов</returns>
-        public static string DDL_Filials(this IHtmlHelper htmlHelper, 
+        public static IHtmlContent DDL_Filials(this IHtmlHelper htmlHelper, 
                                         string[] classes, 
                                         string name, 
                                         Dictionary<string, string> realFiilals, 
@@ -65,7 +66,7 @@ namespace Anketa_4_core.Helpers
                 }
             }
             sb.AppendLine("</select>");
-            return sb.ToString();
+            return new HtmlString(sb.ToString());
         }
 
         /// <summary>
@@ -76,7 +77,7 @@ namespace Anketa_4_core.Helpers
         /// <param name="selectedID">Выбранный заранее филиал филиал</param>
         /// <param name="otherAttributes">остальные аттрибуты (при необходимости)</param>
         /// <returns><select> c филиалами из базы</returns>
-        public static string DDL_Reservs(this IHtmlHelper htmlHelper,
+        public static IHtmlContent DDL_Reservs(this IHtmlHelper htmlHelper,
                                         string[] classes,
                                         string name, 
                                         int selectedID = -1,
@@ -93,7 +94,7 @@ namespace Anketa_4_core.Helpers
                 }
             }
             sb.AppendLine("</select>");
-            return sb.ToString();
+            return new HtmlString(sb.ToString());
         }
     }
 }

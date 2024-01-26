@@ -19,7 +19,9 @@ namespace Anketa_4_core.Controllers.Admin
             val.AddCompetention_1year();
             val.AddCompetention_2year();
             val.AddKettelTest();
-            return View();
+            return RedirectToAction("allAdded");
         }
+
+        public IActionResult allAdded() => View();
     }
 }

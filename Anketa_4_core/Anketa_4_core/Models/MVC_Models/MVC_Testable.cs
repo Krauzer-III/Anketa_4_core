@@ -1,12 +1,16 @@
 ﻿using Anketa_4_core.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using Anketa_4_core.Helpers;
+using static Anketa_4_core.Helpers.ValidTestableCode;
 
 namespace Anketa_4_core.Models.AnketaModels.MVC_Models
 {
-    public class MVC_TestableAdd : IValidatableObject
+    public class MVC_TestableAdd
     {
-        [Display(Name = "Код Оцениваемого")]
+        [ValidTestableCode(operationType = OperationType.Add, ErrorMessage = "Такой код оцениваемого уже существует")]
+        [Required(ErrorMessage = "Поле \"Код оцениваемого\" не должно быть пустым")]
+        [Display(Name = "Код оцениваемого")]
         public string Code { get; set; }
         [Display(Name = "Филиал")]
         public int Filial { get; set; }
@@ -15,31 +19,17 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
         [Display(Name = "Уровень резерва")]
         public int RezervLevel { get; set; }
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            var errors = new List<ValidationResult>();
-
-            using(var context = new AnketaContext())
-            {
-                if (Code == "" || Code == null)
-                    errors.Add(new ValidationResult("Код не должен быть пустым"));
-                if (context.Testables.Any(x=>x.Code==Code))
-                    errors.Add(new ValidationResult($"Тестируемый с таким номером уже существует в базе"));
-                if (context.Filials.FirstOrDefault(f => f.ID == Filial) == null)
-                    errors.Add(new ValidationResult("Некорректно указан филиал"));
-                if (context.ReservLevels.FirstOrDefault(f => f.ID == RezervLevel) == null)
-                    errors.Add(new ValidationResult("Некорректно указан уровень резерва"));
-            }
-
-            return errors;
-        }
     }
 
-    public class MVC_TestableEdit : IValidatableObject
+    public class MVC_TestableEdit
     {
         [HiddenInput]
         public int ID { get; set; }
+        [HiddenInput]
+        public string oldCode { get; set; }
+        [ValidTestableCode(operationType = OperationType.Edit, ErrorMessage = "Такой код оцениваемого уже существует", oldCode = oldCode)]   //TODO решить проблему передачи параметра
         [Display(Name = "Код Оцениваемого")]
+        [Required(ErrorMessage = "Поле \"Код оцениваемого\" не должно быть пустым")]
         public string Code { get; set; }
         [Display(Name = "Филиал")]
         public int Filial { get; set; }
@@ -47,31 +37,11 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
         public int Year { get; set; }
         [Display(Name = "Уровень резерва")]
         public int RezervLevel { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            var errors = new List<ValidationResult>();
-
-            using (var context = new AnketaContext())
-            {
-                var oldcode = context.Testables.First(f => f.ID == ID).Code;
-
-                if (Code == "" || Code == null)
-                    errors.Add(new ValidationResult("Код не должен быть пустым"));
-                if (context.Testables.Any(x => x.Code == Code && x.Code!=oldcode))
-                    errors.Add(new ValidationResult($"Тестируемый с таким номером уже существует в базе"));
-                if (context.Filials.FirstOrDefault(f => f.ID == Filial) == null)
-                    errors.Add(new ValidationResult("Некорректно указан филиал"));
-                if (context.ReservLevels.FirstOrDefault(f => f.ID == RezervLevel) == null)
-                    errors.Add(new ValidationResult("Некорректно указан уровень резерва"));
-            }
-
-            return errors;
-        }
     }
 
     public class MVC_TestableDetails
     {
+        [Required(ErrorMessage ="Поле не должно быть пустым")]
         [Display(Name = "Код Оцениваемого")]
         public string Code { get; set; }
         [Display(Name = "Филиал")]

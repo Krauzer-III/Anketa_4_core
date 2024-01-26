@@ -3,7 +3,29 @@
 @{
     ViewData["Title"] = "Добавить нового тестируемого";
 }
+<style type="text/css">
+    .field-validation-error {
+        color: #ff0000;
+    }
 
+    .field-validation-valid {
+        display: none;
+    }
+
+    .input-validation-error {
+        border: 1px solid #ff0000;
+        background-color: #ffeeee;
+    }
+
+    .validation-summary-errors {
+        font-weight: bold;
+        color: #ff0000;
+    }
+
+    .validation-summary-valid {
+        display: none;
+    }
+</style>
 
 <ul class="nav nav-tabs" id="myTab" role="tablist">
     <li class="nav-item" role="presentation">
@@ -17,14 +39,27 @@
     <div class="tab-pane fade show active" id="addOne-tab-pane" role="tabpanel" aria-labelledby="addOne-tab" tabindex="0">
         <form action="AddTestable" method="post">
             @Html.DisplayNameFor(m=>m.Code)
+            <br />
             @Html.TextBoxFor(m=>m.Code)
+            @Html.ValidationMessageFor(m=>m.Code, "*")
+            <hr>
             @Html.DisplayNameFor(m=>m.Filial)
+            <br />
             @Html.DDL_Filials(new[] {"form-control"}, "Filial")
+            <hr />
             @Html.DisplayNameFor(m=>m.Year)
-            @Html.DropDownListFor(m=>m.Year, new SelectList(new[] {1,2,3,4,5,6}))
+            <br />
+            @Html.DropDownListFor(m=>m.Year, new SelectList(new[] {1,2,3}))
+            <hr />
             @Html.DisplayNameFor(m=>m.RezervLevel)
+            <br />
             @Html.DDL_Reservs(new[] {"form-control"}, "RezervLevel")
+            <hr />
+            <button type="submit">Добавить</button>
+            <hr />
+
             @Html.RenderUnobtrusiveAjaxScript()
+            @Html.ValidationSummary()
         </form>
     </div>
     <div class="tab-pane fade" id="addGroup-tab-pane" role="tabpanel" aria-labelledby="addGroup-tab" tabindex="0">...</div>
