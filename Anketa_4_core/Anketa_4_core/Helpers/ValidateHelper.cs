@@ -73,30 +73,28 @@ namespace Anketa_4_core.Helpers
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-#pragma warning disable CS8600 // Преобразование литерала, допускающего значение NULL или возможного значения NULL в тип, не допускающий значение NULL.
-            string code = Convert.ToString(value);
-#pragma warning restore CS8600 // Преобразование литерала, допускающего значение NULL или возможного значения NULL в тип, не допускающий значение NULL.
-            if (code != null)
+            if (value != null)
             {
-                switch (operationType)
+                string? code = Convert.ToString(value);
+                if (code != null)
                 {
-                    case OperationType.Add:
-#pragma warning disable CS8603 // Возможно, возврат ссылки, допускающей значение NULL.
-                        return CodeExist(code) ?
-                            ValidationResult.Success :
-                            new ValidationResult(ValidateHelper.errors[ErrorCodes.CodeExist]);
-#pragma warning restore CS8603 // Возможно, возврат ссылки, допускающей значение NULL.
-                    case OperationType.Edit:
-#pragma warning disable CS8603 // Возможно, возврат ссылки, допускающей значение NULL.
-                        return CodeExist(code, oldCode) ?
-                         ValidationResult.Success :
-                         new ValidationResult(ValidateHelper.errors[ErrorCodes.CodeExist]);
-#pragma warning restore CS8603 // Возможно, возврат ссылки, допускающей значение NULL.
-                    default: return new ValidationResult("Неизвестная ошибка");
+                    switch (operationType)
+                    {
+                        case OperationType.Add:
+                            return CodeExist(code) ?
+                                ValidationResult.Success :
+                                new ValidationResult(ValidateHelper.errors[ErrorCodes.CodeExist]);
+                        case OperationType.Edit:
+                            return CodeExist(code, oldCode) ?
+                             ValidationResult.Success :
+                             new ValidationResult(ValidateHelper.errors[ErrorCodes.CodeExist]);
+                        default: return new ValidationResult("Неизвестная ошибка");
 
+                    }
                 }
+                else return new ValidationResult("Неизвестная ошибка");
             }
-            else return new ValidationResult("Неизвестная ошибка");
+            else return new ValidationResult("Пустое значение недопустимо");
         }
     }
 }

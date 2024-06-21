@@ -14,7 +14,7 @@ namespace Anketa_4_core.Helpers
         /// </summary>
         /// <param name="classes">CSS классы</param>
         /// <param name="name">Атрибут name</param>
-        /// <param name="selectedID">Выбранный заранее филиал филиал</param>
+        /// <param name="selectedID">Выбранный заранее филиал</param>
         /// <param name="otherAttributes">остальные аттрибуты (при необходимости)</param>
         /// <returns><select> c филиалами из базы</returns>
         public static IHtmlContent DDL_Filials(this IHtmlHelper htmlHelper, 
@@ -43,7 +43,7 @@ namespace Anketa_4_core.Helpers
         /// </summary>
         /// <param name="classes">CSS классы</param>
         /// <param name="name">Атрибут name</param>
-        /// <param name="selectedID">Выбранный заранее филиал филиал</param>
+        /// <param name="selectedID">Выбранный заранее филиал</param>
         /// <param name="otherAttributes">остальные аттрибуты (при необходимости)</param>
         /// <returns><select> c реальными названиями филиалов</returns>
         public static IHtmlContent DDL_Filials(this IHtmlHelper htmlHelper, 
@@ -70,11 +70,11 @@ namespace Anketa_4_core.Helpers
         }
 
         /// <summary>
-        /// Рисует <select> c филиалами из базы
+        /// Рисует <select> c уровнями резерва
         /// </summary>
         /// <param name="classes">CSS классы</param>
         /// <param name="name">Атрибут name</param>
-        /// <param name="selectedID">Выбранный заранее филиал филиал</param>
+        /// <param name="selectedID">Выбранный заранее филиал</param>
         /// <param name="otherAttributes">остальные аттрибуты (при необходимости)</param>
         /// <returns><select> c филиалами из базы</returns>
         public static IHtmlContent DDL_Reservs(this IHtmlHelper htmlHelper,
@@ -94,6 +94,72 @@ namespace Anketa_4_core.Helpers
                 }
             }
             sb.AppendLine("</select>");
+            return new HtmlString(sb.ToString());
+        }
+
+
+        /// <summary>
+        /// Рисует <select> c ролями респондентов
+        /// </summary>
+        /// <param name="classes">CSS классы</param>
+        /// <param name="name">Атрибут name</param>
+        /// <param name="selectedID">Выбранная заранее роль респондента</param>
+        /// <param name="otherAttributes">остальные аттрибуты (при необходимости)</param>
+        /// <returns><select> c филиалами из базы</returns>
+        public static IHtmlContent DDL_RespondentRoles(this IHtmlHelper htmlHelper,
+                                        string[] classes,
+                                        string name,
+                                        int selectedID = -1,
+                                        string otherAttributes = "")
+        {
+            var sb = new StringBuilder($"<select name=\"{name}\" class=\"{string.Join(' ', classes)}\" {otherAttributes}>");
+            using (var context = new AnketaContext())
+            {
+                foreach (var item in context.RespondentRoles)
+                {
+                    string selected = item.ID == selectedID ? "selected" : "";
+
+                    sb.Append($"<option value=\"{item.ID}\" {selected}>{item.Name}</option>");
+                }
+            }
+            sb.AppendLine("</select>");
+            return new HtmlString(sb.ToString());
+        }
+
+
+
+        /// <summary>
+        /// Рисует select c филиалами с чекбоксами
+        /// </summary>
+        /// <param name="classes">CSS классы</param>
+        /// <param name="name">Атрибут name</param>
+        /// <param name="otherAttributes">остальные аттрибуты (при необходимости)</param>
+        /// <returns><select> c филиалами из базы</returns>
+        public static IHtmlContent DDL_Checkbox_Filial(this IHtmlHelper htmlHelper,
+                                        string[] classes,
+                                        string name)
+        {
+            var sb = new StringBuilder($"<div class=\"dropdown\">" +
+                $"<button data-mdb-button-init data-mdb-ripple-init data-mdb-dropdown-init class=\"btn btn-primary dropdown-toggle\" type=\"button\" id=\"{name}\"data-mdb-toggle=\"dropdown\" aria-expanded=\"false\">" +
+                $"Филиалы" +
+                $"</button>" +
+                $"<ul class=\"dropdown-menu\" aria-labelledby=\"{name}\">");
+            using (var context = new AnketaContext())
+            {
+                int i = 1;
+                foreach (var item in context.Filials)
+                {
+                    sb.Append($"<li>" +
+                        $"<a class=\"dropdown-item\" href=\"#\">" +
+                        $"<div class=\"form-check\">" +
+                        $"<input class=\"form-check-input\" type=\"checkbox\" value=\"{item.ID}\" id=\"{name + i.ToString()}\" name=\"{name}\" />" +
+                        $"<label class=\"form-check-label\" for=\"{name + i++.ToString()}\">{item.FilialName}</label>" +
+                        $"</div>" +
+                        $"</a>" +
+                        $"</li>");
+                }
+            }
+            sb.AppendLine("</ul></div>");
             return new HtmlString(sb.ToString());
         }
     }

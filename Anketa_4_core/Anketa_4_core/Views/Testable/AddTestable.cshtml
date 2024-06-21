@@ -37,32 +37,42 @@
 </ul>
 <div class="tab-content" id="myTabContent">
     <div class="tab-pane fade show active" id="addOne-tab-pane" role="tabpanel" aria-labelledby="addOne-tab" tabindex="0">
-        <form action="AddTestable" method="post">
+        @using (Html.BeginForm(FormMethod.Post))
+        {
             @Html.DisplayNameFor(m=>m.Code)
             <br />
-            @Html.TextBoxFor(m=>m.Code)
-            @Html.ValidationMessageFor(m=>m.Code, "*")
+            @Html.TextBoxFor(m=>m.Code, new {@class="form-control"})
+            @Html.ValidationMessageFor(m=>m.Code)
             <hr>
             @Html.DisplayNameFor(m=>m.Filial)
             <br />
-            @Html.DDL_Filials(new[] {"form-control"}, "Filial")
+            @Html.DDL_Filials(new[] { "form-select" }, "Filial")
             <hr />
             @Html.DisplayNameFor(m=>m.Year)
             <br />
-            @Html.DropDownListFor(m=>m.Year, new SelectList(new[] {1,2,3}))
+            @Html.DropDownListFor(m=>m.Year, new SelectList(new[] {1,2,3}), new {@class="form-select"})
             <hr />
             @Html.DisplayNameFor(m=>m.RezervLevel)
             <br />
-            @Html.DDL_Reservs(new[] {"form-control"}, "RezervLevel")
+            @Html.DDL_Reservs(new[] { "form-select" }, "RezervLevel")
             <hr />
-            <button type="submit">Добавить</button>
+            <button type="submit" class="btn btn-primary">Добавить</button>
             <hr />
 
             @Html.RenderUnobtrusiveAjaxScript()
             @Html.ValidationSummary()
-        </form>
+        }
     </div>
-    <div class="tab-pane fade" id="addGroup-tab-pane" role="tabpanel" aria-labelledby="addGroup-tab" tabindex="0">...</div>
+    <div class="tab-pane fade" id="addGroup-tab-pane" role="tabpanel" aria-labelledby="addGroup-tab" tabindex="0">
+        <textarea class="form-control">
+
+
+            
+        </textarea>
+        
+        @Html.RenderUnobtrusiveAjaxScript()
+        @Html.ValidationSummary()
+    </div>
 </div>
 
 

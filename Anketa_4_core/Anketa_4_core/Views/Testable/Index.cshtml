@@ -1,18 +1,84 @@
-﻿
+﻿@using Anketa_4_core.Helpers
 @{
+    ViewData["Title"] = "Index";
 }
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-<br />
-@Html.AjaxActionLink("Загрузить юзеров", "TestablesPage", new AjaxOptions{UpdateTargetId="partial" })
+
+<h1>Index</h1>
+
+<style>
+   .dropdown-menu {
+      padding: 10px;
+    }
+
+    .form-check-input {
+      margin-right: 10px;
+    }
+  </style>
+
+@* @using (Html.AjaxBeginForm("TestablesPage", new AjaxOptions { UpdateTargetId = "partial", HttpMethod = "POST" }))
+{ *@
+
+<div class="dropdown">
+    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+        Dropdown form
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <li>
+            <input class="form-check-input" type="checkbox" value="" id="qwe1">
+            <label class="form-check-label" for="qwe1">qwe1</label>
+        </li>
+        <li>
+            <input class="form-check-input" type="checkbox" value="" id="qwe2">
+            <label class="form-check-label" for="qwe2">qwe2</label>
+        </li>
+        <li>
+            <input class="form-check-input" type="checkbox" value="" id="qwe3">
+            <label class="form-check-label" for="qwe3">qwe3</label>
+        </li>
+    </ul>
+</div>
+
+
+<div class="dropdown">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+        Select Options
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <li>
+            <input class="form-check-input" type="checkbox" value="" id-"qwe1">
+            <label class="form-check-label" for="qwe1">qwe1</label>
+        </li>
+        <li>
+            <input class="form-check-input" type="checkbox" value="" id-"qwe2">
+            <label class="form-check-label" for="qwe2">qwe2</label>
+        </li>
+        <li>
+            <input class="form-check-input" type="checkbox" value="" id-"qwe3">
+            <label class="form-check-label" for="qwe3">qwe3</label>
+        </li>
+    </ul>
+</div>
+
+
+    @Html.DDL_Checkbox_Filial(new string[0], "filialID")
+@* } *@
 
 <div id="partial">
-
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var dropdownMenu = document.querySelector('.dropdown-menu');
+
+        dropdownMenu.addEventListener('click', function (e) {
+            e.stopPropagation(); // предотвращаем закрытие dropdown при клике внутри
+        });
+
+        var checkboxes = dropdownMenu.querySelectorAll('.form-check-input');
+
+        checkboxes.forEach(function (checkbox) {
+            checkbox.addEventListener('click', function (e) {
+                e.stopPropagation(); // предотвращаем закрытие dropdown при клике на чекбокс
+            });
+        });
+    });
+</script>

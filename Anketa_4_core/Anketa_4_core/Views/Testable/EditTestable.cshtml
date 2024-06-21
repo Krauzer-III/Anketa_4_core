@@ -1,0 +1,33 @@
+﻿@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_TestableEdit
+@using Anketa_4_core.Helpers
+@{
+    ViewData["Title"] = "Редактировать тестируемого";
+}
+
+@using (Html.BeginForm(FormMethod.Post))
+{
+    @Html.HiddenFor(m => m.oldCode)
+    @Html.HiddenFor(m => m.ID)
+    @Html.DisplayNameFor(m => m.Code)
+    <br />
+    @Html.TextBoxFor(m => m.Code, new {value=Model.oldCode})
+    @Html.ValidationMessageFor(m => m.Code)
+    <hr>
+    @Html.DisplayNameFor(m => m.Filial)
+    <br />
+    @Html.DDL_Filials(new[] { "form-control" }, "Filial")
+    <hr />
+    @Html.DisplayNameFor(m => m.Year)
+    <br />
+    @Html.DropDownListFor(m => m.Year, new SelectList(new[] { 1, 2, 3 }))
+    <hr />
+    @Html.DisplayNameFor(m => m.RezervLevel)
+    <br />
+    @Html.DDL_Reservs(new[] { "form-control" }, "RezervLevel")
+    <hr />
+    <button type="submit">Добавить</button>
+    <hr />
+
+    @Html.RenderUnobtrusiveAjaxScript()
+    @Html.ValidationSummary()
+}

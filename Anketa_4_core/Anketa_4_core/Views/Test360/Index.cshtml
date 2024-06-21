@@ -1,0 +1,20 @@
+﻿@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_Test360_StartTest_Model
+@using Anketa_4_core.Helpers
+
+
+<form>
+    @Html.DisplayNameFor(m => m.Code)
+    <br />
+    @Html.TextBoxFor(m => m.Code)
+    @Html.ValidationMessageFor(m => m.Code)
+    <hr>
+    @Html.DisplayNameFor(m => m.RoleID)
+    <br />
+    @Html.DDL_RespondentRoles(new[] { "form-control" }, "RoleID")
+    <hr />
+    <button type="submit" class="btn btn-primary">Начать оценку</button>
+    <hr />
+
+    @Html.RenderUnobtrusiveAjaxScript()
+    @Html.ValidationSummary()
+</form>

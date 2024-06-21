@@ -8,7 +8,6 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
 {
     public class MVC_TestableAdd
     {
-        [ValidTestableCode(operationType = OperationType.Add, ErrorMessage = "Такой код оцениваемого уже существует")]
         [Required(ErrorMessage = "Поле \"Код оцениваемого\" не должно быть пустым")]
         [Display(Name = "Код оцениваемого")]
         public string Code { get; set; }
@@ -27,7 +26,6 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
         public int ID { get; set; }
         [HiddenInput]
         public string oldCode { get; set; }
-        [ValidTestableCode(operationType = OperationType.Edit, ErrorMessage = "Такой код оцениваемого уже существует", oldCode = oldCode)]   //TODO решить проблему передачи параметра
         [Display(Name = "Код Оцениваемого")]
         [Required(ErrorMessage = "Поле \"Код оцениваемого\" не должно быть пустым")]
         public string Code { get; set; }
@@ -39,9 +37,18 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
         public int RezervLevel { get; set; }
     }
 
+    public class MVCTestableAddMany
+    {
+        [Display(Name = "Список оцениваемых")]
+        public string data { get; set; }
+        [Display(Name = "Разделить данных")]
+        public string separator { get; set; }
+    }
+
     public class MVC_TestableDetails
     {
-        [Required(ErrorMessage ="Поле не должно быть пустым")]
+        [HiddenInput]
+        public int ID { get; set; }
         [Display(Name = "Код Оцениваемого")]
         public string Code { get; set; }
         [Display(Name = "Филиал")]
@@ -67,7 +74,41 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
         public string ReservLevelName { get; set; }
         [Display(Name = "Год резерва")]
         public int YearTraining { get; set; }
-        [Display(Name = "В архиве")]
-        public bool isArchived { get; set; }
     }
+
+
+    public class MVC_PeriodList
+    {
+        [HiddenInput]
+        public int Id { get; set; }
+        [Display(Name = "Название периода")]
+        public string PeriodName { get; set; }
+        [Display(Name = "Дата добавления ")]
+        public int CountTestables { get; set; }
+
+    }
+
+    public class MVC_PeriodAdd
+    {
+        [Display(Name = "Название периода")]
+        public string PeriodName { get; set; }
+        [Display(Name = "Тестируемые")]
+        public string[] TestableNames { get; set; }
+    }
+
+    public class MVC_PeriodEdit
+    {
+        [HiddenInput]
+        public int Id { get; set; }
+        [HiddenInput]
+        public string oldPeriodName { get; set; }
+        [Display(Name = "Название периода")]
+        public string PeriodName { get; set; }
+        [Display(Name = "Тестируемые")]
+        public string[] TestableNames { get; set; }
+        [HiddenInput]
+        public string[] oldTestableNames { get; set; }
+    }
+
+
 }

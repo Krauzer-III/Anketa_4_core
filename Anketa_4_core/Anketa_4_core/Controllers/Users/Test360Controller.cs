@@ -8,5 +8,16 @@ namespace Anketa_4_core.Controllers.Users
         {
             return View();
         }
+
+        public IActionResult TestPage(string testableCode, int RoleID)
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Final()
+        {
+            return View();
+        }
     }
 }

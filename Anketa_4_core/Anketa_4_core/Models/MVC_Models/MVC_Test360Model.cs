@@ -30,9 +30,11 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
     public class MVC_Test360_StartTest_Model : IValidatableObject
     {
         [Required]
+        [Display(Name = "Код оцениваемого")]
         public string Code { get; set; }
         [Required]
-        public int RezerlLevelID { get; set; }
+        [Display(Name = "Роль респондента")]
+        public int RoleID { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

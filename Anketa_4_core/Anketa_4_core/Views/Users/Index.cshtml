@@ -1,0 +1,26 @@
+﻿@using Microsoft.AspNetCore.Identity
+@model UserManager<IdentityUser>
+@{
+    var roles = ViewData["rolemanager"] as RoleManager<IdentityRole>;
+}
+
+<table class="table">
+    <thead></thead>
+    <tbody>
+        @foreach (var user in Model.Users.ToList())
+        {
+            <tr>
+                <td>
+                    @user.UserName
+                </td>
+                <td>
+                    @{
+                        var masRoles = await Model.GetRolesAsync(user);
+                        var string_r = String.Join(", ", masRoles);
+                    }
+                    @string_r
+                    </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,4 +1,11 @@
 ﻿@model IEnumerable<Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_TestableView>
+@{
+    ViewData["Title"] = "TestablesPage";
+}
+
+<h1>TestablesPage</h1>
+
+
 
 <p>
     <a asp-action="Create"><img src="~/css/icons/icons.svg#add-view" height="30" /></a>
@@ -17,9 +24,6 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.YearTraining)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.isArchived)
             </th>
             <th></th>
         </tr>
@@ -41,13 +45,8 @@
                     @Html.DisplayFor(modelItem => item.YearTraining)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.isArchived)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id"><img src="~/css/icons/icons.svg#edit-view" height="30"/></a>
+                    <a asp-action="Edit" asp-route-id="@item.Id"><img src="~/css/icons/icons.svg#edit-view" height="30" /></a>
                     <a asp-action="Details" asp-route-id="@item.Id"><img src="~/css/icons/icons.svg#info-view" height="30" /></a>
-                    <a asp-action="Delete" asp-route-id="@item.Id"><img src="~/css/icons/icons.svg#delete-view" height="30" /></a>
-                    <a asp-action="Archive" asp-route-id="@item.Id"><img src="~/css/icons/icons.svg#zip-view" height="30" /></a>
                 </td>
             </tr>
         }
