@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Anketa_4_core.Helpers;
 using static Anketa_4_core.Helpers.ValidTestableCode;
+using Anketa_4_core.Models.AnketaModels.MVC_Models;
 
 namespace Anketa_4_core.Models.AnketaModels.MVC_Models
 {
@@ -110,5 +111,83 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
         public string[] oldTestableNames { get; set; }
     }
 
+
+    public class MVC_TestableListItem
+    {
+        public int Id { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public string? Filial { get; set; }
+        public int YearTraining { get; set; }
+        public bool IsArchived { get; set; }
+    }
+
+
+    public class MVC_TestableEditFull : MVC_TestableEdit
+    {
+        [Display(Name = "Привязка к аккаунту (UserName)")]
+        public string? UserName { get; set; }
+
+
+        [Display(Name = "Периоды доступа (TestPeriod)")]
+        public List<int> SelectedTestPeriodIds { get; set; } = new();
+
+
+        public List<(int id, string name)> Filials { get; set; } = new();
+        public List<(int id, string name)> ReservLevels { get; set; } = new();
+        public List<(int id, string name)> TestPeriods { get; set; } = new();
+    }
+
+
+    public class MVC_TestableDetailsFull : MVC_TestableDetails
+    {
+        [Display(Name = "UserName")]
+        public string? UserName { get; set; }
+
+
+        [Display(Name = "LK_Data")]
+        public string? LK_Data { get; set; }
+
+
+        public List<(int id, string name)> BoundTestPeriods { get; set; } = new();
+        public List<string> Reports { get; set; } = new();
+    }
+
+
+    public class MVC_TestableDeletePreview
+    {
+        public int Id { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public int YearTraining { get; set; }
+        public bool IsArchived { get; set; }
+        public string? Filial { get; set; }
+        public string? ReservLevel { get; set; }
+        public string? UserName { get; set; }
+        public string? LK_Data { get; set; }
+        public List<(int id, string name)> BoundTestPeriods { get; set; } = new();
+        public int AccessLinksCount => BoundTestPeriods.Count;
+    }
+
+
+    public class MVC_TestableImportVM
+    {
+        [Display(Name = "CSV-файл")]
+        public IFormFile? File { get; set; }
+
+
+        [Display(Name = "Год по умолчанию для импорта")]
+        public int DefaultYear { get; set; } = DateTime.UtcNow.Year;
+    }
+
+    public class MVC_TestableAddPageVM
+    {
+        public MVC_TestableEditFull Single { get; set; } = new MVC_TestableEditFull();
+        public MVC_TestableImportVM Import { get; set; } = new MVC_TestableImportVM();
+        // Доп. данные для выпадающего списка пользователей
+        public List<string> FreeUsers { get; set; } = new List<string>();
+        // Для модального окна справки
+        public List<string> FilialNames { get; set; } = new List<string>();
+        public List<(int id, string name)> ReservLevels { get; set; } = new List<(int id, string name)>();
+        public List<(int id, string name)> TestPeriods { get; set; } = new List<(int id, string name)>();
+    }
 
 }

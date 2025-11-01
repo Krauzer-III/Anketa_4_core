@@ -1,0 +1,233 @@
+﻿@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_TestableAddPageVM
+@{
+    ViewData["Title"] = "Добавление тестируемых";
+}
+<h2 class="mb-3">@ViewData["Title"]</h2>
+
+<ul class="nav nav-tabs" id="addTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="single-tab" data-bs-toggle="tab" data-bs-target="#single-pane" type="button" role="tab">Добавить одного</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="bulk-tab" data-bs-toggle="tab" data-bs-target="#bulk-pane" type="button" role="tab">Добавить много</button>
+    </li>
+</ul>
+<div class="tab-content border border-top-0 p-3 rounded-bottom" id="addTabsContent">
+    <div class="tab-pane fade show active" id="single-pane" role="tabpanel" aria-labelledby="single-tab">
+        <form asp-action="Create" method="post">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="Single.Code" class="form-label"></label>
+                    <div class="input-group">
+                        <input asp-for="Single.Code" class="form-control" id="Code" />
+                        <button type="button" class="btn btn-outline-secondary" id="btnNextCode">Автокод</button>
+                    </div>
+                    <span asp-validation-for="Single.Code" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Single.Year" class="form-label"></label>
+                    <input asp-for="Single.Year" class="form-control" />
+                    <span asp-validation-for="Single.Year" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Пользователь (testable_user)</label>
+                    <select name="UserName" class="form-select">
+                        <option value="">— без привязки —</option>
+                        @foreach (var u in Model.FreeUsers)
+                        {
+                            <option value="@u">@u</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Филиал</label>
+                    <select asp-for="Single.Filial" class="form-select">
+                        <option value="0">— не выбран —</option>
+                        @foreach (var f in Model.Single.Filials)
+                        {
+                            <option value="@f.id">@f.name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Уровень резерва</label>
+                    <select asp-for="Single.RezervLevel" class="form-select">
+                        <option value="0">— не выбран —</option>
+                        @foreach (var r in Model.Single.ReservLevels)
+                        {
+                            <option value="@r.id">@r.name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Периоды доступа (TestPeriod)</label>
+                    <select asp-for="Single.SelectedTestPeriodIds" multiple class="form-select" size="8">
+                        @foreach (var p in Model.Single.TestPeriods)
+                        {
+                            <option value="@p.id">@p.name</option>
+                        }
+                    </select>
+                    <div class="form-text">Если ничего не выбрано — автоматически привяжется последний период.</div>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Создать</button>
+                <a class="btn btn-secondary" asp-action="Index">Назад</a>
+            </div>
+        </form>
+    </div>
+    <div class="tab-pane fade" id="bulk-pane" role="tabpanel" aria-labelledby="bulk-tab">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Массовая загрузка CSV</h5>
+            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#csvHelpModal">Информация</button>
+        </div>
+        <form asp-action="Import" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label asp-for="Import.File" class="form-label"></label>
+                <input asp-for="Import.File" class="form-control" type="file" />
+                <div class="form-text">Формат CSV: <code>code,filial,rezerv_level,testperiod,username</code></div>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Import.DefaultYear" class="form-label"></label>
+                <input asp-for="Import.DefaultYear" class="form-control" />
+            </div>
+            <button class="btn btn-primary" type="submit">Загрузить</button>
+            <a class="btn btn-secondary" asp-action="Index">Назад</a>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: CSV Help -->
+<div class="modal fade" id="csvHelpModal" tabindex="-1" aria-labelledby="csvHelpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="csvHelpModalLabel">Как подготовить CSV в Р7‑Офис</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ol>
+                    <li>Откройте <b>Р7‑Офис Таблицы</b> и создайте новый файл.</li>
+                    <li>В первой строке укажите заголовки столбцов: <code>code, filial, rezerv_level, testperiod, username</code>.</li>
+                    <li>Заполните строки данными. Один пользователь — одна строка.</li>
+                    <li>Сохраните как <b>CSV (разделители — запятые)</b>. При сохранении выберите кодировку <b>UTF‑8</b>.</li>
+                    <li>Убедитесь, что в файле нет лишних пробелов вокруг запятых, и каждая строка заканчивается переводом строки.</li>
+                </ol>
+                <hr />
+                <h6>Справочник филиалов (используйте точные названия):</h6>
+                @if (Model.FilialNames?.Count > 0)
+                {
+                    <ul class="mb-3">
+                        @foreach (var f in Model.FilialNames)
+                        {
+                            <li>@f</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">Список филиалов пуст.</p>
+                }
+
+                <h6 class="mt-3">Уровни резерва (укажите ID в столбце <code>rezerv_level</code>):</h6>
+                @if (Model.ReservLevels?.Count > 0)
+                {
+                    <table class="table table-sm table-bordered w-auto">
+                        <thead><tr><th>ID</th><th>Название</th></tr></thead>
+                        <tbody>
+                            @foreach (var rl in Model.ReservLevels)
+                            {
+                                <tr><td>@rl.id</td><td>@rl.name</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted">Справочник уровней резерва пуст.</p>
+                }
+
+                <h6 class="mt-3">Периоды тестирования (используйте ID в столбце <code>testperiod</code>):</h6>
+                @if (Model.TestPeriods?.Count > 0)
+                {
+                    <table class="table table-sm table-bordered w-auto">
+                        <thead><tr><th>ID</th><th>Название периода</th></tr></thead>
+                        <tbody>
+                            @foreach (var tper in Model.TestPeriods)
+                            {
+                                <tr><td>@tper.id</td><td>@tper.name</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted">Справочник периодов тестирования пуст.</p>
+                }
+
+
+                <h6 class="mt-3">Пример CSV:</h6>
+                @{
+                    var f1 = Model.FilialNames?.FirstOrDefault() ?? "Филиал А";
+                    var f2 = Model.FilialNames?.Skip(1).FirstOrDefault() ?? "Филиал Б";
+                    var rl1 = Model.ReservLevels?.FirstOrDefault();
+                    var rlId = (rl1?.id ?? 1);
+                }
+                @{
+                    var tp = Model.TestPeriods?.FirstOrDefault();
+                    var tpId = (tp?.id ?? 1);
+                }
+                <pre class="bg-light p-2 border">
+                    code,filial,rezerv_level,testperiod,username
+                    10001,@f1,@rlId,@tpId,ivanov
+                    10002,@f2,1,@tpId,petrova
+                </pre>
+                <p class="text-muted">Если <code>testperiod</code> оставить пустым, система привяжет сотрудника к последнему периоду из базы.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Автокод
+        const btn = document.getElementById('btnNextCode');
+        if (btn) btn.addEventListener('click', async () => {
+            const resp = await fetch('@Url.Action("NextCode")');
+            const code = await resp.text();
+            document.getElementById('Code').value = code;
+        });
+        // Сохраняем активную вкладку в hash
+        const triggerTabList = [].slice.call(document.querySelectorAll('#addTabs button'))
+        triggerTabList.forEach(function (triggerEl) {
+            triggerEl.addEventListener('shown.bs.tab', function (event) {
+                history.replaceState(null, '', '#' + event.target.id);
+            })
+        })
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = location.hash.replace('#', '');
+            if (hash && document.getElementById(hash)) {
+                new bootstrap.Tab(document.getElementById(hash)).show();
+            }
+        });
+    </script>
+}
+<script>
+    // Сохраняем активную вкладку в hash
+    const triggerTabList = [].slice.call(document.querySelectorAll('#addTabs button'))
+    triggerTabList.forEach(function (triggerEl) {
+        triggerEl.addEventListener('shown.bs.tab', function (event) {
+            history.replaceState(null, '', '#' + event.target.id);
+        })
+    })
+    window.addEventListener('DOMContentLoaded', () => {
+        const hash = location.hash.replace('#', '');
+        if (hash && document.getElementById(hash)) {
+            new bootstrap.Tab(document.getElementById(hash)).show();
+        }
+    });
+</script>

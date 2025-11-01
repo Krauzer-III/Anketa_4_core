@@ -1,84 +1,57 @@
-﻿@using Anketa_4_core.Helpers
-@{
-    ViewData["Title"] = "Index";
+﻿@{
+    ViewData["Title"] = "Тестируемые";
 }
 
-<h1>Index</h1>
-
-<style>
-   .dropdown-menu {
-      padding: 10px;
-    }
-
-    .form-check-input {
-      margin-right: 10px;
-    }
-  </style>
-
-@* @using (Html.AjaxBeginForm("TestablesPage", new AjaxOptions { UpdateTargetId = "partial", HttpMethod = "POST" }))
-{ *@
-
-<div class="dropdown">
-    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-        Dropdown form
-    </button>
-    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        <li>
-            <input class="form-check-input" type="checkbox" value="" id="qwe1">
-            <label class="form-check-label" for="qwe1">qwe1</label>
-        </li>
-        <li>
-            <input class="form-check-input" type="checkbox" value="" id="qwe2">
-            <label class="form-check-label" for="qwe2">qwe2</label>
-        </li>
-        <li>
-            <input class="form-check-input" type="checkbox" value="" id="qwe3">
-            <label class="form-check-label" for="qwe3">qwe3</label>
-        </li>
-    </ul>
+<h2 class="mb-3">Тестируемые</h2>
+<div class="d-flex gap-2 mb-3">
+    <a class="btn btn-primary" asp-action="Create">Добавить тестируемого</a>
+    <input id="searchBox" class="form-control" style="max-width: 320px" placeholder="Поиск по коду..." />
 </div>
 
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Код</th>
+            <th>Филиал</th>
+            <th>Год</th>
+            <th>Архив</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="infiniteBody"></tbody>
+</table>
 
-<div class="dropdown">
-    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-        Select Options
-    </button>
-    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        <li>
-            <input class="form-check-input" type="checkbox" value="" id-"qwe1">
-            <label class="form-check-label" for="qwe1">qwe1</label>
-        </li>
-        <li>
-            <input class="form-check-input" type="checkbox" value="" id-"qwe2">
-            <label class="form-check-label" for="qwe2">qwe2</label>
-        </li>
-        <li>
-            <input class="form-check-input" type="checkbox" value="" id-"qwe3">
-            <label class="form-check-label" for="qwe3">qwe3</label>
-        </li>
-    </ul>
-</div>
+<div id="loading" class="text-muted">Загрузка...</div>
 
+@section Scripts {
+    <script>
+        let skip = 0; const take = 30; let done = false; let loading = false; let q = '';
+        const body = document.getElementById('infiniteBody');
+        const loadingEl = document.getElementById('loading');
+        const searchBox = document.getElementById('searchBox');
 
-    @Html.DDL_Checkbox_Filial(new string[0], "filialID")
-@* } *@
+        async function loadMore(reset = false) {
+            if (loading || done) return; loading = true; loadingEl.style.display = 'block';
+            const url = `@Url.Action("List")?skip=${reset ? 0 : skip}&take=${take}&q=${encodeURIComponent(q)}`;
+            const resp = await fetch(url);
+            const html = await resp.text();
+            if (reset) { body.innerHTML = ''; skip = 0; done = false; }
+            if (html.trim().length === 0) { done = true; }
+            else { body.insertAdjacentHTML('beforeend', html); skip += take; }
+            loading = false; loadingEl.style.display = 'none';
+        }
 
-<div id="partial">
-</div>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var dropdownMenu = document.querySelector('.dropdown-menu');
+        const observer = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting) { loadMore(); }
+        });
+        observer.observe(loadingEl);
 
-        dropdownMenu.addEventListener('click', function (e) {
-            e.stopPropagation(); // предотвращаем закрытие dropdown при клике внутри
+        searchBox.addEventListener('input', () => {
+            q = searchBox.value || '';
+            done = false; skip = 0; loadMore(true);
         });
 
-        var checkboxes = dropdownMenu.querySelectorAll('.form-check-input');
-
-        checkboxes.forEach(function (checkbox) {
-            checkbox.addEventListener('click', function (e) {
-                e.stopPropagation(); // предотвращаем закрытие dropdown при клике на чекбокс
-            });
-        });
-    });
-</script>
+        loadMore();
+    </script>
+}

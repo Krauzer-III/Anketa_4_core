@@ -162,5 +162,34 @@ namespace Anketa_4_core.Helpers
             sb.AppendLine("</ul></div>");
             return new HtmlString(sb.ToString());
         }
+
+        /// <summary>
+        /// Рисует &lt;select multiple&gt; с реальными названиями TestPeriod (GroupName)
+        /// </summary>
+        /// <param name="classes">CSS классы</param>
+        /// <param name="name">Атрибут name</param>
+        /// <param name="selectedIds">Заранее выбранные ID периодов</param>
+        /// <param name="otherAttributes">Другие атрибуты</param>
+        /// <returns>&lt;select&gt; с вариантами периодов</returns>
+        public static IHtmlContent DDL_TestPeriods(this IHtmlHelper htmlHelper,
+                                                   string[] classes,
+                                                   string name,
+                                                   IEnumerable<int>? selectedIds = null,
+                                                   string otherAttributes = "")
+        {
+            selectedIds ??= Enumerable.Empty<int>();
+            var sel = new HashSet<int>(selectedIds);
+            var sb = new StringBuilder($"<select name=\"{name}\" class=\"{string.Join(' ', classes)}\" multiple {otherAttributes}>");
+            using (var context = new AnketaContext())
+            {
+                foreach (var item in context.TestPeriods.OrderBy(x => x.GroupName))
+                {
+                    string selected = sel.Contains(item.ID) ? "selected" : "";
+                    sb.Append($"<option value=\"{item.ID}\" {selected}>{item.GroupName}</option>");
+                }
+            }
+            sb.AppendLine("</select>");
+            return new HtmlString(sb.ToString());
+        }
     }
 }

@@ -1,0 +1,71 @@
+﻿@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_TestableDetailsFull
+@{
+    ViewData["Title"] = $"Тестируемый #{Model.ID}";
+}
+<h2>@ViewData["Title"]</h2>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Общая информация</h5>
+                <dl class="row">
+                    <dt class="col-sm-4">Код</dt>
+                    <dd class="col-sm-8">@Model.Code</dd>
+                    <dt class="col-sm-4">Год</dt>
+                    <dd class="col-sm-8">@Model.Year</dd>
+                    <dt class="col-sm-4">Филиал Id</dt>
+                    <dd class="col-sm-8">@Model.Filial</dd>
+                    <dt class="col-sm-4">Уровень резерва Id</dt>
+                    <dd class="col-sm-8">@Model.RezervLevel</dd>
+                    <dt class="col-sm-4">UserName</dt>
+                    <dd class="col-sm-8">@Model.UserName</dd>
+                </dl>
+                <div>
+                    <strong>Периоды доступа:</strong>
+                    <ul>
+                        @foreach (var p in Model.BoundTestPeriods)
+                        {
+                            <li>@p.name</li>
+                        }
+                    </ul>
+                </div>
+                <div class="mt-3 d-flex gap-2">
+                    <a class="btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model.ID">Редактировать</a>
+                    <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@Model.ID">Удалить</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Личный кабинет</h5>
+                <form asp-action="SaveLKData" method="post">
+                    <input type="hidden" name="id" value="@Model.ID" />
+                    <textarea name="lkData" class="form-control" rows="6">@Model.LK_Data</textarea>
+                    <div class="form-text">// TODO: обработчик сохранения</div>
+                    <button class="btn btn-secondary mt-2" type="submit">Сохранить LK_Data</button>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Отчёты</h5>
+                <div class="d-flex gap-2">
+                    <form asp-action="GenerateReportPdf" method="post">
+                        <input type="hidden" name="id" value="@Model.ID" />
+                        <button class="btn btn-outline-primary" type="submit">PDF отчёт</button>
+                    </form>
+                    <form asp-action="GenerateReportXlsx" method="post">
+                        <input type="hidden" name="id" value="@Model.ID" />
+                        <button class="btn btn-outline-success" type="submit">Excel отчёт</button>
+                    </form>
+                </div>
+                <div class="form-text mt-2">// TODO: генерация отчётов в контроллере</div>
+            </div>
+        </div>
+    </div>
+</div>
+

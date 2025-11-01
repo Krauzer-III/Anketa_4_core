@@ -1,33 +1,70 @@
-﻿@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_TestableEdit
-@using Anketa_4_core.Helpers
+﻿@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_TestableEditFull
 @{
-    ViewData["Title"] = "Редактировать тестируемого";
+    ViewData["Title"] = Model.ID > 0 ? $"Редактирование #{Model.ID}" : "Создание тестируемого";
+}
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="@(Model.ID > 0?"Edit":"Create")" method="post">
+    @if (Model.ID > 0)
+    {
+        <input type="hidden" asp-for="ID" /> <input type="hidden" asp-for="oldCode" />
+    }
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label asp-for="Code" class="form-label"></label>
+            <input asp-for="Code" class="form-control" />
+            <span asp-validation-for="Code" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Year" class="form-label"></label>
+            <input asp-for="Year" class="form-control" />
+            <span asp-validation-for="Year" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" asp-for="UserName"></label>
+            <input asp-for="UserName" class="form-control" placeholder="можно оставить пустым" />
+            <div class="form-text">Оставьте пустым, чтобы снять привязку.</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Филиал</label>
+            <select asp-for="Filial" class="form-select">
+                <option value="0">— не выбран —</option>
+                @foreach (var f in Model.Filials)
+                {
+                    <option value="@f.id" selected="@(Model.Filial==f.id)">@f.name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Уровень резерва</label>
+            <select asp-for="RezervLevel" class="form-select">
+                <option value="0">— не выбран —</option>
+                @foreach (var r in Model.ReservLevels)
+                {
+                    <option value="@r.id" selected="@(Model.RezervLevel==r.id)">@r.name</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-12">
+            <label class="form-label">Периоды доступа (TestPeriod)</label>
+            <select asp-for="SelectedTestPeriodIds" multiple class="form-select" size="8">
+                @foreach (var p in Model.TestPeriods)
+                {
+                    <option value="@p.id" selected="@Model.SelectedTestPeriodIds.Contains(p.id)">@p.name</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a class="btn btn-secondary" asp-action="Index">Назад</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }
 
-@using (Html.BeginForm(FormMethod.Post))
-{
-    @Html.HiddenFor(m => m.oldCode)
-    @Html.HiddenFor(m => m.ID)
-    @Html.DisplayNameFor(m => m.Code)
-    <br />
-    @Html.TextBoxFor(m => m.Code, new {value=Model.oldCode})
-    @Html.ValidationMessageFor(m => m.Code)
-    <hr>
-    @Html.DisplayNameFor(m => m.Filial)
-    <br />
-    @Html.DDL_Filials(new[] { "form-control" }, "Filial")
-    <hr />
-    @Html.DisplayNameFor(m => m.Year)
-    <br />
-    @Html.DropDownListFor(m => m.Year, new SelectList(new[] { 1, 2, 3 }))
-    <hr />
-    @Html.DisplayNameFor(m => m.RezervLevel)
-    <br />
-    @Html.DDL_Reservs(new[] { "form-control" }, "RezervLevel")
-    <hr />
-    <button type="submit">Добавить</button>
-    <hr />
-
-    @Html.RenderUnobtrusiveAjaxScript()
-    @Html.ValidationSummary()
-}

@@ -1,0 +1,42 @@
+﻿@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_TestableImportVM
+@{
+    ViewData["Title"] = "Массовая загрузка (CSV)";
+}
+<h2>@ViewData["Title"]</h2>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <div>@err.ErrorMessage</div>
+        }
+    </div>
+}
+@if (TempData["ImportOk"] != null)
+{
+    <div class="alert alert-success">@TempData["ImportOk"]</div>
+}
+
+<form asp-action="Import" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label asp-for="File" class="form-label"></label>
+        <input asp-for="File" class="form-control" type="file" />
+        <div class="form-text">Формат: <code>code,filial,rezerv_level,testperiod,username</code></div>
+        <div class="form-text">
+            <ul>
+                <li><b>code</b> — уникальный текстовый код (ошибка при повторе)</li>
+                <li><b>filial</b> — название филиала (ищется в AnketaContext.Filials.FilialName)</li>
+                <li><b>rezerv_level</b> — ID из ReservLevels</li>
+                <li><b>testperiod</b> — название периода (ищется в TestPeriods.GroupName); если пусто — привяжется последний период</li>
+                <li><b>username</b> — логин из ApplicationDbContext, роль <code>testable_user</code>, и не привязан к другому тестируемому (может быть пустым)</li>
+            </ul>
+        </div>
+    </div>
+    <div class="mb-3">
+        <label asp-for="DefaultYear" class="form-label"></label>
+        <input asp-for="DefaultYear" class="form-control" />
+    </div>
+    <button class="btn btn-primary" type="submit">Загрузить</button>
+    <a class="btn btn-secondary" asp-action="Index">Назад</a>
+</form>

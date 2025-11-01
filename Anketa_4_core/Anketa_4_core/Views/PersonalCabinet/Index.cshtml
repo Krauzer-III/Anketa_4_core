@@ -1,0 +1,214 @@
+﻿@{
+    ViewData["Title"] = "Личный кабинет";
+}
+
+<h2>Личный кабинет</h2>
+<hr />
+
+<div id="lkContent">
+    <ul class="nav nav-tabs" id="lkTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="prof-tab" data-bs-toggle="tab" data-bs-target="#prof" type="button">Проф. задачи</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="intern-tab" data-bs-toggle="tab" data-bs-target="#intern" type="button">Стажировки</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="vice-tab" data-bs-toggle="tab" data-bs-target="#vice" type="button">Замещения</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="devmap-tab" data-bs-toggle="tab" data-bs-target="#devmap" type="button">Карта развития</button>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3">
+        <!-- Профессиональные задачи -->
+        <div class="tab-pane fade show active" id="prof" role="tabpanel">
+            <table class="table table-bordered" id="profTasksTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Название задачи</th>
+                        <th>Дата начала</th>
+                        <th>Дата окончания</th>
+                        <th>Сложности</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button class="btn btn-primary" id="addTask">Добавить задачу</button>
+        </div>
+
+        <!-- Стажировки -->
+        <div class="tab-pane fade" id="intern" role="tabpanel">
+            <table class="table table-bordered" id="internshipTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Дата начала</th>
+                        <th>Дата окончания</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button class="btn btn-primary" id="addIntern">Добавить стажировку</button>
+        </div>
+
+        <!-- Замещения -->
+        <div class="tab-pane fade" id="vice" role="tabpanel">
+            <table class="table table-bordered" id="viceTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Дата начала</th>
+                        <th>Дата окончания</th>
+                        <th>Цель</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button class="btn btn-primary" id="addVice">Добавить замещение</button>
+        </div>
+
+        <!-- Карта развития -->
+        <div class="tab-pane fade" id="devmap" role="tabpanel">
+            <div class="mb-3">
+                <label>Дата начала:</label>
+                <input type="date" class="form-control" id="mapDateFrom" />
+            </div>
+            <div class="mb-3">
+                <label>Дата окончания:</label>
+                <input type="date" class="form-control" id="mapDateTo" />
+            </div>
+        </div>
+    </div>
+
+    <hr />
+    <button id="saveAll" class="btn btn-success mt-3">💾 Сохранить все данные</button>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(async function () {
+            // === Загружаем данные текущего пользователя ===
+            const res = await fetch('/PersonalCabinet/Index');
+            const data = await res.json();
+
+            const LK_Data = data.LK_Data || {};
+
+            // === Проф. задачи ===
+            (LK_Data.ProfTasks || []).forEach(t => {
+                addProfTaskRow(t);
+            });
+
+            // === Стажировки ===
+            (LK_Data.Internships || []).forEach(i => {
+                addInternRow(i);
+            });
+
+            // === Замещения ===
+            (LK_Data.LK_ViceBoss || []).forEach(v => {
+                addViceRow(v);
+            });
+
+            // === Карта развития ===
+            if (LK_Data.DevelopmentalActionMaproperty) {
+                $('#mapDateFrom').val(LK_Data.DevelopmentalActionMaproperty.DateFrom?.substring(0, 10));
+                $('#mapDateTo').val(LK_Data.DevelopmentalActionMaproperty.DateTo?.substring(0, 10));
+            }
+
+            // ======= Добавление новых строк =======
+            $('#addTask').click(() => addProfTaskRow());
+            $('#addIntern').click(() => addInternRow());
+            $('#addVice').click(() => addViceRow());
+
+            // ======= Сохранение =======
+            $('#saveAll').click(async () => {
+                const profTasks = [];
+                $('#profTasksTable tbody tr').each(function () {
+                    profTasks.push({
+                        ProfTaskName: $(this).find('.task-name').val(),
+                        DateFrom: $(this).find('.task-from').val(),
+                        DateTo: $(this).find('.task-to').val(),
+                        Difficult: $(this).find('.task-difficult').val()
+                    });
+                });
+
+                const internships = [];
+                $('#internshipTable tbody tr').each(function () {
+                    internships.push({
+                        DateFrom: $(this).find('.date-from').val(),
+                        DateTo: $(this).find('.date-to').val()
+                    });
+                });
+
+                const viceBoss = [];
+                $('#viceTable tbody tr').each(function () {
+                    viceBoss.push({
+                        DateFrom: $(this).find('.date-from').val(),
+                        DateTo: $(this).find('.date-to').val(),
+                        Target: $(this).find('.target').val()
+                    });
+                });
+
+                const dataToSave = {
+                    ProfTasks: profTasks,
+                    Internships: internships,
+                    LK_ViceBoss: viceBoss,
+                    DevelopmentalActionMaproperty: {
+                        DateFrom: $('#mapDateFrom').val(),
+                        DateTo: $('#mapDateTo').val()
+                    }
+                };
+
+                const saveRes = await fetch('/PersonalCabinet/SaveData', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataToSave)
+                });
+
+                const saveResult = await saveRes.json();
+                alert(saveResult.message);
+            });
+
+            // ======= Функции добавления строк =======
+            function addProfTaskRow(task = {}) {
+                $('#profTasksTable tbody').append(`
+                        <tr>
+                            <td><input type="text" class="form-control task-name" value="${task.ProfTaskName || ''}" /></td>
+                            <td><input type="date" class="form-control task-from" value="${task.DateFrom?.substring(0, 10) || ''}" /></td>
+                            <td><input type="date" class="form-control task-to" value="${task.DateTo?.substring(0, 10) || ''}" /></td>
+                            <td><input type="text" class="form-control task-difficult" value="${task.Difficult || ''}" /></td>
+                            <td><button class="btn btn-sm btn-danger remove-row">✖</button></td>
+                        </tr>
+                    `);
+            }
+
+            function addInternRow(i = {}) {
+                $('#internshipTable tbody').append(`
+                        <tr>
+                            <td><input type="date" class="form-control date-from" value="${i.DateFrom?.substring(0, 10) || ''}" /></td>
+                            <td><input type="date" class="form-control date-to" value="${i.DateTo?.substring(0, 10) || ''}" /></td>
+                            <td><button class="btn btn-sm btn-danger remove-row">✖</button></td>
+                        </tr>
+                    `);
+            }
+
+            function addViceRow(v = {}) {
+                $('#viceTable tbody').append(`
+                        <tr>
+                            <td><input type="date" class="form-control date-from" value="${v.DateFrom?.substring(0, 10) || ''}" /></td>
+                            <td><input type="date" class="form-control date-to" value="${v.DateTo?.substring(0, 10) || ''}" /></td>
+                            <td><input type="text" class="form-control target" value="${v.Target || ''}" /></td>
+                            <td><button class="btn btn-sm btn-danger remove-row">✖</button></td>
+                        </tr>
+                    `);
+            }
+
+            // ======= Удаление строк =======
+            $(document).on('click', '.remove-row', function () {
+                $(this).closest('tr').remove();
+            });
+        });
+    </script>
+}

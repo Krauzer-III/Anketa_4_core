@@ -1,0 +1,48 @@
+﻿@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_Test360Model
+@{
+    ViewData["Title"] = "Тест 360°";
+}
+
+<div class="container mt-5">
+    <h2>Тест 360°</h2>
+    <p class="text-muted">Оцените каждое утверждение по шкале от -3 до +3</p>
+    <hr />
+
+    <form asp-action="SubmitTest" method="post">
+        @Html.HiddenFor(m => m.AccesTestID)
+        @Html.HiddenFor(m => m.RespondentRoleID)
+        @Html.HiddenFor(m => m.isSelf)
+
+        @for (int i = 1; i <= 15; i++)
+        {
+            var qName = $"q{i:D2}";
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Вопрос @i</h5>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        @for (int val = -3; val <= 3; val++)
+                        {
+                            <div class="form-check form-check-inline text-center">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="@qName"
+                                       value="@val"
+                                       id="@($"{qName}_{val}")"
+                                       required />
+                                <label class="form-check-label" for="@($"{qName}_{val}")">@val</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-success btn-lg">Отправить результаты</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

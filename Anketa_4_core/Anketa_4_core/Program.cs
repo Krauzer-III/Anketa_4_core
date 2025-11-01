@@ -1,4 +1,82 @@
 using Anketa_4_core.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+
+// ...
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+var IdentityConnectionString = builder.Configuration.GetConnectionString("IdentityConnection");
+var AnketaConnectionString = builder.Configuration.GetConnectionString("AnketaConnection");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(IdentityConnectionString));
+builder.Services.AddDbContext<AnketaContext>(options =>
+    options.UseNpgsql(AnketaConnectionString));
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.SignIn.RequireConfirmedEmail = false;
+    options.SignIn.RequireConfirmedPhoneNumber = false;
+    options.User.RequireUniqueEmail = false;
+    options.Password.RequireDigit = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+})
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+
+var app = builder.Build();
+
+// Применяем миграции и сидим данные
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    // Применяем миграции для Identity
+    var identityDb = services.GetRequiredService<ApplicationDbContext>();
+    await identityDb.Database.MigrateAsync();
+
+    // Сидим роли и пользователей
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+    await ApplicationDbContext_Initializer.InitializeAsync(userManager, roleManager);
+}
+
+// далее ваш конвейер:
+if (app.Environment.IsDevelopment())
+{
+    app.UseMigrationsEndPoint();
+}
+else
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages();
+
+app.Run();
+
+
+
+/*using Anketa_4_core.Data;
 using Anketa_4_core.Data.LK_Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -61,3 +139,4 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.Run();
+                          */
