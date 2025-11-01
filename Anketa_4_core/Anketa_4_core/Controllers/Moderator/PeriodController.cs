@@ -1,171 +1,237 @@
-﻿using Anketa_4_core.Data;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Anketa_4_core.Data;
 using Anketa_4_core.Data.AnketaModels;
 using Anketa_4_core.Models.AnketaModels.MVC_Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Anketa_4_core.Controllers.Moderator
 {
+    [Authorize(Roles = "admin,moderator,verificator")]
     public class PeriodController : Controller
     {
-        public IActionResult Index()
-        {
-            using (AnketaContext context = new AnketaContext())
-            {
-                List<MVC_PeriodList> model = context.TestPeriods.Select(e => new MVC_PeriodList
-                {
-                    Id = e.ID,
-                    PeriodName = e.GroupName
-                }).ToList();
-                for (int i = 0; i < model.Count; i++)
-                {
-                    model[i].CountTestables = context.AccessForTestables.Include(e => e.TestPeriod).Count(e => e.TestPeriod.ID == model[i].Id);
-                }
+        private readonly AnketaContext _db;
+        public PeriodController(AnketaContext db) => _db = db;
 
-                return View(model);
-            }
+        // ============== Index ==============
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var items = await _db.TestPeriods
+                .AsNoTracking()
+                .OrderBy(p => p.GroupName)
+                .Select(p => new MVC_TestPeriodListItem
+                {
+                    Id = p.ID,
+                    PeriodName = p.GroupName,
+                    CountTestables = _db.AccessForTestables.Count(a => a.TestPeriod.ID == p.ID)
+                })
+                .ToListAsync();
+
+            return View(items);
         }
 
-        public IActionResult AddPeriod()
+        // ============== Details ==============
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
         {
-            using (AnketaContext context = new AnketaContext())
+            var period = await _db.TestPeriods.AsNoTracking().FirstOrDefaultAsync(x => x.ID == id);
+            if (period == null) return NotFound();
+
+            var links = await _db.AccessForTestables
+                .Where(a => a.TestPeriod.ID == id)
+                .Include(a => a.Testable).ThenInclude(t => t.filial)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var vm = new MVC_TestPeriodDetails
             {
-                ViewData["testables"] = context.Testables.Select(e => e.Code).ToArray();
-                return View();
-            }
+                Id = id,
+                PeriodName = period.GroupName,
+                BoundTestables = links.Select(l => new MVC_TestPeriodBoundTestable
+                {
+                    TestableId = l.Testable.ID,
+                    Code = l.Testable.Code,
+                    Filial = l.Testable.filial != null ? l.Testable.filial.FilialName : null,
+                    IsActive = l.isActive
+                }).OrderBy(x => x.Code).ToList()
+            };
+
+            return View(vm);
+        }
+
+        // ============== Create ==============
+        [HttpGet]
+        public async Task<IActionResult> Create()
+        {
+            var vm = new MVC_TestPeriodCreate
+            {
+                AllTestables = await _db.Testables
+                    .Include(t => t.filial)
+                    .AsNoTracking()
+                    .OrderBy(t => t.Code)
+                    .Select(t => new ValueTuple<int, string, string?>(t.ID, t.Code, t.filial != null ? t.filial.FilialName : null))
+                    .ToListAsync()
+            };
+            return View(vm);
         }
 
         [HttpPost]
-        public IActionResult AddPeriod(MVC_PeriodAdd model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(MVC_TestPeriodCreate vm)
         {
-            using (AnketaContext context = new AnketaContext())
+            if (!ModelState.IsValid)
             {
-
-                if (context.TestPeriods.FirstOrDefault(e => e.GroupName == model.PeriodName) == null)
-                {
-                    TestPeriod period = new TestPeriod
-                    {
-                        GroupName = model.PeriodName
-                    };
-                    context.TestPeriods.Add(period);
-                    context.SaveChanges();
-                    if (model.TestableNames.Length > 0)
-                    {
-                        foreach (string cod in model.TestableNames)
-                        {
-                            var testable = context.Testables.FirstOrDefault(e => e.Code == cod);
-                            if (testable != null)
-                            {
-                                context.AccessForTestables.Add(new AccessForTestable
-                                {
-                                    isActive = false,
-                                    Testable = testable,
-                                    TestPeriod = period
-                                });
-                            }
-                            else
-                            {
-                                ModelState.AddModelError("TestableNames", "Код " +cod + " не существует");
-                            }
-                        }
-                        context.SaveChanges();
-                    }
-                }
-                else
-                {
-                    ModelState.AddModelError("PeriodName", "Такой период уже существует");
-                }
-
-                return View();
+                vm.AllTestables = await _db.Testables
+                    .Include(t => t.filial)
+                    .AsNoTracking()
+                    .OrderBy(t => t.Code)
+                    .Select(t => new ValueTuple<int, string, string?>(t.ID, t.Code, t.filial != null ? t.filial.FilialName : null))
+                    .ToListAsync();
+                return View(vm);
             }
+
+            // название уникально по желанию — можно снять проверку
+            var exists = await _db.TestPeriods.AnyAsync(p => p.GroupName == vm.PeriodName);
+            if (exists)
+            {
+                ModelState.AddModelError(nameof(vm.PeriodName), "Такое название периода уже существует");
+                vm.AllTestables = await _db.Testables
+                    .Include(t => t.filial).AsNoTracking()
+                    .OrderBy(t => t.Code)
+                    .Select(t => new ValueTuple<int, string, string?>(t.ID, t.Code, t.filial != null ? t.filial.FilialName : null))
+                    .ToListAsync();
+                return View(vm);
+            }
+
+            var period = new TestPeriod { GroupName = vm.PeriodName };
+            _db.TestPeriods.Add(period);
+            await _db.SaveChangesAsync();
+
+            if (vm.SelectedTestableIds != null && vm.SelectedTestableIds.Count > 0)
+            {
+                var testables = await _db.Testables.Where(t => vm.SelectedTestableIds.Contains(t.ID)).ToListAsync();
+                foreach (var t in testables)
+                {
+                    _db.AccessForTestables.Add(new AccessForTestable
+                    {
+                        Testable = t,
+                        TestPeriod = period,
+                        isActive = true
+                    });
+                }
+                await _db.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Details), new { id = period.ID });
         }
 
-
-        public IActionResult EditPeriod(int ID)
+        // ============== Edit ==============
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
         {
-            using (AnketaContext context = new AnketaContext())
+            var period = await _db.TestPeriods.FirstOrDefaultAsync(p => p.ID == id);
+            if (period == null) return NotFound();
+
+            var links = await _db.AccessForTestables
+                .Where(a => a.TestPeriod.ID == id)
+                .Include(a => a.Testable).ThenInclude(t => t.filial)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var linkedIds = links.Select(l => l.Testable.ID).ToHashSet();
+
+            var vm = new MVC_TestPeriodEdit
             {
-                ViewData["testables"] = context.Testables.Select(e => e.Code).ToArray();
-                var period = context.TestPeriods.FirstOrDefault(e => e.ID == ID);
-                if (period != null)
+                Id = id,
+                PeriodName = period.GroupName,
+                BoundTestables = links.Select(l => new MVC_TestPeriodBoundTestable
                 {
-                    var data = context.AccessForTestables
-                        .Include(e => e.TestPeriod)
-                        .Include(e => e.Testable)
-                        .Where(e => e.TestPeriod.ID == ID).
-                        ToList();
-                    MVC_PeriodEdit model; 
-                    if (data.Count > 0)
-                    {
-                        model = new MVC_PeriodEdit
-                        {
-                            Id = period.ID,
-                            oldPeriodName = period.GroupName,
-                            PeriodName = period.GroupName,
-                            oldTestableNames = data.Select(e => e.Testable.Code).ToArray(),
-                            TestableNames = data.Select(e => e.Testable.Code).ToArray()
-                        };
-                    }
-                    else
-                    {
-                        model = new MVC_PeriodEdit
-                        {
-                            Id = period.ID,
-                            oldPeriodName = period.GroupName,
-                            PeriodName = period.GroupName,
-                            oldTestableNames = new string[0],
-                            TestableNames = new string[0]
-                        };
-                    }    
-                    return View(model);
-                }
-                throw new Exception("Такого периода не существует");
-                
-            }
+                    TestableId = l.Testable.ID,
+                    Code = l.Testable.Code,
+                    Filial = l.Testable.filial != null ? l.Testable.filial.FilialName : null,
+                    IsActive = l.isActive
+                }).OrderBy(x => x.Code).ToList(),
+                AllTestables = await _db.Testables
+                    .Include(t => t.filial)
+                    .AsNoTracking()
+                    .Where(t => !linkedIds.Contains(t.ID)) // 🚫 исключаем уже добавленных
+                    .OrderBy(t => t.Code)
+                    .Select(t => new ValueTuple<int, string, string?>(t.ID, t.Code, t.filial != null ? t.filial.FilialName : null))
+                    .ToListAsync()
+            };
+
+            return View(vm);
         }
 
 
         [HttpPost]
-        public IActionResult EditPeriod(MVC_PeriodEdit model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(MVC_TestPeriodEdit vm, string? actionBtn)
         {
-            using (AnketaContext context = new AnketaContext())
+            if (!ModelState.IsValid)
             {
-                var period = context.TestPeriods.FirstOrDefault(e => e.ID == model.Id);
-                if(period != null)
+                vm.AllTestables = await _db.Testables
+                    .Include(t => t.filial)
+                    .AsNoTracking()
+                    .OrderBy(t => t.Code)
+                    .Select(t => new ValueTuple<int, string, string?>(t.ID, t.Code, t.filial != null ? t.filial.FilialName : null))
+                    .ToListAsync();
+                return View(vm);
+            }
+
+            var period = await _db.TestPeriods.FirstOrDefaultAsync(p => p.ID == vm.Id);
+            if (period == null) return NotFound();
+
+            // обновить название
+            period.GroupName = vm.PeriodName;
+            await _db.SaveChangesAsync();
+
+            // текущие связи этого периода
+            var existing = await _db.AccessForTestables
+                .Where(a => a.TestPeriod.ID == vm.Id)
+                .Include(a => a.Testable)
+                .ToListAsync();
+
+            // обновить активность по присланному списку BoundTestables
+            if (vm.BoundTestables != null && vm.BoundTestables.Count > 0)
+            {
+                var mapIsActive = vm.BoundTestables.ToDictionary(x => x.TestableId, x => x.IsActive);
+                foreach (var link in existing)
                 {
-                    //удаляем всех неотмеченных
-                    var forDelete = model.oldTestableNames.Except(model.TestableNames).ToList();
-                    foreach(var name in forDelete)
+                    if (mapIsActive.TryGetValue(link.Testable.ID, out var active))
                     {
-                        var tmpTestable = context.AccessForTestables
-                            .Include(e => e.TestPeriod)
-                            .Include(e => e.Testable)
-                            .FirstOrDefault(e => e.TestPeriod.ID == model.Id && e.Testable.Code == name);
-                        if (tmpTestable != null)
-                            context.AccessForTestables.Remove(tmpTestable);
+                        link.isActive = active;
                     }
-
-                    //добавляем всех заново отмеченных
-                    var forAdding = model.TestableNames.Except(model.oldTestableNames).ToList();
-                    foreach (var name in forAdding)
-                    {
-                        var tmpTestable = context.AccessForTestables
-                            .Include(e => e.TestPeriod)
-                            .Include(e => e.Testable)
-                            .FirstOrDefault(e => e.TestPeriod.ID == model.Id && e.Testable.Code == name);
-                        if (tmpTestable != null)
-                            context.AccessForTestables.Add(tmpTestable);
-                    }
-
-                    //переименовываем период, если был изменён
-                    if(model.PeriodName!=model.oldPeriodName)
-                    {
-                        period.GroupName = model.PeriodName;
-                    }
-                    context.SaveChanges();
                 }
             }
-            return RedirectToAction("Index");
+
+            // добавить новые привязки
+            if (vm.AddTestableIds != null && vm.AddTestableIds.Count > 0)
+            {
+                var existingIds = existing.Select(e => e.Testable.ID).ToHashSet();
+                var newIds = vm.AddTestableIds.Distinct().Where(id => !existingIds.Contains(id)).ToList();
+
+                if (newIds.Count > 0)
+                {
+                    var testablesToAdd = await _db.Testables.Where(t => newIds.Contains(t.ID)).ToListAsync();
+                    foreach (var t in testablesToAdd)
+                    {
+                        _db.AccessForTestables.Add(new AccessForTestable
+                        {
+                            Testable = t,
+                            TestPeriod = period,
+                            isActive = true
+                        });
+                    }
+                }
+            }
+
+            await _db.SaveChangesAsync();
+            return RedirectToAction(nameof(Details), new { id = vm.Id });
         }
 
 

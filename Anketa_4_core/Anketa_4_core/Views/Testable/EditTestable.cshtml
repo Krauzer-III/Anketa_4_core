@@ -49,10 +49,10 @@
 
         <div class="col-12">
             <label class="form-label">Периоды доступа (TestPeriod)</label>
-            <select asp-for="SelectedTestPeriodIds" multiple class="form-select" size="8">
+            <select asp-for="SelectedTestPeriodId" class="form-select" size="8">
                 @foreach (var p in Model.TestPeriods)
                 {
-                    <option value="@p.id" selected="@Model.SelectedTestPeriodIds.Contains(p.id)">@p.name</option>
+                    <option value="@p.id" selected="@Model.SelectedTestPeriodId==p.id">@p.name</option>
                 }
             </select>
         </div>

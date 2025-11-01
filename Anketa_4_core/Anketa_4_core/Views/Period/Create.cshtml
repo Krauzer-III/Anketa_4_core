@@ -1,0 +1,33 @@
+﻿@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_TestPeriodCreate
+@{
+    ViewData["Title"] = "Добавить период";
+}
+<h2 class="mb-3">@ViewData["Title"]</h2>
+
+<form asp-action="Create" method="post">
+    <div class="mb-3">
+        <label asp-for="PeriodName" class="form-label"></label>
+        <input asp-for="PeriodName" class="form-control" />
+        <span asp-validation-for="PeriodName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Привязать тестируемых</label>
+        <select asp-for="SelectedTestableIds" multiple class="form-select" size="12">
+            @foreach (var t in Model.AllTestables)
+            {
+                <option value="@t.id">@t.name @(string.IsNullOrEmpty(t.filial) ? "" : $"({t.filial})")</option>
+            }
+        </select>
+        <div class="form-text">Выберите одного или несколько тестируемых, которым будет назначен этот период (isActive = true).</div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Создать</button>
+        <a asp-action="Index" class="btn btn-secondary">Назад</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

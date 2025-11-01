@@ -61,7 +61,7 @@
                 </div>
                 <div class="col-12">
                     <label class="form-label">Периоды доступа (TestPeriod)</label>
-                    <select asp-for="Single.SelectedTestPeriodIds" multiple class="form-select" size="8">
+                    <select asp-for="Single.SelectedTestPeriodId" multiple class="form-select" size="8">
                         @foreach (var p in Model.Single.TestPeriods)
                         {
                             <option value="@p.id">@p.name</option>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Anketa_4_core.Data;
@@ -101,54 +102,59 @@ namespace Anketa_4_core.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(MVC_TestableEditFull vm)
+        public async Task<IActionResult> Create([Bind(Prefix = "Single")] MVC_TestableEditFull single)
         {
-            if (string.IsNullOrWhiteSpace(vm.Code))
-            {
-                vm.Code = await GetNextCodeAsync();
-            }
+            // 1) Подготовка данных
+            if (string.IsNullOrWhiteSpace(single.Code))
+                single.Code = await GetNextCodeAsync();
 
-            // Проверка уникальности кода
-            var codeExists = await _db.Testables.AsNoTracking().AnyAsync(t => t.Code == vm.Code);
-            if (codeExists)
-            {
-                ModelState.AddModelError(nameof(vm.Code), $"Код '{vm.Code}' уже существует");
-            }
+            // 2) Уникальность кода
+            if (await _db.Testables.AsNoTracking().AnyAsync(t => t.Code == single.Code))
+                ModelState.AddModelError("Code", $"Код '{single.Code}' уже существует"); // ключ без "Single." т.к. Prefix="Single"
 
             if (!ModelState.IsValid)
             {
-                await FillLookupsAsync(vm);
-                ViewBag.FreeUsers = await GetFreeTestableUsersAsync();
-                return View(vm);
+                // Собираем wrapper для возврата в ту же страницу с табами
+                await FillLookupsAsync(single);
+                var vm = new MVC_TestableAddPageVM
+                {
+                    Single = single,
+                    FreeUsers = await GetFreeTestableUsersAsync(),
+                    FilialNames = await _db.Filials.AsNoTracking().OrderBy(f => f.FilialName).Select(f => f.FilialName).ToListAsync(),
+                    ReservLevels = await _db.ReservLevels.AsNoTracking().OrderBy(r => r.ID)
+                                        .Select(r => new ValueTuple<int, string>(r.ID, r.ReservLevelName)).ToListAsync(),
+                    TestPeriods = await _db.TestPeriods.AsNoTracking().OrderBy(p => p.ID)
+                                        .Select(p => new ValueTuple<int, string>(p.ID, p.GroupName)).ToListAsync()
+                };
+                return View("Create", vm);
             }
 
+            // 3) Создание сущности
             var entity = new Testable
             {
-                Code = vm.Code,
-                YearTraining = 1,
+                Code = single.Code,
+                YearTraining = single.Year > 0 ? single.Year : 1,
                 isArchived = false,
-                filial = vm.Filial > 0 ? await _db.Filials.FindAsync(vm.Filial) : null,
-                reservLevel = vm.RezervLevel > 0 ? await _db.ReservLevels.FindAsync(vm.RezervLevel) : null
+                filial = single.Filial > 0 ? await _db.Filials.FindAsync(single.Filial) : null,
+                reservLevel = single.RezervLevel > 0 ? await _db.ReservLevels.FindAsync(single.RezervLevel) : null
             };
-
-
             _db.Testables.Add(entity);
             await _db.SaveChangesAsync();
 
-            // Привязка аккаунта (опционально)
-            await UpsertTestableUser(entity, vm.UserName);
+            // 4) Привязки
+            await UpsertTestableUser(entity, single.UserName);
 
-            // Если периоды не выбраны — привязываем к последнему периоду
-            if (vm.SelectedTestPeriodIds == null || vm.SelectedTestPeriodIds.Count == 0)
+            if (single.SelectedTestPeriodId == null)
             {
                 var lastPeriodId = await _db.TestPeriods.OrderByDescending(p => p.ID).Select(p => p.ID).FirstOrDefaultAsync();
-                if (lastPeriodId > 0) vm.SelectedTestPeriodIds = new List<int> { lastPeriodId };
+                if (lastPeriodId > 0) single.SelectedTestPeriodId = lastPeriodId;
             }
-            // Привязка периодов доступа
-            await UpsertAccessForTestable(entity.ID, vm.SelectedTestPeriodIds);
+
+            await UpsertAccessForTestable(entity.ID,  single.SelectedTestPeriodId!.Value );
 
             return RedirectToAction(nameof(Details), new { id = entity.ID });
         }
+
 
 
 
@@ -179,7 +185,7 @@ namespace Anketa_4_core.Controllers
         public async Task<IActionResult> Import(MVC_TestableImportVM vm)
         {
             var errors = new List<string>();
-            var toCreate = new List<(Testable t, List<int> periodIds, string? userName)>();
+            var toCreate = new List<(Testable t, int periodId, string? userName)>();
 
             if (vm.File == null || vm.File.Length == 0)
             {
@@ -239,16 +245,16 @@ namespace Anketa_4_core.Controllers
                         if (rezervId > 0 && await _db.ReservLevels.FindAsync(rezervId) == null)
                         { errors.Add($"Строка {line}: уровень резерва ID={rezervId} не найден"); continue; }
 
-                        List<int> periods = new();
+                        int period = new();
                         if (string.IsNullOrEmpty(periodName))
                         {
-                            if (lastPeriodId > 0) periods.Add(lastPeriodId);
+                            if (lastPeriodId > 0) period = lastPeriodId;
                         }
                         else
                         {
                             if (!periodByName.TryGetValue(periodName, out int pid))
                             { errors.Add($"Строка {line}: период '{periodName}' не найден"); continue; }
-                            periods.Add(pid);
+                            period = pid;
                         }
 
                         string? userToBind = null;
@@ -267,7 +273,7 @@ namespace Anketa_4_core.Controllers
                             filial = filialId > 0 ? await _db.Filials.FindAsync(filialId) : null,
                             reservLevel = rezervId > 0 ? await _db.ReservLevels.FindAsync(rezervId) : null
                         };
-                        toCreate.Add((t, periods, userToBind));
+                        toCreate.Add((t, period, userToBind));
                     }
                 }
             }
@@ -289,7 +295,7 @@ namespace Anketa_4_core.Controllers
                     if (!string.IsNullOrEmpty(item.userName))
                         await UpsertTestableUser(item.t, item.userName);
 
-                    await UpsertAccessForTestable(item.t.ID, item.periodIds);
+                    await UpsertAccessForTestable(item.t.ID, item.periodId);
                 }
                 await tx.CommitAsync();
                 TempData["ImportOk"] = $"Добавлено записей: {toCreate.Count}";
@@ -334,10 +340,11 @@ namespace Anketa_4_core.Controllers
 
             if (t == null) return NotFound();
 
-            var accessIds = await _db.AccessForTestables
+            var accessId = await _db.AccessForTestables
                 .Where(a => a.Testable.ID == id)
-                .Select(a => a.TestPeriod.ID)
-                .ToListAsync();
+                .Select(a => (int?)a.TestPeriod.ID)
+                .FirstOrDefaultAsync() ?? 0;
+
 
             var userName = await _db.Set<TestableUser>()
                 .Where(u => u.testable.ID == id)
@@ -353,7 +360,7 @@ namespace Anketa_4_core.Controllers
                 Filial = t.filial?.ID ?? 0,
                 RezervLevel = t.reservLevel?.ID ?? 0,
                 UserName = userName,
-                SelectedTestPeriodIds = accessIds
+                SelectedTestPeriodId = accessId
             };
 
             await FillLookupsAsync(vm);
@@ -388,7 +395,7 @@ namespace Anketa_4_core.Controllers
             await UpsertTestableUser(t, vm.UserName);
 
             // Обновить периоды
-            await UpsertAccessForTestable(t.ID, vm.SelectedTestPeriodIds);
+            await UpsertAccessForTestable(t.ID, vm.SelectedTestPeriodId);
 
             return RedirectToAction(nameof(Details), new { id });
         }
@@ -554,21 +561,17 @@ namespace Anketa_4_core.Controllers
             await _db.SaveChangesAsync();
         }
 
-        private async Task UpsertAccessForTestable(int testableId, List<int> selectedPeriodIds)
+        private async Task UpsertAccessForTestable(int testableId, int? selectedPeriodId)
         {
+            if (selectedPeriodId == null)
+                return;
             var existing = await _db.AccessForTestables.Where(a => a.Testable.ID == testableId).ToListAsync();
             var existingIds = existing.Select(e => e.TestPeriod.ID).ToHashSet();
-            var targetIds = selectedPeriodIds.Distinct().ToHashSet();
+            var targetId = selectedPeriodId;
 
-            // Удалить лишние
-            var toRemove = existing.Where(e => !targetIds.Contains(e.TestPeriod.ID)).ToList();
-            _db.AccessForTestables.RemoveRange(toRemove);
-
-            // Добавить недостающие
-            var toAddIds = targetIds.Except(existingIds).ToList();
-            foreach (var pid in toAddIds)
+            if (!existingIds.Any(e => e == targetId))
             {
-                var period = await _db.TestPeriods.FindAsync(pid);
+                var period = await _db.TestPeriods.FindAsync(targetId);
                 if (period != null)
                 {
                     var testable = await _db.Testables.FindAsync(testableId);
@@ -583,6 +586,8 @@ namespace Anketa_4_core.Controllers
                     }
                 }
             }
+
+
             await _db.SaveChangesAsync();
         }
     }

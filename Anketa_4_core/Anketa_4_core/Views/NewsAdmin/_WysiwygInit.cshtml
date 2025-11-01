@@ -1,0 +1,17 @@
+﻿@* OFFLINE TinyMCE (self-hosted). Без внешних CDN *@
+<script src="/lib/tinymce/tinymce.min.js"></script>
+<script>
+    // Важно: base_url указывает на корень установки TinyMCE в wwwroot
+    tinymce.init({
+      selector: 'textarea.wysiwyg',
+      base_url: '/lib/tinymce',   // путь к папке tinyMCE (wwwroot/lib/tinymce)
+      suffix: '.min',             // использовать .min файлы
+      menubar: false,
+      height: 420,
+      plugins: 'lists link table code autoresize',
+      toolbar: 'undo redo | bold italic underline | bullist numlist | link table | removeformat | code',
+      language: 'ru',             // добавьте ru.js в /lib/tinymce/langs при необходимости
+      branding: false,
+      license_key: 'gpl'
+    });
+</script>

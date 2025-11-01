@@ -1,0 +1,97 @@
+﻿@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_TestPeriodEdit
+@{
+    ViewData["Title"] = "Редактировать период: " + Model.PeriodName;
+}
+<h2 class="mb-3">@ViewData["Title"]</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label asp-for="PeriodName" class="form-label"></label>
+        <input asp-for="PeriodName" class="form-control" />
+        <span asp-validation-for="PeriodName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <h5>Текущие привязки</h5>
+        @if (Model.BoundTestables.Count == 0)
+        {
+            <p class="text-muted">Нет привязанных тестируемых.</p>
+        }
+        else
+        {
+            <table class="table table-sm table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Код</th>
+                        <th>Филиал</th>
+                        <th>Активен</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.BoundTestables.Count; i++)
+                    {
+                        <tr>
+                            <td>
+                                @Model.BoundTestables[i].TestableId
+                                <input type="hidden" name="BoundTestables[@i].TestableId" value="@Model.BoundTestables[i].TestableId" />
+                            </td>
+                            <td>
+                                @Model.BoundTestables[i].Code
+                                <input type="hidden" name="BoundTestables[@i].Code" value="@Model.BoundTestables[i].Code" />
+                            </td>
+                            <td>
+                                @Model.BoundTestables[i].Filial
+                                <input type="hidden" name="BoundTestables[@i].Filial" value="@Model.BoundTestables[i].Filial" />
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox"
+                                       name="BoundTestables[@i].IsActive"
+                                       value="true"
+                                @(Model.BoundTestables[i].IsActive ? "checked" : "") />
+                                <input type="hidden" name="BoundTestables[@i].IsActive" value="false" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="form-text">Снимите/поставьте галочки, чтобы изменить <b>"Активен"</b> для привязок.</div>
+        }
+    </div>
+
+   <div class="mb-3">
+    <label class="form-label fw-semibold">Добавить тестируемых</label>
+    @if (Model.AllTestables.Count == 0)
+    {
+        <p class="text-muted">Все доступные тестируемые уже привязаны к этому периоду.</p>
+    }
+    else
+    {
+        <div class="border rounded p-2" style="max-height: 400px; overflow-y: auto;">
+            @foreach (var t in Model.AllTestables)
+            {
+                <div class="form-check form-check-inline me-3 mb-2" style="min-width: 220px;">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="AddTestableIds"
+                           value="@t.id"
+                           id="t_@t.id" />
+                    <label class="form-check-label" for="t_@t.id">
+                        @t.name @(string.IsNullOrEmpty(t.filial) ? "" : $" ({t.filial})")
+                    </label>
+                </div>
+            }
+        </div>
+        <div class="form-text">
+                Новые привязки добавятся с <b>"Активен"</b>. Уже привязанные пользователи здесь не отображаются.
+        </div>
+    }
+</div>
+
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

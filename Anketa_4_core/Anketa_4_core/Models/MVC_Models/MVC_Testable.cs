@@ -26,7 +26,7 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
         [HiddenInput]
         public int ID { get; set; }
         [HiddenInput]
-        public string oldCode { get; set; }
+        public string? oldCode { get; set; }
         [Display(Name = "Код Оцениваемого")]
         [Required(ErrorMessage = "Поле \"Код оцениваемого\" не должно быть пустым")]
         public string Code { get; set; }
@@ -78,40 +78,7 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
     }
 
 
-    public class MVC_PeriodList
-    {
-        [HiddenInput]
-        public int Id { get; set; }
-        [Display(Name = "Название периода")]
-        public string PeriodName { get; set; }
-        [Display(Name = "Дата добавления ")]
-        public int CountTestables { get; set; }
-
-    }
-
-    public class MVC_PeriodAdd
-    {
-        [Display(Name = "Название периода")]
-        public string PeriodName { get; set; }
-        [Display(Name = "Тестируемые")]
-        public string[] TestableNames { get; set; }
-    }
-
-    public class MVC_PeriodEdit
-    {
-        [HiddenInput]
-        public int Id { get; set; }
-        [HiddenInput]
-        public string oldPeriodName { get; set; }
-        [Display(Name = "Название периода")]
-        public string PeriodName { get; set; }
-        [Display(Name = "Тестируемые")]
-        public string[] TestableNames { get; set; }
-        [HiddenInput]
-        public string[] oldTestableNames { get; set; }
-    }
-
-
+   
     public class MVC_TestableListItem
     {
         public int Id { get; set; }
@@ -128,13 +95,13 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
         public string? UserName { get; set; }
 
 
-        [Display(Name = "Периоды доступа (TestPeriod)")]
-        public List<int> SelectedTestPeriodIds { get; set; } = new();
+        [Display(Name = "Период доступа (TestPeriod)")]
+        public int? SelectedTestPeriodId { get; set; } = new();
 
 
-        public List<(int id, string name)> Filials { get; set; } = new();
-        public List<(int id, string name)> ReservLevels { get; set; } = new();
-        public List<(int id, string name)> TestPeriods { get; set; } = new();
+        public List<(int id, string name)>? Filials { get; set; } = new();
+        public List<(int id, string name)>? ReservLevels { get; set; } = new();
+        public List<(int id, string name)>? TestPeriods { get; set; } = new();
     }
 
 
