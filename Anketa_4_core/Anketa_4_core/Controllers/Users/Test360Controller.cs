@@ -226,7 +226,7 @@ namespace Anketa_4_core.Controllers
         private IActionResult TestError(string message)
         {
             ViewBag.Error = message;
-            return View("Error");
+            return View("TestError");
         }
     }
 }
