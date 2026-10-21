@@ -1,12 +1,15 @@
-﻿@{
-
+@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_MotivationLoginModel
+@{
+    ViewData["Title"] = "Мотивационный тест";
 }
-
-<form action="index" method="post" >
-    <input type="text" name="Code"/>
-    <input type="submit" value="Начать оценку"/>
-</form>
-
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+<div class="container mt-5">
+    <h2>Начало мотивационного тестирования</h2>
+    <form asp-action="Index" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <label asp-for="Code" class="form-label">Код тестируемого</label>
+        <input asp-for="Code" class="form-control" required />
+        <span asp-validation-for="Code" class="text-danger"></span>
+        <button type="submit" class="btn btn-primary mt-3">Начать тест</button>
+    </form>
+</div>
