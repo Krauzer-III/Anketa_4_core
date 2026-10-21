@@ -26,7 +26,7 @@ namespace Anketa_4_core.Data.AnketaModels
         /// Поиск результата по айдишнику
         /// </summary>
         /// <param name="accesID">ИД доступа к тестам</param>
-        public JSON_ResultModel(int accesID)
+        public JSON_ResultModel()\n        {\n            _JSON_ResultModel();\n        }\n\n        public JSON_ResultModel(int accesID)
         {
             using (var context = new AnketaContext())
             {
@@ -104,25 +104,40 @@ namespace Anketa_4_core.Data.AnketaModels
 
         public void Add_JSON_Test360_ToReport_Respondents(JSON_Test360 t360)
         {
+            Tests360 ??= new List<JSON_Test360>();
             Tests360.Add(t360);
-            var items = Tests360.Where(e => !e.IsSelfMark);
+            var items = Tests360.Where(e => !e.IsSelfMark).ToList();
             Test360ForReportRespondents = new JSON_Test360_ToReport
             {
-                q01 = items.Sum(e => e.q01) / items.Count(),
-                q02 = items.Sum(e => e.q02) / items.Count(),
-                q03 = items.Sum(e => e.q03) / items.Count(),
-                q04 = items.Sum(e => e.q04) / items.Count(),
-                q05 = items.Sum(e => e.q05) / items.Count(),
-                q06 = items.Sum(e => e.q06) / items.Count(),
-                q07 = items.Sum(e => e.q07) / items.Count(),
-                q08 = items.Sum(e => e.q08) / items.Count(),
-                q09 = items.Sum(e => e.q09) / items.Count(),
-                q10 = items.Sum(e => e.q10) / items.Count(),
-                q11 = items.Sum(e => e.q11) / items.Count(),
-                q12 = items.Sum(e => e.q12) / items.Count(),
-                q13 = items.Sum(e => e.q13) / items.Count(),
-                q14 = items.Sum(e => e.q14) / items.Count(),
-                q15 = items.Sum(e => e.q15) / items.Count()
+                q01 = items.Average(e => (double)e.q01),
+                q02 = items.Average(e => (double)e.q02),
+                q03 = items.Average(e => (double)e.q03),
+                q04 = items.Average(e => (double)e.q04),
+                q05 = items.Average(e => (double)e.q05),
+                q06 = items.Average(e => (double)e.q06),
+                q07 = items.Average(e => (double)e.q07),
+                q08 = items.Average(e => (double)e.q08),
+                q09 = items.Average(e => (double)e.q09),
+                q10 = items.Average(e => (double)e.q10),
+                q11 = items.Average(e => (double)e.q11),
+                q12 = items.Average(e => (double)e.q12),
+                q13 = items.Average(e => (double)e.q13),
+                q14 = items.Average(e => (double)e.q14),
+                q15 = items.Average(e => (double)e.q15)
+            };
+        }
+
+        public void Add_JSON_Test360_ToReport_Testable(JSON_Test360 t360)
+        {
+            Tests360 ??= new List<JSON_Test360>();
+            Tests360.Add(t360);
+            Test360ForReportTestable = new JSON_Test360_ToReport
+            {
+                q01 = t360.q01, q02 = t360.q02, q03 = t360.q03,
+                q04 = t360.q04, q05 = t360.q05, q06 = t360.q06,
+                q07 = t360.q07, q08 = t360.q08, q09 = t360.q09,
+                q10 = t360.q10, q11 = t360.q11, q12 = t360.q12,
+                q13 = t360.q13, q14 = t360.q14, q15 = t360.q15
             };
         }
 
@@ -219,7 +234,7 @@ namespace Anketa_4_core.Data.AnketaModels
         public int q15 { get; set; }
 
 
-        public JSON_Test360(Test360 t360, RespondentRole rr)
+        public JSON_Test360() { }\n\n        public JSON_Test360(Test360 t360, RespondentRole rr)
         {
             ID = t360.ID;
             RespondentRoleID = rr.ID;
