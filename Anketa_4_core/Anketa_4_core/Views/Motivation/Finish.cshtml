@@ -1,0 +1,9 @@
+@model bool
+@{
+    ViewData["Title"] = "Мотивационный тест завершён";
+}
+<div class="container mt-5">
+    @if (Model) { <div class="alert alert-success">Ваши ответы сохранены.</div> }
+    else { <div class="alert alert-warning">Тест не завершён.</div> }
+    <a asp-action="Index" class="btn btn-primary">Вернуться</a>
+</div>
