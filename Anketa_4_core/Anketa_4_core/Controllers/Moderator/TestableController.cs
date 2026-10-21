@@ -79,24 +79,8 @@ namespace Anketa_4_core.Controllers
         [Authorize(Roles = "admin,moderator")]
         public async Task<IActionResult> Create()
         {
-            var single = new MVC_TestableEditFull();
-            await FillLookupsAsync(single);
-            single.Code = await GetNextCodeAsync();
-
-
-            var vm = new MVC_TestableAddPageVM
-            {
-                Single = single,
-                Import = new MVC_TestableImportVM(),
-                FreeUsers = await GetFreeTestableUsersAsync(),
-                FilialNames = await _db.Filials.AsNoTracking().OrderBy(f => f.FilialName)
-                     .Select(f => f.FilialName).ToListAsync(),
-                ReservLevels = await _db.ReservLevels.AsNoTracking().OrderBy(r => r.ID)
-                     .Select(r => new ValueTuple<int, string>(r.ID, r.ReservLevelName)).ToListAsync(),
-                TestPeriods = await _db.TestPeriods.AsNoTracking().OrderBy(p => p.ID)
-                     .Select(p => new ValueTuple<int, string>(p.ID, p.GroupName)).ToListAsync()
-            };
-            return View("Create", vm);
+            //TODO : Подготовка данных для создания нового Testable
+            return View("Create");
         }
 
 
@@ -104,55 +88,9 @@ namespace Anketa_4_core.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind(Prefix = "Single")] MVC_TestableEditFull single)
         {
-            // 1) Подготовка данных
-            if (string.IsNullOrWhiteSpace(single.Code))
-                single.Code = await GetNextCodeAsync();
 
-            // 2) Уникальность кода
-            if (await _db.Testables.AsNoTracking().AnyAsync(t => t.Code == single.Code))
-                ModelState.AddModelError("Code", $"Код '{single.Code}' уже существует"); // ключ без "Single." т.к. Prefix="Single"
-
-            if (!ModelState.IsValid)
-            {
-                // Собираем wrapper для возврата в ту же страницу с табами
-                await FillLookupsAsync(single);
-                var vm = new MVC_TestableAddPageVM
-                {
-                    Single = single,
-                    FreeUsers = await GetFreeTestableUsersAsync(),
-                    FilialNames = await _db.Filials.AsNoTracking().OrderBy(f => f.FilialName).Select(f => f.FilialName).ToListAsync(),
-                    ReservLevels = await _db.ReservLevels.AsNoTracking().OrderBy(r => r.ID)
-                                        .Select(r => new ValueTuple<int, string>(r.ID, r.ReservLevelName)).ToListAsync(),
-                    TestPeriods = await _db.TestPeriods.AsNoTracking().OrderBy(p => p.ID)
-                                        .Select(p => new ValueTuple<int, string>(p.ID, p.GroupName)).ToListAsync()
-                };
-                return View("Create", vm);
-            }
-
-            // 3) Создание сущности
-            var entity = new Testable
-            {
-                Code = single.Code,
-                YearTraining = single.Year > 0 ? single.Year : 1,
-                isArchived = false,
-                filial = single.Filial > 0 ? await _db.Filials.FindAsync(single.Filial) : null,
-                reservLevel = single.RezervLevel > 0 ? await _db.ReservLevels.FindAsync(single.RezervLevel) : null
-            };
-            _db.Testables.Add(entity);
-            await _db.SaveChangesAsync();
-
-            // 4) Привязки
-            await UpsertTestableUser(entity, single.UserName);
-
-            if (single.SelectedTestPeriodId == null)
-            {
-                var lastPeriodId = await _db.TestPeriods.OrderByDescending(p => p.ID).Select(p => p.ID).FirstOrDefaultAsync();
-                if (lastPeriodId > 0) single.SelectedTestPeriodId = lastPeriodId;
-            }
-
-            await UpsertAccessForTestable(entity.ID,  single.SelectedTestPeriodId!.Value );
-
-            return RedirectToAction(nameof(Details), new { id = entity.ID });
+            //TODO : Создание нового Testable на основе данных из single
+            return RedirectToAction(nameof(Details));
         }
 
 

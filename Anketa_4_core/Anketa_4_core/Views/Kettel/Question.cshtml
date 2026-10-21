@@ -1,0 +1,48 @@
+﻿@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_KettelModel_Question
+@{
+    ViewData["Title"] = "Тест Кэттелла – вопрос " + Model.Number;
+    int total = (int)(ViewBag.TotalQuestions ?? 0);
+    int accessId = (int)(ViewBag.AccessID ?? 0);
+    int years = (int)(ViewBag.Years ?? 0);
+    string gender = (string)(ViewBag.Gender ?? "");
+}
+<h2>@ViewData["Title"]</h2>
+
+<p class="text-muted">
+    Вопрос @Model.Number из @total
+</p>
+
+<form asp-action="Question" method="post">
+    <input type="hidden" name="number" value="@Model.Number" />
+    <input type="hidden" name="accessId" value="@accessId" />
+    <input type="hidden" name="years" value="@years" />
+    <input type="hidden" name="gender" value="@gender" />
+
+    <div class="mb-3">
+        <p>@Model.Text</p>
+    </div>
+
+    <div class="mb-3">
+        @foreach (var ans in Model.Answers)
+        {
+            <div class="form-check mb-1">
+                <input class="form-check-input"
+                       type="radio"
+                       name="selectedAnswerId"
+                       id="ans_@ans.ID"
+                       value="@ans.ID" />
+                <label class="form-check-label" for="ans_@ans.ID">
+                    <strong>@ans.AnswerNumber)</strong> @ans.AnswerText
+                </label>
+            </div>
+        }
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        @(Model.Number == total ? "Завершить тест" : "Следующий вопрос")
+    </button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

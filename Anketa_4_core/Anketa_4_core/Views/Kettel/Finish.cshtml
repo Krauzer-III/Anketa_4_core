@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Тест Кэттелла – завершён";
+    int accessId = (int)(ViewBag.AccessID ?? 0);
+    int years = (int)(ViewBag.Years ?? 0);
+    string gender = (string)(ViewBag.Gender ?? "");
+}
+<h2>@ViewData["Title"]</h2>
+
+<p>Спасибо, что прошли тест.</p>
+
+<p>
+    (AccessID: @accessId, возраст: @years, пол: @gender)
+</p>
+

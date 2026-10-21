@@ -1,0 +1,133 @@
+﻿@model Anketa_4_core.Models.RegistrationPageModel
+@using Anketa_4_core.Models
+
+@{
+    ViewData["Title"] = "Регистрация пользователей";
+    var success = TempData["RegistrationSuccess"] as string;
+}
+
+<h2 class="mb-4">Регистрация пользователей</h2>
+
+@if (!string.IsNullOrWhiteSpace(success))
+{
+    <div class="alert alert-success">@success</div>
+}
+
+@if (Model.Errors.Count > 0)
+{
+    <div class="alert alert-danger">
+        <div class="fw-bold mb-2">Регистрация не выполнена. Ни одна запись не загружена.</div>
+        @if (Model.ParsedCount > 0)
+        {
+            <div class="mb-2">Распознано строк: <b>@Model.ParsedCount</b></div>
+        }
+        <ul class="mb-0">
+            @foreach (var error in Model.Errors.OrderBy(x => x.Line).ThenBy(x => x.Login))
+            {
+                <li>
+                    @if (error.Line > 0)
+                    {
+                        <span>Строка @error.Line: </span>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(error.Login))
+                    {
+                        <span><b>@error.Login</b> — </span>
+                    }
+                    @error.Message
+                </li>
+            }
+        </ul>
+    </div>
+}
+
+<form asp-action="Register" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="Role" class="form-label">Роль</label>
+            <select asp-for="Role" class="form-select" id="roleSelect">
+                <option value="admin">Админ</option>
+                <option value="moderator">Модератор</option>
+                <option value="verificator">Verificator</option>
+                <option value="filial_user">Filial-user</option>
+                <option value="testable_user">Testable-user</option>
+            </select>
+        </div>
+
+        <div class="col-md-6" id="testableModeBlock">
+            <label asp-for="TestableMode" class="form-label">Сценарий Testable-user</label>
+            <select asp-for="TestableMode" class="form-select" id="testableModeSelect">
+                <option value="existing">Привязать к существующему Testable</option>
+                <option value="new">Создать Testable и привязать к периоду</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-md-3">
+            <label asp-for="Delimiter" class="form-label">Разделитель</label>
+            <input asp-for="Delimiter" class="form-control" maxlength="1" id="delimiterInput" />
+            <div class="form-text">Например: <code>;</code>, <code>,</code> или <code>|</code></div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Источник данных</h5>
+            <p class="text-muted mb-3">Textarea и CSV проходят один и тот же pipeline. Выберите только один источник.</p>
+
+            <div class="mb-3">
+                <label asp-for="TextData" class="form-label">Текстовые данные</label>
+                <textarea asp-for="TextData" class="form-control font-monospace" rows="12" id="textData"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="CsvFile" class="form-label">CSV-файл</label>
+                <input asp-for="CsvFile" type="file" class="form-control" accept=".csv,.txt,text/csv,text/plain" />
+            </div>
+
+            <div class="alert alert-secondary mb-0">
+                <div id="formatHelp"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Проверить и зарегистрировать</button>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        (() => {
+            const role = document.getElementById('roleSelect');
+            const mode = document.getElementById('testableModeSelect');
+            const modeBlock = document.getElementById('testableModeBlock');
+            const help = document.getElementById('formatHelp');
+
+            function render() {
+                const r = role.value;
+                modeBlock.style.display = r === 'testable_user' ? '' : 'none';
+
+                let format = '';
+                if (r === 'admin' || r === 'moderator') {
+                    format = '<b>Формат:</b> Login;Password';
+                } else if (r === 'verificator' || r === 'filial_user') {
+                    format = '<b>Формат:</b> Login;Password;FilialName';
+                } else if (r === 'testable_user' && mode.value === 'existing') {
+                    format = '<b>Формат:</b> Login;Password;Code<br><span class="text-muted">Code — код уже существующего тестируемого.</span>';
+                } else {
+                    format = '<b>Формат:</b> Login;Password;Code;FilialName;ReservLevelID;TestablePeriodID<br><span class="text-muted">Будут созданы одновременно User, Testable, TestableUser и AccessForTestable.</span>';
+                }
+
+                help.innerHTML = format;
+            }
+
+            role.addEventListener('change', render);
+            mode.addEventListener('change', render);
+            render();
+        })();
+    </script>
+}
