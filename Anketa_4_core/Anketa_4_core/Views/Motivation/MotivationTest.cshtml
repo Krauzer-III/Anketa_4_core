@@ -1,0 +1,48 @@
+@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_MotivationModel
+@{
+    ViewData["Title"] = "Мотивационный тест";
+}
+<div class="container mt-5">
+    <h2>Мотивационный тест</h2>
+    <form asp-action="MotivationTest" method="post">
+        @Html.AntiForgeryToken()
+        <input asp-for="AccessTestID" type="hidden" />
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <fieldset class="mb-3">
+            <legend class="fs-5">Хотите ли вы вступить в кадровый резерв?</legend>
+            <label><input type="radio" asp-for="IsAgree" value="true" id="agreeYes" /> Да</label>
+            <label class="ms-3"><input type="radio" asp-for="IsAgree" value="false" id="agreeNo" checked /> Нет</label>
+        </fieldset>
+        <div class="mb-3" id="reasonBlock">
+            <label asp-for="Question_YES_NO" class="form-label">Если нет, укажите причину</label>
+            <textarea asp-for="Question_YES_NO" class="form-control" id="reasonText"></textarea>
+            <span asp-validation-for="Question_YES_NO" class="text-danger"></span>
+        </div>
+        <div class="mb-3"><label asp-for="RecomendPosition">Рекомендуемая должность</label><input asp-for="RecomendPosition" class="form-control" /></div>
+        <div class="mb-3"><label asp-for="Recomendator">Рекомендатель</label><input asp-for="Recomendator" class="form-control" /></div>
+        @for (int i = 1; i <= 9; i++)
+        {
+            var field = $"Question_{i:D2}";
+            <div class="mb-3">
+                <label class="form-label" for="@field">Вопрос @i</label>
+                <input class="form-control" type="text" name="@field" id="@field" required />
+            </div>
+        }
+        <button class="btn btn-success" type="submit">Сохранить ответы</button>
+    </form>
+</div>
+<script>
+(function () {
+    const yes = document.getElementById('agreeYes');
+    const block = document.getElementById('reasonBlock');
+    const reason = document.getElementById('reasonText');
+    function toggle() {
+        block.hidden = yes.checked;
+        reason.required = !yes.checked;
+        if (yes.checked) reason.value = 'Да';
+        else if (reason.value === 'Да') reason.value = '';
+    }
+    document.querySelectorAll('input[name="IsAgree"]').forEach(x => x.addEventListener('change', toggle));
+    toggle();
+})();
+</script>
