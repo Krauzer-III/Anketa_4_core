@@ -1,33 +1,54 @@
-﻿@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_KettelModel_Main
+@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_KettelModel_Main
 @{
-    ViewData["Title"] = "Тест Кэттелла – начало";
+    ViewData["Title"] = "Психологическое тестирование";
 }
-<h2>@ViewData["Title"]</h2>
+<div class="container mt-4 mb-5">
+    <h2>Психологическое тестирование</h2>
 
-<form asp-action="Start" method="post">
-    <input type="hidden" asp-for="AccessID" />
-
-    <div class="mb-3">
-        <label asp-for="Years" class="form-label"></label>
-        <input asp-for="Years" class="form-control" type="number" min="1" max="120" />
-        <span asp-validation-for="Years" class="text-danger"></span>
+    <div class="card my-4">
+        <div class="card-body">
+            <h5 class="card-title">Инструкция</h5>
+            <p>
+                Вам будут последовательно предложены вопросы психологического тестирования.
+                В каждом вопросе выберите один вариант, который наиболее точно отражает Ваш ответ.
+            </p>
+            <p class="mb-0">
+                После нажатия кнопки «Следующий вопрос» ответ сохраняется в базе данных.
+                Если Вы прервёте тестирование, при следующем входе оно продолжится
+                с первого вопроса, на который Вы ещё не ответили.
+            </p>
+        </div>
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Пол</label>
-        <div class="form-check">
-            <input class="form-check-input" type="radio" asp-for="Gender" value="M" id="genderM" />
-            <label class="form-check-label" for="genderM">Мужской</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="radio" asp-for="Gender" value="F" id="genderF" />
-            <label class="form-check-label" for="genderF">Женский</label>
-        </div>
-        <span asp-validation-for="Gender" class="text-danger"></span>
-    </div>
+    <form asp-controller="Kettel" asp-action="Start" method="post">
+        @Html.AntiForgeryToken()
+        <input asp-for="AccessID" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-    <button type="submit" class="btn btn-primary">Начать тест</button>
-</form>
+        <div class="mb-3">
+            <label asp-for="Years" class="form-label">Укажите Ваш текущий возраст</label>
+            <input asp-for="Years" class="form-control" type="number" min="1" max="120" required />
+            <span asp-validation-for="Years" class="text-danger"></span>
+        </div>
+
+        <fieldset class="mb-3">
+            <legend class="fs-6">Укажите Ваш пол</legend>
+            <div class="form-check">
+                <input asp-for="Gender" type="radio" class="form-check-input"
+                       id="genderMan" value="Мужчина" required />
+                <label class="form-check-label" for="genderMan">Мужчина</label>
+            </div>
+            <div class="form-check">
+                <input asp-for="Gender" type="radio" class="form-check-input"
+                       id="genderWoman" value="Женщина" required />
+                <label class="form-check-label" for="genderWoman">Женщина</label>
+            </div>
+            <span asp-validation-for="Gender" class="text-danger"></span>
+        </fieldset>
+
+        <button type="submit" class="btn btn-primary">Начать тестирование</button>
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
