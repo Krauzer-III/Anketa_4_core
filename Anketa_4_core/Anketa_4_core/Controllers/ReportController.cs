@@ -1,0 +1,48 @@
+using Anketa_4_core.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace Anketa_4_core.Controllers
+{
+    /// <summary>
+    /// Единая точка получения отчёта из личного кабинета и Testable/Details.
+    /// TODO: подключить генератор ReportGenerator и шаблон документа.
+    /// </summary>
+    [Authorize]
+    public class ReportController : Controller
+    {
+        private readonly AnketaContext _db;
+        public ReportController(AnketaContext db) => _db = db;
+
+        [HttpGet]
+        public async Task<IActionResult> GetReport(int? testableId)
+        {
+            bool moderator = User.IsInRole("admin") || User.IsInRole("moderator");
+            int id;
+            if (moderator && testableId.HasValue)
+                id = testableId.Value;
+            else
+            {
+                if (!User.IsInRole("testable_user")) return Forbid();
+
+                string? username = User.Identity?.Name;
+                var ownId = await _db.TestableUsers.AsNoTracking()
+                    .Where(x => x.UserName == username)
+                    .Select(x => (int?)x.testable.ID).FirstOrDefaultAsync();
+                if (!ownId.HasValue) return NotFound();
+                if (testableId.HasValue && testableId != ownId.Value) return Forbid();
+                id = ownId.Value;
+            }
+
+            var testable = await _db.Testables.AsNoTracking()
+                .Where(x => x.ID == id)
+                .Select(x => new { x.ID, x.Code }).FirstOrDefaultAsync();
+            if (testable == null) return NotFound();
+
+            ViewBag.TestableID = testable.ID;
+            ViewBag.TestableCode = testable.Code;
+            return View("Pending");
+        }
+    }
+}
