@@ -215,14 +215,28 @@ namespace Anketa_4_core.Data.AnketaModels
                 var answers = allAnswers.Where(x => x.Answer.Question.Block.ID == block.ID)
                     .ToArray();
 
+                int rawScore = answers.Count(x => x.Mark == x.Answer.Correct_Answer);
+                // In Anketa 3 the second-year 12-answer block was graded
+                // by Comp_Level2: 0–2=>0, 3–5=>1, 6–8=>2,
+                // 9–10=>3, 11=>4, 12=>5.
+                // First-year Comp_Levels thresholds were stored in its database
+                // and are not part of the archived source: do not guess them.
+                int? normalizedLevel = year == 2 && answers.Length == 12
+                    ? rawScore <= 2 ? 0
+                    : rawScore <= 5 ? 1
+                    : rawScore <= 8 ? 2
+                    : rawScore <= 10 ? 3
+                    : rawScore == 11 ? 4 : 5
+                    : null;
                 CompetentionResult.Add(new JSON_Competention_Result
                 {
                     Year = year,
                     BlockID = block.ID,
                     Block = block.BlockName,
                     BlockWordInReport = block.WordInReport,
-                    Ball = answers.Count(x => x.Mark == x.Answer.Correct_Answer),
-                    MaxBall = answers.Length
+                    Ball = rawScore,
+                    MaxBall = answers.Length,
+                    LevelNumber = normalizedLevel
                 });
             }
         }
@@ -537,6 +551,11 @@ namespace Anketa_4_core.Data.AnketaModels
             public string BlockWordInReport { get; set; } = "";
             public int Ball { get; set; }
             public int MaxBall { get; set; }
+            /// <summary>
+            /// Normed level for Excel (not the raw number of correct priorities).
+            /// Null if the original norm table is unknown.
+            /// </summary>
+            public int? LevelNumber { get; set; }
         }
 
 
