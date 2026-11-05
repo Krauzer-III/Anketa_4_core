@@ -1,0 +1,113 @@
+@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_CompetentionModel_Question
+@{
+    ViewData["Title"] = $"Компетенции ({Model.Year} год)";
+    var progress = Model.TotalQuestions > 0
+        ? (100.0 * (Model.Position - 1) / Model.TotalQuestions)
+            .ToString(System.Globalization.CultureInfo.InvariantCulture)
+        : "0";
+}
+<div class="container mt-4 mb-5">
+    <h2>@ViewData["Title"]</h2>
+    <p class="text-muted">Ситуация @Model.Position из @Model.TotalQuestions</p>
+    <div class="progress mb-4" role="progressbar" aria-label="Прогресс тестирования"
+         aria-valuenow="@Model.Position" aria-valuemin="0" aria-valuemax="@Model.TotalQuestions">
+        <div class="progress-bar" style="width: @(progress)%"></div>
+    </div>
+
+    <section class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Ситуация №@Model.Number</h5>
+            <p class="card-text" style="white-space: pre-line">@Model.Text</p>
+
+            <p class="small text-muted">
+                Для каждого варианта выберите уникальный рейтинг:
+                1 — самое эффективное, 4 — самое неэффективное.
+            </p>
+
+            <form asp-controller="Competention" asp-action="Question" method="post"
+                  id="competentionForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="AccessID" value="@Model.AccessID" />
+                <input type="hidden" name="Year" value="@Model.Year" />
+                <input type="hidden" name="QuestionID" value="@Model.QuestionID" />
+
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                <div id="rankError" class="alert alert-danger" role="alert" hidden>
+                    Назначьте всем четырём вариантам разные приоритеты: 1, 2, 3, 4.
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width: 65px">№</th>
+                                <th scope="col">Вариант действия</th>
+                                <th scope="col" style="min-width: 225px">Приоритет</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Answers.Length; i++)
+                            {
+                                <tr>
+                                    <th scope="row">@Model.Answers[i].AnswerNumber</th>
+                                    <td>@Model.Answers[i].AnswerText</td>
+                                    <td>
+                                        <input type="hidden" name="Answers[@i].ID"
+                                               value="@Model.Answers[i].ID" />
+                                        <div class="d-flex flex-wrap gap-1" role="group"
+                                             aria-label="Приоритет варианта @Model.Answers[i].AnswerNumber">
+                                            @for (int rank = 1; rank <= 4; rank++)
+                                            {
+                                                var radioId = $"priority_{i}_{rank}";
+                                                <input type="radio" class="btn-check"
+                                                       id="@radioId" name="Answers[@i].Priority"
+                                                       value="@rank" required
+                                                       checked="@(Model.Answers[i].Priority == rank)"
+                                                       autocomplete="off" />
+                                                <label class="btn btn-outline-primary"
+                                                       for="@radioId">@rank</label>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <button id="submitRank" type="submit" class="btn btn-primary mt-3">
+                    @(Model.Position == Model.TotalQuestions ? "Завершить тестирование" : "Следующая ситуация")
+                </button>
+            </form>
+        </div>
+    </section>
+    <p class="text-muted mt-3">
+        После отправки приоритеты сохраняются в базе данных.
+        Следующий вход продолжит тест с первого неотвеченного вопроса.
+    </p>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("competentionForm");
+    const error = document.getElementById("rankError");
+    const submit = document.getElementById("submitRank");
+    const selects = form.querySelectorAll('input[type="radio"]');
+    function validate() {
+        const ranks = Array.from(selects).filter(x => x.checked).map(x => Number(x.value));
+        const valid = ranks.length === 4 && new Set(ranks).size === 4
+            && [1, 2, 3, 4].every(x => ranks.includes(x));
+        error.hidden = valid;
+        return valid;
+    }
+    form.addEventListener("submit", function (event) {
+        if (!validate()) {
+            event.preventDefault();
+        } else {
+            submit.disabled = true;
+            submit.textContent = "Сохранение ответов...";
+        }
+    });
+    selects.forEach(x => x.addEventListener("change", function () {
+        if (!error.hidden) validate();
+    }));
+});
+</script>
