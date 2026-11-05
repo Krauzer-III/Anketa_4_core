@@ -40,8 +40,18 @@ namespace Anketa_4_core.Controllers
                 .Select(x => new { x.ID, x.Code }).FirstOrDefaultAsync();
             if (testable == null) return NotFound();
 
+            // TODO: GetReport will use the last assigned AccessForTestable
+            // and load TestResult.Results for ReportGenerator.
+            var latest = await _db.AccessForTestables.AsNoTracking()
+                .Where(x => x.Testable.ID == testable.ID)
+                .OrderByDescending(x => x.ID)
+                .Select(x => new { x.ID, Period = x.TestPeriod.GroupName })
+                .FirstOrDefaultAsync();
+
             ViewBag.TestableID = testable.ID;
             ViewBag.TestableCode = testable.Code;
+            ViewBag.AccessID = latest?.ID;
+            ViewBag.PeriodName = latest?.Period;
             return View("Pending");
         }
     }
