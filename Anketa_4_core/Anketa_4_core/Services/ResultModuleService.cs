@@ -16,7 +16,7 @@ namespace Anketa_4_core.Services
         private readonly AnketaContext _db;
         public ResultModuleService(AnketaContext db) => _db = db;
 
-        private const int PageSize = 50;
+        private const int PageSize = 100;
 
         public async Task<MVC_ResultSearchPage> SearchAsync(MVC_ResultFilter filter)
         {
