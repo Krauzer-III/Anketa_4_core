@@ -1,9 +1,21 @@
 @model bool
 @{
-    ViewData["Title"] = "Мотивационный тест завершён";
+    ViewData["Title"] = Model ? "Оценка успешно пройдена" : "Ошибка";
 }
 <div class="container mt-5">
-    @if (Model) { <div class="alert alert-success">Ваши ответы сохранены.</div> }
-    else { <div class="alert alert-warning">Тест не завершён.</div> }
-    <a asp-action="Index" class="btn btn-primary">Вернуться</a>
+    @if (Model)
+    {
+        <div class="alert alert-success" role="alert">
+            <h2>Оценка успешно пройдена</h2>
+            <p class="mb-0">Ваши ответы сохранены.</p>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger" role="alert">
+            <h2>Оценка не завершена</h2>
+            <p class="mb-0">Обратитесь к модератору для решения проблемы.</p>
+        </div>
+    }
+    <a asp-action="Index" asp-controller="Motivation" class="btn btn-primary">Вернуться к началу</a>
 </div>
