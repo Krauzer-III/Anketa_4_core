@@ -43,28 +43,29 @@
         <div class="card mb-3">
             <div class="card-body">
                 <h5 class="card-title">Личный кабинет</h5>
-                <form asp-action="SaveLKData" method="post">
-                    <input type="hidden" name="id" value="@Model.ID" />
-                    <textarea name="lkData" class="form-control" rows="6">@Model.LK_Data</textarea>
-                    <div class="form-text">// TODO: обработчик сохранения</div>
-                    <button class="btn btn-secondary mt-2" type="submit">Сохранить LK_Data</button>
-                </form>
+                <p class="text-muted small">
+                    Все поля LK_Data доступны для просмотра и редактирования
+                    в модальных окнах. Изменения сохраняются по разделам через AJAX.
+                </p>
+                @{
+                    ViewData["LKCompact"] = true;
+                    ViewData["LKDataUrl"] = Url.Action("LKData", "Testable", new { id = Model.ID });
+                    ViewData["LKSaveUrl"] = Url.Action("SaveLKSection", "Testable", new { id = Model.ID });
+                    ViewData["LKRatingUrl"] = "";
+                }
+                <partial name="_LKDashboard" />
             </div>
         </div>
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Отчёты</h5>
-                <div class="d-flex gap-2">
-                    <form asp-action="GenerateReportPdf" method="post">
-                        <input type="hidden" name="id" value="@Model.ID" />
-                        <button class="btn btn-outline-primary" type="submit">PDF отчёт</button>
-                    </form>
-                    <form asp-action="GenerateReportXlsx" method="post">
-                        <input type="hidden" name="id" value="@Model.ID" />
-                        <button class="btn btn-outline-success" type="submit">Excel отчёт</button>
-                    </form>
-                </div>
-                <div class="form-text mt-2">// TODO: генерация отчётов в контроллере</div>
+                <h5 class="card-title">Отчёт</h5>
+                <a class="btn btn-success" asp-controller="Report"
+                   asp-action="GetReport" asp-route-testableId="@Model.ID">
+                    Получить отчёт
+                </a>
+                <p class="text-muted small mt-2 mb-0">
+                    Заготовка. Генератор и шаблон отчёта подключим позже.
+                </p>
             </div>
         </div>
     </div>
