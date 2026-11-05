@@ -138,7 +138,10 @@ namespace Anketa_4_core.Services
             if (string.IsNullOrWhiteSpace(json)) return (0, 0);
             JSON_ResultModel? result;
             try { result = JsonSerializer.Deserialize<JSON_ResultModel>(json); }
-            catch (JsonException) { return (0, 0); }
+            catch (Exception ex) when (ex is JsonException or NotSupportedException)
+            {
+                return (0, 0);
+            }
             if (result == null) return (0, 0);
 
             // Personal year is 1 or 2. If the legacy YearTraining contains a
