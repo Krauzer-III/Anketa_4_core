@@ -132,6 +132,7 @@
     const clone = x => JSON.parse(JSON.stringify(x));
     function emptyValue(f) {
         if (f.type === "list") return [];
+        if (f.type === "object") return emptyRecord(f.fields);
         if (f.type === "number") return 0;
         return "";
     }
