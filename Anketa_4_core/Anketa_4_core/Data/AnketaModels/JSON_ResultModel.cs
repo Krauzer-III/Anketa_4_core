@@ -26,7 +26,12 @@ namespace Anketa_4_core.Data.AnketaModels
         /// Поиск результата по айдишнику
         /// </summary>
         /// <param name="accesID">ИД доступа к тестам</param>
-        public JSON_ResultModel()\n        {\n            _JSON_ResultModel();\n        }\n\n        public JSON_ResultModel(int accesID)
+        public JSON_ResultModel()
+        {
+            _JSON_ResultModel();
+        }
+
+        public JSON_ResultModel(int accesID)
         {
             using (var context = new AnketaContext())
             {
@@ -234,7 +239,9 @@ namespace Anketa_4_core.Data.AnketaModels
         public int q15 { get; set; }
 
 
-        public JSON_Test360() { }\n\n        public JSON_Test360(Test360 t360, RespondentRole rr)
+        public JSON_Test360() { }
+
+        public JSON_Test360(Test360 t360, RespondentRole rr)
         {
             ID = t360.ID;
             RespondentRoleID = rr.ID;
