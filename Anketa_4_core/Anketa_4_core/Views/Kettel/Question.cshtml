@@ -9,7 +9,7 @@
     <div class="progress mb-4" role="progressbar" aria-label="Прогресс тестирования"
          aria-valuenow="@Model.Position" aria-valuemin="0" aria-valuemax="@Model.TotalQuestions">
         <div class="progress-bar"
-             style="width: @(Model.TotalQuestions == 0 ? 0 : (100.0 * (Model.Position - 1) / Model.TotalQuestions).ToString(System.Globalization.CultureInfo.InvariantCulture))%">
+             style="width: @(Model.TotalQuestions == 0 ? "0" : (100.0 * (Model.Position - 1) / Model.TotalQuestions).ToString(System.Globalization.CultureInfo.InvariantCulture))%">
         </div>
     </div>
 
