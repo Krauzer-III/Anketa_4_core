@@ -387,6 +387,12 @@ namespace Anketa_4_core.Services
                     throw new InvalidOperationException("В TestResult отсутствует JSON.");
                 json = JsonSerializer.Deserialize<JSON_ResultModel>(stored.Results)
                     ?? throw new InvalidOperationException("Отчётный JSON пуст.");
+                // Совместимость с ранними JSON, где AccessID / TestableCode
+                // ещё отсутствовали. Чужие периоды перезаписывать нельзя.
+                if (json.AccessID != 0 && json.AccessID != access.ID)
+                    throw new InvalidOperationException("Отчётный JSON относится к другому периоду.");
+                json.AccessID = access.ID;
+                json.TestableCode = access.Testable.Code;
             }
 
             int deleted;
