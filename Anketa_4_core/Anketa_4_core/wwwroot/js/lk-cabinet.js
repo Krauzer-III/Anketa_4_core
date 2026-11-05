@@ -285,7 +285,10 @@
         });
         parent.appendChild(stack);
         parent.appendChild(btn("Добавить строку", "btn-outline-primary btn-sm mt-2", () => {
-            arr.push(emptyRecord(fields));
+            const row = emptyRecord(fields);
+            if (fields.some(f => f.key === "Number"))
+                row.Number = arr.reduce((max, x) => Math.max(max, Number(x.Number) || 0), 0) + 1;
+            arr.push(row);
             update(true);
         }));
     }
