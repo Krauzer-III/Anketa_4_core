@@ -419,6 +419,7 @@
                 for (const item of [
                     ["Заполненность таблиц", rating.current.tableCompletion],
                     ["Завершённость тестов", rating.current.testCompletion],
+                    ["Результат тестов компетенций", rating.current.competenceQuality],
                     ["Общий рейтинг", rating.current.totalScore]
                 ]) {
                     slot.appendChild(dom("div", "fw-semibold mt-3 mb-1",
