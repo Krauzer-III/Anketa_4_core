@@ -1,0 +1,86 @@
+@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_ResultDetail
+@{
+    var m = Model.Data.MotivationTest;
+}
+<h6>Оцениваемый: <strong>@Model.TestableCode</strong></h6>
+<p class="text-muted">Период: @Model.PeriodName · доступ №@Model.AccessID</p>
+@if (m == null || m.ID <= 0)
+{
+    <div class="alert alert-secondary">Мотивационный опросник ещё не пройден.</div>
+}
+else
+{
+    <div class="mb-3">
+        <strong>Дата прохождения:</strong> @m.DatetimeTest.ToString("dd.MM.yyyy HH:mm:ss")
+        <div>
+            <strong>Участие в кадровом резерве:</strong>
+            @if (m.IsAgree)
+            {
+                <span class="badge text-bg-success">Согласен</span>
+            }
+            else
+            {
+                <span class="badge text-bg-warning">Отказался</span>
+            }
+        </div>
+    </div>
+
+    @if (!m.IsAgree)
+    {
+        <div class="alert alert-warning">
+            <strong>Причина отказа:</strong>
+            <p class="mb-0" style="white-space: pre-line">@m.Question_YES_NO</p>
+        </div>
+    }
+    else
+    {
+        <h6>Результаты мотивационного опросника</h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead><tr><th>Показатель</th><th>Баллы</th></tr></thead>
+                <tbody>
+                    <tr><td>Согласие участвовать в резерве</td><td>@m.Mark_01</td></tr>
+                    <tr><td>Готовность оплачивать обучение</td><td>@m.Mark_02</td></tr>
+                    <tr><td>Готовность к программе подготовки</td><td>@m.Mark_03</td></tr>
+                    <tr><td>Готовность тратить личное время</td><td>@m.Mark_04</td></tr>
+                    <tr><td>Готовность к переводу в другой филиал</td><td>@m.Mark_05</td></tr>
+                    <tr><td>Готовность к переезду в любой регион</td><td>@m.Mark_06</td></tr>
+                    <tr class="table-light"><th>Сумма баллов</th><th>@m.SummBall / 6</th></tr>
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <h6 class="mt-4">Ответы на вопросы</h6>
+    @{
+        var responses = new[]
+        {
+            new { Label = "Рекомендуемая должность", Value = m.RecomendPosition },
+            new { Label = "По чьей рекомендации", Value = m.Recomendator },
+            new { Label = "Хотите участвовать в кадровом резерве / причина отказа", Value = m.Question_YES_NO },
+            new { Label = "1. Участие в программе подготовки", Value = m.Question_01 },
+            new { Label = "2. Понятие «карьерный рост»", Value = m.Question_02 },
+            new { Label = "3. Польза участия в резерве", Value = m.Question_03 },
+            new { Label = "4. Личное время на обучение", Value = m.Question_04 },
+            new { Label = "5. Обучение за свой счёт", Value = m.Question_05 },
+            new { Label = "6. Профессиональный и карьерный рост", Value = m.Question_06 },
+            new { Label = "7. Перемещение в другие филиалы", Value = m.Question_07 },
+            new { Label = "8. Регионы возможного перевода", Value = m.Question_08 },
+            new { Label = "9. Подтверждение официальной позиции", Value = m.Question_09 }
+        };
+    }
+    <div class="table-responsive">
+        <table class="table table-sm table-striped table-bordered">
+            <thead><tr><th style="width:45%">Вопрос</th><th>Ответ</th></tr></thead>
+            <tbody>
+                @foreach (var response in responses)
+                {
+                    <tr>
+                        <td>@response.Label</td>
+                        <td style="white-space: pre-line">@(string.IsNullOrEmpty(response.Value) ? "—" : response.Value)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
