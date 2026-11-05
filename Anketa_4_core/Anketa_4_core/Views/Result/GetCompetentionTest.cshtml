@@ -1,0 +1,135 @@
+@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_ResultDetail
+@{
+    int year = Model.Year;
+    var questions = Model.Data.CompetentionAnswers?
+        .Where(x => x.Year == year)
+        .OrderBy(x => x.QuestionNumber).ThenBy(x => x.QuestionID).ToList();
+    var blocks = Model.Data.CompetentionResult?
+        .Where(x => x.Year == year).OrderBy(x => x.Block).ToList();
+    bool started = questions?.Count > 0;
+    bool completed = blocks?.Count > 0;
+}
+<h6>Оцениваемый: <strong>@Model.TestableCode</strong></h6>
+<p class="text-muted">
+    Период: @Model.PeriodName · доступ №@Model.AccessID ·
+    Компетенции (@year год)
+</p>
+@if (!started && !completed)
+{
+    <div class="alert alert-secondary">Тест компетенций этого года ещё не начат.</div>
+}
+else
+{
+    <div class="row g-2 mb-3">
+        <div class="col-md-6">
+            <strong>Статус:</strong>
+            <span class="badge @(completed ? "text-bg-success" : "text-bg-warning")">
+                @(completed ? "Пройден" : "В процессе")
+            </span>
+        </div>
+        <div class="col-md-6">
+            <strong>Ситуаций с ответами:</strong> @(questions?.Count ?? 0)
+        </div>
+    </div>
+
+    @if (completed)
+    {
+        <h6>Итоговые результаты по блокам</h6>
+        <table class="table table-sm table-striped table-bordered">
+            <thead><tr><th>Блок</th><th>Совпадений с ключом</th></tr></thead>
+            <tbody>
+                @foreach (var b in blocks!)
+                {
+                    <tr>
+                        <td>@b.Block</td>
+                        <td>
+                            @b.Ball
+                            @if (b.MaxBall > 0)
+                            {
+                                <span class="text-muted">из @b.MaxBall</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                <tr class="table-light">
+                    <th>Всего</th>
+                    <th>
+                        @blocks!.Sum(x => x.Ball)
+                        @if (blocks.Sum(x => x.MaxBall) > 0)
+                        {
+                            <span>из @blocks.Sum(x => x.MaxBall)</span>
+                        }
+                    </th>
+                </tr>
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            Тест ещё не закончен. Итоговые баллы по блокам появятся после последней ситуации.
+        </div>
+    }
+
+    @if (started)
+    {
+        var dates = questions!.SelectMany(x => x.Answers ?? Array.Empty<Anketa_4_core.Data.AnketaModels.JSON_Motivation_Result.JSON_Competention_AnswerResult>())
+            .Where(x => x.DateTimeAnswer != default)
+            .Select(x => x.DateTimeAnswer).ToArray();
+        if (dates.Length > 0)
+        {
+            <p class="text-muted">
+                Первый ответ: @dates.Min().ToString("dd.MM.yyyy HH:mm:ss");
+                последний ответ: @dates.Max().ToString("dd.MM.yyyy HH:mm:ss")
+            </p>
+        }
+
+        <h6 class="mt-4">Ответы по ситуациям</h6>
+        <p class="text-muted small">
+            В колонке «Совпадение» показывается, совпал ли приоритет с сохранённым ключом.
+            Для старых JSON без ключей отображается прочерк.
+        </p>
+        @foreach (var question in questions!)
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <strong>Ситуация №@question.QuestionNumber</strong>
+                    <div class="mt-1" style="white-space: pre-line">@question.QuestionText</div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped table-bordered mb-0">
+                        <thead>
+                            <tr><th>№</th><th>Вариант решения</th><th>Приоритет</th><th>Совпадение</th></tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var answer in (question.Answers ??
+                            Array.Empty<Anketa_4_core.Data.AnketaModels.JSON_Motivation_Result.JSON_Competention_AnswerResult>())
+                            .OrderBy(x => x.AnswerNumber))
+                        {
+                            <tr>
+                                <td>@answer.AnswerNumber</td>
+                                <td>@answer.AnswerText</td>
+                                <td>@answer.AnswerMark</td>
+                                <td>
+                                    @if (answer.IsCorrect == true)
+                                    {
+                                        <span class="text-success fw-bold" aria-label="Верно">✓</span>
+                                    }
+                                    else if (answer.IsCorrect == false)
+                                    {
+                                        <span class="text-danger fw-bold" aria-label="Неверно">✕</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+}
