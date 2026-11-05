@@ -398,6 +398,41 @@ namespace Anketa_4_core.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> LKData(int id)
+        {
+            if (!await _db.Testables.AnyAsync(x => x.ID == id)) return NotFound();
+            try
+            {
+                var lk = await new LKCabinetService(_db).LoadForTestableAsync(id);
+                return Json(new { lkData = lk });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveLKSection(
+            int id, [FromBody] MVC_LK_SectionUpdate request)
+        {
+            if (!await _db.Testables.AnyAsync(x => x.ID == id)) return NotFound();
+            if (request == null) return BadRequest(new { error = "Данные не получены." });
+            try
+            {
+                var lk = await new LKCabinetService(_db)
+                    .SaveForTestableAsync(id, request.Section, request.Value);
+                return Json(new { saved = true, lkData = lk });
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException
+                or System.Text.Json.JsonException or NotSupportedException)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
         // === Заглушки действий по тестам/ЛК (заполните позже) ===
         [HttpPost]
         public IActionResult GenerateReportPdf(int id)
