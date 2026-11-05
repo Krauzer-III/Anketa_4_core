@@ -6,6 +6,10 @@
     <div class="alert alert-info">
         <strong>Подготовка отчёта пока не подключена.</strong>
         <p class="mb-0">Заготовка для тестируемого с кодом @ViewBag.TestableCode.
+           @if (ViewBag.AccessID != null)
+           {
+               <span>Период: @ViewBag.PeriodName (доступ №@ViewBag.AccessID).</span>
+           }
            TODO: загрузить шаблон и вызвать общий ReportGenerator.</p>
     </div>
     <a href="javascript:history.back()" class="btn btn-outline-primary">Назад</a>
