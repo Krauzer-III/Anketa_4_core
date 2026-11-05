@@ -151,6 +151,16 @@ namespace Anketa_4_core.Data.AnketaModels
             KettelTest = new JSON_Kettel(main, answers);
         }
 
+        /// <summary>
+        /// Сохраняет очередной ответ Кеттела в общий JSON без расчёта итогов.
+        /// В конце теста Add_JSON_Kettel заменяет промежуточные данные полным результатом.
+        /// </summary>
+        public void Add_JSON_Kettel_Answer(KT_Main main, KT_TestableAnswers answer)
+        {
+            KettelTest ??= new JSON_Kettel();
+            KettelTest.RecordAnswer(main, answer);
+        }
+
         public string GetJSON() => JsonSerializer.Serialize(this);
 
         /// <summary>
@@ -360,74 +370,134 @@ namespace Anketa_4_core.Data.AnketaModels
             public string Gender { get; set; }
             public List<JSON_Kettel_Question_Answer> QA { get; set; }
             public List<JSON_Kettel_KategoryResult> Results { get; set; }
+            public bool IsCompleted { get; set; }
 
             public JSON_Kettel()
             {
-                this.ID = -1;
-                this.Years = -1;
-                this.Gender = "";
-                this.QA = new List<JSON_Kettel_Question_Answer>();
-                this.Results = new List<JSON_Kettel_KategoryResult>();
+                ID = -1;
+                Years = -1;
+                Gender = "";
+                QA = new List<JSON_Kettel_Question_Answer>();
+                Results = new List<JSON_Kettel_KategoryResult>();
             }
-            public JSON_Kettel(KT_Main main, KT_TestableAnswers[] answers)
+
+            /// <summary>
+            /// Совместимость с прежним способом создания отчётных результатов.
+            /// Для сохранения последнего ответа внутри транзакции используйте
+            /// перегрузку, принимающую категории/ключи/диапазоны из того же DbContext.
+            /// </summary>
+            public JSON_Kettel(KT_Main main, KT_TestableAnswers[] answers) : this()
+            {
+                using var db = new AnketaContext();
+                Calculate(main, answers,
+                    db.KT_Categories.ToList(),
+                    db.KT_Keys.Include(x => x.Category).Include(x => x.Answer).ToList(),
+                    db.KT_Marks.Include(x => x.Category).ToList());
+            }
+
+            public JSON_Kettel(
+                KT_Main main,
+                KT_TestableAnswers[] answers,
+                IReadOnlyCollection<KT_Category> categories,
+                IReadOnlyCollection<KT_KeyForCategory> keys,
+                IReadOnlyCollection<KT_Mark> marks) : this()
+            {
+                Calculate(main, answers, categories, keys, marks);
+            }
+
+            public void RecordAnswer(KT_Main main, KT_TestableAnswers answer)
             {
                 ID = main.ID;
                 Years = main.Years;
                 Gender = main.Gender;
-                QA = answers.Select(a => new JSON_Kettel_Question_Answer
-                {
-                    QuestionNumber = a.Answer.Question.Number.ToString(),
-                    QuestionText = a.Answer.Question.Text,
-                    AnswerNumber = a.Answer.AnswerNumber,
-                    AnswerText = a.Answer.AnswerText
-                }).OrderBy(x => x.QuestionNumber).ToList();
-                Results = new List<JSON_Kettel_KategoryResult>();
-                using (var db = new AnketaContext())
-                {
-                    var answerIds = answers.Select(a => a.ID).ToArray();
-                    foreach (var category in db.KT_Categories)
-                    {
-                        var ballForCategory = db.KT_Keys
-                           .Include(c => c.Category)
-                           .Include(a => a.Answer)
-                           .Where(x => x.Category.ID == category.ID && answerIds.Contains(x.Answer.ID))
-                           .Sum(x => x.Score);
-                        var mark = db.KT_Marks.FirstOrDefault(x => x.Category.ID == category.ID &&
-                            x.ScoreFrom <= ballForCategory && x.ScoreTo >= ballForCategory);
+                QA ??= new List<JSON_Kettel_Question_Answer>();
+                Results ??= new List<JSON_Kettel_KategoryResult>();
 
-                        Results.Add(new JSON_Kettel_KategoryResult
-                        {
-                            CategoryID = category.ID,
-                            CategoryBall = mark.Mark,
-                            CategoryLevel = mark.LevelWord,
-                            CategoryName = category.CategoryName,
-                            CategoryBallExcelColumn = mark.WordInReport,
-                            CategoryLevelExcelColumn = mark.LevelWordInReport
-                        });
-                    }
+                var question = answer.Answer.Question;
+                QA.RemoveAll(x => x.QuestionID == question.ID ||
+                    (x.QuestionID == 0 && x.QuestionNumber == question.Number.ToString()));
+
+                QA.Add(new JSON_Kettel_Question_Answer
+                {
+                    QuestionID = question.ID,
+                    AnswerID = answer.Answer.ID,
+                    QuestionNumber = question.Number.ToString(),
+                    QuestionText = question.Text,
+                    AnswerNumber = answer.Answer.AnswerNumber,
+                    AnswerText = answer.Answer.AnswerText,
+                    DateTimeAnswer = answer.DateTimeAnswer
+                });
+                QA = QA.OrderBy(x => int.TryParse(x.QuestionNumber, out var number)
+                        ? number : int.MaxValue).ToList();
+
+                // Сырые ответы уже записаны, но стандартизованные баллы
+                // появляются только после последнего вопроса.
+                IsCompleted = false;
+                Results.Clear();
+            }
+
+            private void Calculate(
+                KT_Main main,
+                KT_TestableAnswers[] answers,
+                IReadOnlyCollection<KT_Category> categories,
+                IReadOnlyCollection<KT_KeyForCategory> keys,
+                IReadOnlyCollection<KT_Mark> marks)
+            {
+                foreach (var answer in answers.OrderBy(a => a.Answer.Question.Number))
+                    RecordAnswer(main, answer);
+
+                var selectedAnswerIDs = answers.Select(x => x.Answer.ID).ToHashSet();
+                Results.Clear();
+
+                foreach (var category in categories.OrderBy(x => x.ID))
+                {
+                    // Ключи привязаны к KT_Answer.ID, а не к KT_TestableAnswers.ID!
+                    int rawScore = keys.Where(x => x.Category.ID == category.ID &&
+                                                  selectedAnswerIDs.Contains(x.Answer.ID))
+                                       .Sum(x => x.Score);
+                    var mark = marks.FirstOrDefault(x => x.Category.ID == category.ID &&
+                         x.ScoreFrom <= rawScore && rawScore <= x.ScoreTo);
+                    if (mark == null)
+                        throw new InvalidOperationException(
+                            $"Нет таблицы перевода баллов для категории '{category.CategoryName}', результат {rawScore}.");
+
+                    Results.Add(new JSON_Kettel_KategoryResult
+                    {
+                        CategoryID = category.ID,
+                        CategoryName = category.CategoryName,
+                        RawScore = rawScore,
+                        CategoryBall = mark.Mark,
+                        CategoryLevel = mark.LevelWord,
+                        CategoryBallExcelColumn = mark.WordInReport,
+                        CategoryLevelExcelColumn = mark.LevelWordInReport
+                    });
                 }
+
+                IsCompleted = true;
             }
         }
 
         public class JSON_Kettel_Question_Answer
         {
+            public int QuestionID { get; set; }
+            public int AnswerID { get; set; }
             public string QuestionNumber { get; set; }
             public string QuestionText { get; set; }
             public string AnswerNumber { get; set; }
             public string AnswerText { get; set; }
+            public DateTime DateTimeAnswer { get; set; }
         }
-
 
         public class JSON_Kettel_KategoryResult
         {
             public int CategoryID { get; set; }
             public string CategoryName { get; set; }
+            public int RawScore { get; set; }
             public int CategoryBall { get; set; }
             public string CategoryBallExcelColumn { get; set; }
             public string CategoryLevel { get; set; }
             public string CategoryLevelExcelColumn { get; set; }
         }
-
 
         public class JSON_Competention_Answers
         {
