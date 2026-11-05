@@ -1,0 +1,51 @@
+@{
+    bool compact = (bool?)ViewData["LKCompact"] ?? false;
+    string dataUrl = (string?)ViewData["LKDataUrl"] ?? "";
+    string saveUrl = (string?)ViewData["LKSaveUrl"] ?? "";
+    string ratingUrl = (string?)ViewData["LKRatingUrl"] ?? "";
+}
+<div class="lk-dashboard" data-mode="@(compact ? "compact" : "full")"
+     data-read-url="@dataUrl" data-save-url="@saveUrl" data-rating-url="@ratingUrl">
+    @Html.AntiForgeryToken()
+
+    <div class="alert alert-danger lk-message" role="alert" hidden></div>
+    @if (compact)
+    {
+        <button type="button" class="btn btn-outline-primary lk-open-overview">
+            <span aria-hidden="true">✎</span> Просмотреть и редактировать поля личного кабинета
+        </button>
+    }
+    else
+    {
+        <div class="lk-main-sections"></div>
+        <section class="mt-4 lk-ranking" aria-label="Рейтинг тестируемого"></section>
+    }
+
+    <div class="modal fade lk-edit-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title lk-modal-title">Личный кабинет</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger lk-modal-error" role="alert" hidden></div>
+                    <div class="lk-modal-body"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary lk-back" hidden>
+                        К списку разделов
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Закрыть
+                    </button>
+                    <button type="button" class="btn btn-primary lk-save" hidden>
+                        Сохранить изменения
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/js/lk-cabinet.js" asp-append-version="true"></script>
