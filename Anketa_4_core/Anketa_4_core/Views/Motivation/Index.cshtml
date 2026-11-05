@@ -1,15 +1,21 @@
 @model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_MotivationLoginModel
 @{
-    ViewData["Title"] = "Мотивационный тест";
+    ViewData["Title"] = "Мотивационный опросник";
 }
 <div class="container mt-5">
-    <h2>Начало мотивационного тестирования</h2>
-    <form asp-action="Index" method="post">
+    <h2 class="mb-4">Введите данные оценки</h2>
+    <form asp-controller="Motivation" asp-action="Index" method="post">
         @Html.AntiForgeryToken()
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <label asp-for="Code" class="form-label">Код тестируемого</label>
-        <input asp-for="Code" class="form-control" required />
+        <div class="input-group mb-3">
+            <label class="input-group-text" for="Code">Введите код оцениваемого</label>
+            <input asp-for="Code" class="form-control" required />
+            <button type="submit" class="btn btn-primary">Перейти к опросу</button>
+        </div>
         <span asp-validation-for="Code" class="text-danger"></span>
-        <button type="submit" class="btn btn-primary mt-3">Начать тест</button>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     </form>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
