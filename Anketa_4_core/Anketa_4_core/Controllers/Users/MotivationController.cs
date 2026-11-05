@@ -184,7 +184,7 @@ namespace Anketa_4_core.Controllers.Users
                 Question_04 = agreed ? Clean(result.Question_04) : "",
                 Question_05 = agreed ? Clean(result.Question_05) : "",
                 Question_06 = agreed
-                    ? $"Профессиональный рост: {Clean(result.Question_06_1)}\\nКарьерный рост: {Clean(result.Question_06_2)}"
+                    ? $"Профессиональный рост: {Clean(result.Question_06_1)}" + Environment.NewLine + $"Карьерный рост: {Clean(result.Question_06_2)}"
                     : "",
                 Question_07 = agreed ? Clean(result.Question_07) : "",
                 Question_08 = agreed
