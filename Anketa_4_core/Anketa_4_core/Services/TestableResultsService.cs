@@ -84,6 +84,8 @@ namespace Anketa_4_core.Services
                 {
                     try
                     {
+                        if (string.IsNullOrWhiteSpace(reports[0].Json))
+                            throw new JsonException("JSON пуст.");
                         report = JsonSerializer.Deserialize<JSON_ResultModel>(reports[0].Json);
                         if (report == null) period.JsonError = "Отчётный JSON пуст.";
                         if (reports.Length > 1)
@@ -196,8 +198,19 @@ namespace Anketa_4_core.Services
             {
                 if (report?.MotivationTest?.ID > 0)
                 {
-                    row.LastAnswerAt = report.MotivationTest.DatetimeTest;
+                    var saved = report.MotivationTest;
+                    row.LastAnswerAt = saved.DatetimeTest;
                     row.FirstAnswerAt = row.LastAnswerAt;
+                    row.Scores.AddRange(new[]
+                    {
+                        Value("Mark_01", saved.Mark_01.ToString(Ru)),
+                        Value("Mark_02", saved.Mark_02.ToString(Ru)),
+                        Value("Mark_03", saved.Mark_03.ToString(Ru)),
+                        Value("Mark_04", saved.Mark_04.ToString(Ru)),
+                        Value("Mark_05", saved.Mark_05.ToString(Ru)),
+                        Value("Mark_06", saved.Mark_06.ToString(Ru)),
+                        Value("Сумма баллов", saved.SummBall.ToString(Ru))
+                    });
                 }
                 return row;
             }
@@ -370,6 +383,8 @@ namespace Anketa_4_core.Services
             JSON_ResultModel? json = null;
             if (stored != null)
             {
+                if (string.IsNullOrWhiteSpace(stored.Results))
+                    throw new InvalidOperationException("В TestResult отсутствует JSON.");
                 json = JsonSerializer.Deserialize<JSON_ResultModel>(stored.Results)
                     ?? throw new InvalidOperationException("Отчётный JSON пуст.");
             }
