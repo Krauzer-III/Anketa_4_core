@@ -1,0 +1,11 @@
+@{
+    int year = (int)(ViewBag.Year ?? 1);
+    ViewData["Title"] = $"Компетенции ({year} год)";
+}
+<div class="container mt-5">
+    <div class="alert alert-success" role="alert">
+        <h2>Компетенции (@year год): тестирование завершено</h2>
+        <p class="mb-0">Все ответы сохранены, результаты по блокам рассчитаны.</p>
+    </div>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">На главную страницу</a>
+</div>
