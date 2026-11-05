@@ -1,0 +1,25 @@
+@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_KettelModel_Login
+@{
+    ViewData["Title"] = "Психологическое тестирование";
+}
+<div class="container mt-5">
+    <h2>Психологическое тестирование</h2>
+    <p>Введите код тестируемого, чтобы начать или продолжить тестирование.</p>
+
+    <form asp-controller="Kettel" asp-action="Index" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="Code" class="form-label">Код тестируемого</label>
+            <input asp-for="Code" type="text" class="form-control" required />
+            <span asp-validation-for="Code" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Перейти к тестированию</button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
