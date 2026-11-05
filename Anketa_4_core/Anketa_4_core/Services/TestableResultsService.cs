@@ -116,13 +116,20 @@ namespace Anketa_4_core.Services
             var row = new MVC_TestableTestResult
             {
                 Kind = "Test360", Name = "Оценка 360°",
-                HasData = surveys.Length > 0, AnsweredCount = surveys.Length,
-                Status = surveys.Length == 0 ? "Не пройдена" : $"Анкет: {surveys.Length}"
+                HasData = surveys.Length > 0 || report?.Tests360?.Count > 0,
+                AnsweredCount = surveys.Length,
+                Status = surveys.Length > 0 ? $"Анкет: {surveys.Length}" :
+                    (report?.Tests360?.Count > 0 ? "Есть отчётные данные без первичных анкет" : "Не пройдена")
             };
             if (surveys.Length > 0)
             {
                 row.FirstAnswerAt = surveys.Min(x => x.DatetimeTest);
                 row.LastAnswerAt = surveys.Max(x => x.DatetimeTest);
+            }
+            else if (report?.Tests360?.Count > 0)
+            {
+                row.FirstAnswerAt = report.Tests360.Min(x => x.DatetimeTest);
+                row.LastAnswerAt = report.Tests360.Max(x => x.DatetimeTest);
             }
 
             foreach (var survey in surveys)
@@ -153,9 +160,13 @@ namespace Anketa_4_core.Services
 
             if (report != null)
             {
-                if (surveys.Any(x => x.IsSelfMark) && report.Test360ForReportTestable != null)
+                if ((surveys.Any(x => x.IsSelfMark) ||
+                    report.Tests360?.Any(x => x.IsSelfMark) == true) &&
+                    report.Test360ForReportTestable != null)
                     row.Scores.AddRange(Marks360(report.Test360ForReportTestable, "Самооценка"));
-                if (surveys.Any(x => !x.IsSelfMark) && report.Test360ForReportRespondents != null)
+                if ((surveys.Any(x => !x.IsSelfMark) ||
+                    report.Tests360?.Any(x => !x.IsSelfMark) == true) &&
+                    report.Test360ForReportRespondents != null)
                     row.Scores.AddRange(Marks360(report.Test360ForReportRespondents, "Средняя оценка респондентов"));
             }
             row.Note = "Каждая анкета хранится отдельно. Удаление одной оценки обновит средние показатели.";
@@ -177,10 +188,19 @@ namespace Anketa_4_core.Services
             var row = new MVC_TestableTestResult
             {
                 Kind = "Motivation", Name = "Мотивационное тестирование",
-                HasData = entries.Length > 0,
-                Status = entries.Length > 0 ? "Пройден" : "Не пройден"
+                HasData = entries.Length > 0 || (report?.MotivationTest?.ID ?? 0) > 0,
+                Status = entries.Length > 0 ? "Пройден" :
+                    ((report?.MotivationTest?.ID ?? 0) > 0 ? "Есть только отчётные данные" : "Не пройден")
             };
-            if (entries.Length == 0) return row;
+            if (entries.Length == 0)
+            {
+                if (report?.MotivationTest?.ID > 0)
+                {
+                    row.LastAnswerAt = report.MotivationTest.DatetimeTest;
+                    row.FirstAnswerAt = row.LastAnswerAt;
+                }
+                return row;
+            }
             var entry = entries[^1];
             row.FirstAnswerAt = entries.Min(x => x.DatetimeTest);
             row.LastAnswerAt = entries.Max(x => x.DatetimeTest);
@@ -229,7 +249,9 @@ namespace Anketa_4_core.Services
             var row = new MVC_TestableTestResult
             {
                 Kind = "Kettel", Name = "Психологическое тестирование (Кеттел)",
-                HasData = mains.Length > 0 || entries.Length > 0,
+                HasData = mains.Length > 0 || entries.Length > 0 ||
+                    (report?.KettelTest?.ID ?? -1) > 0 ||
+                    (report?.KettelTest?.QA?.Count ?? 0) > 0,
                 TotalCount = total,
                 AnsweredCount = entries.Select(x => x.Answer.Question.ID).Distinct().Count()
             };
@@ -240,7 +262,8 @@ namespace Anketa_4_core.Services
                 row.FirstAnswerAt = entries.Min(x => x.DateTimeAnswer);
                 row.LastAnswerAt = entries.Max(x => x.DateTimeAnswer);
             }
-            row.Status = total > 0 && row.AnsweredCount >= total ? "Пройден" : "В процессе";
+            row.Status = total > 0 && row.AnsweredCount >= total ? "Пройден" :
+                (entries.Length == 0 && mains.Length == 0 ? "Есть только отчётные данные" : "В процессе");
             var main = mains.OrderByDescending(x => x.ID).FirstOrDefault();
             if (main != null)
             {
@@ -273,9 +296,14 @@ namespace Anketa_4_core.Services
             var row = new MVC_TestableTestResult
             {
                 Kind = "Competention", Year = year, Name = $"Компетенции ({year} год)",
-                HasData = saved.Length > 0, TotalCount = total, AnsweredCount = completed,
-                Status = saved.Length == 0 ? "Не начат" :
-                    (total > 0 && completed >= total ? "Пройден" : "В процессе")
+                HasData = saved.Length > 0 ||
+                    report?.CompetentionAnswers?.Any(x => x.Year == year) == true ||
+                    report?.CompetentionResult?.Any(x => x.Year == year) == true,
+                TotalCount = total, AnsweredCount = completed,
+                Status = saved.Length > 0 ?
+                    (total > 0 && completed >= total ? "Пройден" : "В процессе") :
+                    (report?.CompetentionResult?.Any(x => x.Year == year) == true
+                        ? "Есть только отчётные данные" : "Не начат")
             };
             if (saved.Length > 0)
             {
@@ -332,9 +360,13 @@ namespace Anketa_4_core.Services
 
             // Отказываемся удалять, если общий JSON нельзя восстановить:
             // иначе можно получить несогласованные первичные и отчётные данные.
-            var stored = await _db.TestResults
+            var storedRows = await _db.TestResults
                 .Where(x => x.Access.ID == access.ID).OrderByDescending(x => x.ID)
-                .FirstOrDefaultAsync();
+                .ToArrayAsync();
+            if (storedRows.Length > 1)
+                throw new InvalidOperationException(
+                    "Для периода найдено несколько TestResult. Сначала необходимо устранить дубли.");
+            var stored = storedRows.FirstOrDefault();
             JSON_ResultModel? json = null;
             if (stored != null)
             {
