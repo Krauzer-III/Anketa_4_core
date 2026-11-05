@@ -8,6 +8,20 @@
 }
 <div class="container mt-4 mb-5">
     <h2>@ViewData["Title"]</h2>
+    <details class="card mb-3">
+        <summary class="card-header" style="cursor: pointer">Инструкция к тесту</summary>
+        <div class="card-body">
+            <p>Уважаемый коллега! Внимательно прочитайте ситуацию и четыре возможных действия руководителя.</p>
+            <p>Каждому действию присвойте один из рангов:</p>
+            <ol>
+                <li><strong>1</strong> — самое эффективное;</li>
+                <li><strong>2</strong> — скорее эффективное;</li>
+                <li><strong>3</strong> — скорее неэффективное;</li>
+                <li><strong>4</strong> — самое неэффективное.</li>
+            </ol>
+            <p class="mb-0">Каждый ранг можно использовать только один раз. После отправки ответ сохраняется.</p>
+        </div>
+    </details>
     <p class="text-muted">Ситуация @Model.Position из @Model.TotalQuestions</p>
     <div class="progress mb-4" role="progressbar" aria-label="Прогресс тестирования"
          aria-valuenow="@Model.Position" aria-valuemin="0" aria-valuemax="@Model.TotalQuestions">
