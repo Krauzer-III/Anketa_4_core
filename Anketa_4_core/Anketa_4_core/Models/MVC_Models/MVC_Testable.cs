@@ -117,6 +117,9 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
 
         public List<(int id, string name)> BoundTestPeriods { get; set; } = new();
         public List<string> Reports { get; set; } = new();
+
+        // Результаты всех тестов по каждому назначенному периоду.
+        public List<MVC_TestablePeriodResults> TestResults { get; set; } = new();
     }
 
 
