@@ -81,7 +81,7 @@ else
                             <tr>
                                 <td>@item.QuestionNumber</td>
                                 <td>@item.QuestionText</td>
-                                <td>@item.AnswerNumber. @item.AnswerText</td>
+                                <td>@(item.AnswerNumber). @item.AnswerText</td>
                                 <td>
                                     @(item.DateTimeAnswer == default
                                         ? "—" : item.DateTimeAnswer.ToString("dd.MM.yyyy HH:mm:ss"))
