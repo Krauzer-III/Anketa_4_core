@@ -446,6 +446,10 @@ namespace Anketa_4_core.Data.AnketaModels
                 foreach (var answer in answers.OrderBy(a => a.Answer.Question.Number))
                     RecordAnswer(main, answer);
 
+                if (categories.Count == 0 || keys.Count == 0 || marks.Count == 0)
+                    throw new InvalidOperationException(
+                        "Не загружены категории, ключи или диапазоны оценок теста Кеттела.");
+
                 var selectedAnswerIDs = answers.Select(x => x.Answer.ID).ToHashSet();
                 Results.Clear();
 
