@@ -116,7 +116,7 @@ namespace Anketa_4_core.Services
         private static void Identity(IXLWorksheet sheet, int row, int ordinal, Subject item)
         {
             sheet.Cell(row, 1).Value = ordinal;
-            sheet.Cell(row, 2).SetValue(item.Code).SetDataType(XLDataType.Text);
+            sheet.Cell(row, 2).Value = item.Code; // keep code as text
             sheet.Cell(row, 3).Value = item.Name;
             sheet.Cell(row, 4).Value = item.Position;
             sheet.Cell(row, 5).Value = item.Filial;
