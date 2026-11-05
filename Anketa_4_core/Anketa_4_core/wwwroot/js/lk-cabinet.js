@@ -194,6 +194,7 @@
                 const td = dom("td");
                 td.colSpan = fields.length;
                 const panel = dom("details");
+                panel.open = true; // nested vice-boss task tables are visible on the main page
                 const summary = dom("summary", "small fw-semibold", f.label + " — запись " + (ix + 1));
                 panel.appendChild(summary);
                 drawTable(panel, item && item[f.key], f.fields);
