@@ -377,6 +377,19 @@ namespace Anketa_4_core.Controllers
             if (!await IsCompleted(access.ID))
                 return RedirectToAction(nameof(Question), new { accessId = access.ID });
 
+            var resultJson = await _db.TestResults
+                .Where(x => x.Access.ID == access.ID)
+                .Select(x => x.Results).FirstOrDefaultAsync();
+            var report = string.IsNullOrWhiteSpace(resultJson)
+                ? null : JsonSerializer.Deserialize<JSON_ResultModel>(resultJson);
+
+            // Не показываем сообщение о полном завершении, если по старым
+            // данным есть все ответы, но итоговые категории ещё не рассчитаны.
+            if (report?.KettelTest == null ||
+                (!report.KettelTest.IsCompleted &&
+                 (report.KettelTest.Results == null || report.KettelTest.Results.Count == 0)))
+                return TestError("Ответы сохранены, но итоговый расчёт Кеттела отсутствует. Обратитесь к администратору.");
+
             return View();
         }
 
