@@ -333,7 +333,17 @@ namespace Anketa_4_core.Controllers
                 var marks = await _db.KT_Marks
                     .Include(x => x.Category).ToArrayAsync();
 
-                aggregate.KettelTest = new JSON_Kettel(main, allAnswers, categories, keys, marks);
+                try
+                {
+                    aggregate.KettelTest = new JSON_Kettel(main, allAnswers, categories, keys, marks);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // При ошибке таблицы нормирования последний ответ откатится
+                    // вместе с обновлением JSON. Пользователь сможет повторить
+                    // отправку после исправления справочников.
+                    return TestError("Не удалось рассчитать результаты Кеттела: " + ex.Message);
+                }
             }
             else
             {
