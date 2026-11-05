@@ -1,48 +1,283 @@
 @model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_MotivationModel
 @{
-    ViewData["Title"] = "Мотивационный тест";
+    ViewData["Title"] = "Мотивационный опросник";
+    var recommenders = new[]
+    {
+        "Генеральный директор",
+        "Главный инженер - первый заместитель главного директора",
+        "Заместитель генерального директора по направлению деятельности",
+        "Начальник отдела/службы администрации Общества",
+        "Руководство филиала (начальник, главный инженер, зам. начальника филиала)",
+        "Начальник службы филиала",
+        "Самовыдвижение"
+    };
+    var regions = new[]
+    {
+        "Надымский регион",
+        "Белоярский регион",
+        "Свердловский регион",
+        "Филиалы г. Югорска",
+        "Не имеет значения"
+    };
 }
-<div class="container mt-5">
-    <h2>Мотивационный тест</h2>
-    <form asp-action="MotivationTest" method="post">
+<style>
+    .motivation-choice {
+        display: inline-block;
+        margin: 0 .4rem .45rem 0;
+    }
+
+    .motivation-choice .btn {
+        white-space: normal;
+        text-align: left;
+    }
+
+    .motivation-question .card-header {
+        font-weight: 600;
+    }
+</style>
+
+<div class="container mt-4 mb-5">
+    <h2 class="text-center mb-4">Мотивационный опросник</h2>
+
+    <form asp-controller="Motivation" asp-action="MotivationTest" method="post" id="motivationForm">
         @Html.AntiForgeryToken()
         <input asp-for="AccessTestID" type="hidden" />
-        <div asp-validation-summary="All" class="text-danger"></div>
-        <fieldset class="mb-3">
-            <legend class="fs-5">Хотите ли вы вступить в кадровый резерв?</legend>
-            <label><input type="radio" asp-for="IsAgree" value="true" id="agreeYes" /> Да</label>
-            <label class="ms-3"><input type="radio" asp-for="IsAgree" value="false" id="agreeNo" checked /> Нет</label>
-        </fieldset>
-        <div class="mb-3" id="reasonBlock">
-            <label asp-for="Question_YES_NO" class="form-label">Если нет, укажите причину</label>
-            <textarea asp-for="Question_YES_NO" class="form-control" id="reasonText"></textarea>
-            <span asp-validation-for="Question_YES_NO" class="text-danger"></span>
-        </div>
-        <div class="mb-3"><label asp-for="RecomendPosition">Рекомендуемая должность</label><input asp-for="RecomendPosition" class="form-control" /></div>
-        <div class="mb-3"><label asp-for="Recomendator">Рекомендатель</label><input asp-for="Recomendator" class="form-control" /></div>
-        @for (int i = 1; i <= 9; i++)
-        {
-            var field = $"Question_{i:D2}";
-            <div class="mb-3">
-                <label class="form-label" for="@field">Вопрос @i</label>
-                <input class="form-control" type="text" name="@field" id="@field" required />
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+        <section class="card bg-light mb-3 motivation-question">
+            <h5 class="card-header">Рекомендуемая должность резерва</h5>
+            <div class="card-body">
+                <input asp-for="RecomendPosition" type="text" class="form-control" required />
+                <span asp-validation-for="RecomendPosition" class="text-danger"></span>
             </div>
-        }
-        <button class="btn btn-success" type="submit">Сохранить ответы</button>
+        </section>
+
+        <section class="card bg-light mb-3 motivation-question">
+            <h5 class="card-header">По чьей рекомендации Вы были зачислены в состав кандидатов в резерв кадров?</h5>
+            <div class="card-body">
+                @for (int i = 0; i < recommenders.Length; i++)
+                {
+                    var id = $"recommender_{i}";
+                    <span class="motivation-choice">
+                        <input asp-for="Recomendator" type="radio" class="btn-check"
+                               id="@id" value="@recommenders[i]" required autocomplete="off" />
+                        <label for="@id" class="btn btn-outline-primary">@recommenders[i]</label>
+                    </span>
+                }
+                <span asp-validation-for="Recomendator" class="text-danger d-block"></span>
+            </div>
+        </section>
+
+        <section class="card bg-light mb-3 motivation-question">
+            <h5 class="card-header">Хотите ли Вы быть включённым в состав резерва кадров Общества?</h5>
+            <div class="card-body">
+                <span class="motivation-choice">
+                    <input asp-for="IsAgree" type="radio" class="btn-check" id="agreeYes" value="true" required autocomplete="off" />
+                    <label for="agreeYes" class="btn btn-outline-primary">Да</label>
+                </span>
+                <span class="motivation-choice">
+                    <input asp-for="IsAgree" type="radio" class="btn-check" id="agreeNo" value="false" required autocomplete="off" />
+                    <label for="agreeNo" class="btn btn-outline-primary">Нет</label>
+                </span>
+                <span asp-validation-for="IsAgree" class="text-danger d-block"></span>
+            </div>
+        </section>
+
+        <div id="motivationRefusal" hidden>
+            <section class="card bg-light mb-3 motivation-question">
+                <h5 class="card-header">
+                    Если «Нет», укажите, пожалуйста, причины, по которым Вы не готовы
+                    принимать участие в отборе и быть включённым в состав резерва кадров
+                </h5>
+                <div class="card-body">
+                    <textarea asp-for="Question_YES_NO" class="form-control" rows="5"
+                              id="refusalReason"></textarea>
+                    <span asp-validation-for="Question_YES_NO" class="text-danger"></span>
+                </div>
+                <div class="card-footer">
+                    Если Вы ответили «Нет» и указали причину отказа,
+                    на последующие вопросы анкеты можно не отвечать.
+                </div>
+            </section>
+        </div>
+
+        <div id="motivationAgreement" hidden>
+            <section class="card bg-light mb-3 motivation-question">
+                <h5 class="card-header">1. Готовы ли Вы принимать участие в Комплексной программе подготовки резерва кадров Общества?</h5>
+                <div class="card-body">
+                    <span class="motivation-choice">
+                        <input asp-for="Question_01" type="radio" class="btn-check" id="q01yes"
+                               value="Да" data-required-yes autocomplete="off" />
+                        <label for="q01yes" class="btn btn-outline-primary">Да</label>
+                    </span>
+                    <span class="motivation-choice">
+                        <input asp-for="Question_01" type="radio" class="btn-check" id="q01no"
+                               value="Нет" data-required-yes autocomplete="off" />
+                        <label for="q01no" class="btn btn-outline-primary">Нет</label>
+                    </span>
+                </div>
+            </section>
+
+            <section class="card bg-light mb-3 motivation-question">
+                <h5 class="card-header">2. Какой смысл Вы вкладываете в понятие «карьерный рост»?</h5>
+                <div class="card-body">
+                    <textarea asp-for="Question_02" class="form-control" rows="5" data-required-yes></textarea>
+                </div>
+            </section>
+
+            <section class="card bg-light mb-3 motivation-question">
+                <h5 class="card-header">3. Что даст лично Вам нахождение в составе резерва кадров?</h5>
+                <div class="card-body">
+                    <textarea asp-for="Question_03" class="form-control" rows="5" data-required-yes></textarea>
+                </div>
+            </section>
+
+            <section class="card bg-light mb-3 motivation-question">
+                <h5 class="card-header">4. Готовы ли Вы тратить своё личное время на обучение (в том числе самообразование)?</h5>
+                <div class="card-body">
+                    <span class="motivation-choice">
+                        <input asp-for="Question_04" type="radio" class="btn-check" id="q04yes"
+                               value="Да" data-required-yes autocomplete="off" />
+                        <label for="q04yes" class="btn btn-outline-primary">Да</label>
+                    </span>
+                    <span class="motivation-choice">
+                        <input asp-for="Question_04" type="radio" class="btn-check" id="q04no"
+                               value="Нет" data-required-yes autocomplete="off" />
+                        <label for="q04no" class="btn btn-outline-primary">Нет</label>
+                    </span>
+                </div>
+            </section>
+
+            <section class="card bg-light mb-3 motivation-question">
+                <h5 class="card-header">5. Готовы ли Вы, если это понадобится для карьерного продвижения, обучаться за свои деньги?</h5>
+                <div class="card-body">
+                    <span class="motivation-choice">
+                        <input asp-for="Question_05" type="radio" class="btn-check" id="q05yes"
+                               value="Да" data-required-yes autocomplete="off" />
+                        <label for="q05yes" class="btn btn-outline-primary">Да</label>
+                    </span>
+                    <span class="motivation-choice">
+                        <input asp-for="Question_05" type="radio" class="btn-check" id="q05no"
+                               value="Нет" data-required-yes autocomplete="off" />
+                        <label for="q05no" class="btn btn-outline-primary">Нет</label>
+                    </span>
+                </div>
+            </section>
+
+            <section class="card bg-light mb-3 motivation-question">
+                <h5 class="card-header">6. Каким Вы видите через 3 года свой дальнейший рост?</h5>
+                <div class="card-body">
+                    <label asp-for="Question_06_1" class="form-label fw-semibold">Профессиональный рост</label>
+                    <textarea asp-for="Question_06_1" class="form-control mb-3" rows="5" data-required-yes></textarea>
+                    <label asp-for="Question_06_2" class="form-label fw-semibold">Карьерный рост</label>
+                    <textarea asp-for="Question_06_2" class="form-control" rows="5" data-required-yes></textarea>
+                </div>
+            </section>
+
+            <section class="card bg-light mb-3 motivation-question">
+                <h5 class="card-header">7. Готовы ли Вы к перемещению в другие филиалы Общества, если этого потребует новое назначение?</h5>
+                <div class="card-body">
+                    <span class="motivation-choice">
+                        <input asp-for="Question_07" type="radio" class="btn-check" id="q07yes"
+                               value="Да" data-required-yes autocomplete="off" />
+                        <label for="q07yes" class="btn btn-outline-primary">Да</label>
+                    </span>
+                    <span class="motivation-choice">
+                        <input asp-for="Question_07" type="radio" class="btn-check" id="q07no"
+                               value="Нет" data-required-yes autocomplete="off" />
+                        <label for="q07no" class="btn btn-outline-primary">Нет</label>
+                    </span>
+                </div>
+            </section>
+
+            <section class="card bg-light mb-3 motivation-question">
+                <h5 class="card-header">
+                    8. В филиалы какого региона присутствия Общества Вы готовы переехать,
+                    если этого потребует назначение?
+                </h5>
+                <div class="card-body">
+                    <p class="text-muted">Можно выбрать несколько вариантов.</p>
+                    @for (int i = 0; i < regions.Length; i++)
+                    {
+                        var id = $"region_{i}";
+                        <span class="motivation-choice">
+                            <input type="checkbox" class="btn-check" name="Question_08"
+                                   id="@id" value="@regions[i]" autocomplete="off"
+                                   checked="@(Model.Question_08?.Contains(regions[i]) == true)" />
+                            <label for="@id" class="btn btn-outline-primary">@regions[i]</label>
+                        </span>
+                    }
+                    <span asp-validation-for="Question_08" class="text-danger d-block"></span>
+                </div>
+            </section>
+
+            <section class="card bg-light mb-3 motivation-question">
+                <h5 class="card-header">
+                    9. Можно ли считать данные Вами ответы Вашей официальной позицией
+                    и опираться на них при формировании резерва кадров
+                    ООО «Газпром трансгаз Югорск»?
+                </h5>
+                <div class="card-body">
+                    <span class="motivation-choice">
+                        <input asp-for="Question_09" type="radio" class="btn-check" id="q09yes"
+                               value="Да" data-required-yes autocomplete="off" />
+                        <label for="q09yes" class="btn btn-outline-primary">Да</label>
+                    </span>
+                    <span class="motivation-choice">
+                        <input asp-for="Question_09" type="radio" class="btn-check" id="q09no"
+                               value="Нет" data-required-yes autocomplete="off" />
+                        <label for="q09no" class="btn btn-outline-primary">Нет</label>
+                    </span>
+                </div>
+            </section>
+        </div>
+
+        <p class="mt-4 fs-5">Если Вы завершили опрос, нажмите кнопку «Отправить».</p>
+        <button class="btn btn-success btn-lg" type="submit">Отправить</button>
     </form>
 </div>
+
 <script>
-(function () {
+document.addEventListener('DOMContentLoaded', function () {
     const yes = document.getElementById('agreeYes');
-    const block = document.getElementById('reasonBlock');
-    const reason = document.getElementById('reasonText');
-    function toggle() {
-        block.hidden = yes.checked;
-        reason.required = !yes.checked;
-        if (yes.checked) reason.value = 'Да';
-        else if (reason.value === 'Да') reason.value = '';
+    const no = document.getElementById('agreeNo');
+    const agreement = document.getElementById('motivationAgreement');
+    const refusal = document.getElementById('motivationRefusal');
+    const reason = document.getElementById('refusalReason');
+    const requiredOnYes = agreement.querySelectorAll('[data-required-yes]');
+    const regions = agreement.querySelectorAll('input[name="Question_08"]');
+
+    function updateForm() {
+        const agreed = yes.checked;
+        const declined = no.checked;
+        agreement.hidden = !agreed;
+        refusal.hidden = !declined;
+        reason.required = declined;
+        requiredOnYes.forEach(function (control) {
+            control.required = agreed;
+        });
+        validateRegions();
     }
-    document.querySelectorAll('input[name="IsAgree"]').forEach(x => x.addEventListener('change', toggle));
-    toggle();
-})();
+
+    function validateRegions() {
+        const hasRegion = Array.from(regions).some(function (input) { return input.checked; });
+        if (regions.length) {
+            regions[0].setCustomValidity(yes.checked && !hasRegion
+                ? 'Выберите хотя бы один регион.'
+                : '');
+        }
+    }
+
+    yes.addEventListener('change', updateForm);
+    no.addEventListener('change', updateForm);
+    regions.forEach(function (input) {
+        input.addEventListener('change', validateRegions);
+    });
+
+    updateForm();
+});
 </script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
