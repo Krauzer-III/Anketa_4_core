@@ -1,0 +1,159 @@
+@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_ResultSearchPage
+@functions {
+    string StatusName(string value) => value switch {
+        "done" => "Пройден",
+        "progress" => "В процессе",
+        _ => "Не начат"
+    };
+    string StatusClass(string value) => value switch {
+        "done" => "btn-outline-success",
+        "progress" => "btn-outline-warning",
+        _ => "btn-outline-secondary"
+    };
+}
+<div class="mb-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <h5 class="mb-0">Найдено записей: @Model.Total</h5>
+    <span class="text-muted small">
+        Страница @Model.Page из @Math.Max(Model.Pages, 1); по @Model.PageSize записей
+    </span>
+</div>
+@if (Model.Items.Count == 0)
+{
+    <div class="alert alert-secondary">По заданным условиям результатов не найдено.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Выбрать</th>
+                    <th scope="col">Код</th>
+                    <th scope="col">Период оценки</th>
+                    <th scope="col">Филиал / резерв</th>
+                    <th scope="col">Самооценка 360°</th>
+                    <th scope="col">Респонденты 360°</th>
+                    <th scope="col">Мотивация</th>
+                    <th scope="col">Кеттел</th>
+                    <th scope="col">Компетенции (1 год)</th>
+                    <th scope="col">Компетенции (2 год)</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var row in Model.Items)
+            {
+                <tr>
+                    <td>
+                        <input class="form-check-input result-select" type="checkbox"
+                               value="@row.AccessID" aria-label="Выбрать @row.Code" />
+                    </td>
+                    <td>
+                        <strong>@row.Code</strong>
+                        <div class="small text-muted">Доступ №@row.AccessID</div>
+                        @if (User.IsInRole("admin") || User.IsInRole("moderator"))
+                        {
+                            <a asp-controller="Testable" asp-action="Details"
+                               asp-route-id="@row.TestableID" class="small">
+                                Карточка
+                            </a>
+                        }
+                    </td>
+                    <td>
+                        @row.Period
+                        @if (!row.IsActive)
+                        {
+                            <span class="badge text-bg-secondary">Закрыт</span>
+                        }
+                    </td>
+                    <td><small>@row.Filial<br />@row.ReservLevel</small></td>
+                    @if (row.InvalidJson)
+                    {
+                        <td colspan="6">
+                            <div class="alert alert-warning my-1">
+                                Отчётный JSON отсутствует или повреждён, либо для периода
+                                найдено несколько записей TestResult. Проверьте данные.
+                            </div>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            <button type="button"
+                                    class="btn btn-sm @(row.HasSelf360 ? "btn-outline-success" : "btn-outline-secondary")"
+                                    data-result-url="@Url.Action("GetTests360", "Result", new { accessId = row.AccessID })"
+                                    data-result-title="360° — @row.Code">
+                                @(row.HasSelf360 ? "Пройдена" : "Нет")
+                            </button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                    data-result-url="@Url.Action("GetTests360", "Result", new { accessId = row.AccessID })"
+                                    data-result-title="360° — @row.Code">
+                                @row.Respondents360
+                            </button>
+                        </td>
+                        <td>
+                            <button type="button"
+                                    class="btn btn-sm @StatusClass(row.MotivationStatus)"
+                                    data-result-url="@Url.Action("GetMotivationTest", "Result", new { accessId = row.AccessID })"
+                                    data-result-title="Мотивация — @row.Code">
+                                @if (row.MotivationStatus == "done" && row.MotivationAgree == false)
+                                {
+                                    @:Отказался
+                                }
+                                else
+                                {
+                                    @StatusName(row.MotivationStatus)
+                                }
+                            </button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm @StatusClass(row.KettelStatus)"
+                                    data-result-url="@Url.Action("GetKettelTest", "Result", new { accessId = row.AccessID })"
+                                    data-result-title="Кеттел — @row.Code">
+                                @StatusName(row.KettelStatus)
+                            </button>
+                            @if (row.KettelStatus == "progress")
+                            {
+                                <div class="small">@row.KettelAnswered ответов</div>
+                            }
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm @StatusClass(row.Competence1Status)"
+                                    data-result-url="@Url.Action("GetCompetentionTest", "Result", new { accessId = row.AccessID, year = 1 })"
+                                    data-result-title="Компетенции (1 год) — @row.Code">
+                                @StatusName(row.Competence1Status)
+                            </button>
+                            @if (row.Competence1Status == "progress")
+                            {
+                                <div class="small">@row.Competence1Answered ситуаций</div>
+                            }
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm @StatusClass(row.Competence2Status)"
+                                    data-result-url="@Url.Action("GetCompetentionTest", "Result", new { accessId = row.AccessID, year = 2 })"
+                                    data-result-title="Компетенции (2 год) — @row.Code">
+                                @StatusName(row.Competence2Status)
+                            </button>
+                            @if (row.Competence2Status == "progress")
+                            {
+                                <div class="small">@row.Competence2Answered ситуаций</div>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+@if (Model.Pages > 1)
+{
+    <nav aria-label="Страницы результатов" class="d-flex flex-wrap gap-2 align-items-center justify-content-center my-3">
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                data-result-page="@(Model.Page - 1)" disabled="@(Model.Page <= 1)">Назад</button>
+        <span>@Model.Page / @Model.Pages</span>
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                data-result-page="@(Model.Page + 1)" disabled="@(Model.Page >= Model.Pages)">Вперёд</button>
+    </nav>
+}
