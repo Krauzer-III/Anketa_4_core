@@ -69,3 +69,228 @@
     </div>
 </div>
 
+<section class="mt-4">
+    <h3>Тестирование и результаты</h3>
+    <p class="text-muted">
+        Результаты сгруппированы по периодам. Даты указаны по времени записей в базе данных;
+        для Кеттела и компетенций отображается время первого и последнего сохранённого ответа.
+    </p>
+
+    @if (TempData["ResultsSuccess"] is string success)
+    {
+        <div class="alert alert-success" role="alert">@success</div>
+    }
+    @if (TempData["ResultsError"] is string error)
+    {
+        <div class="alert alert-danger" role="alert">@error</div>
+    }
+
+    @if (!Model.TestResults.Any())
+    {
+        <div class="alert alert-secondary">У тестируемого пока нет назначенных периодов оценки.</div>
+    }
+    else
+    {
+        @foreach (var period in Model.TestResults)
+        {
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div>
+                        <h4 class="h5 mb-1">@period.PeriodName</h4>
+                        <span class="text-muted small">Доступ №@period.AccessID</span>
+                    </div>
+                    @if (period.IsActive)
+                    {
+                        <span class="badge bg-success">Период активен</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Период закрыт</span>
+                    }
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrWhiteSpace(period.JsonError))
+                    {
+                        <div class="alert alert-warning">@period.JsonError</div>
+                    }
+
+                    @foreach (var test in period.Tests)
+                    {
+                        <div class="border rounded mb-3 p-3">
+                            <div class="d-flex flex-wrap align-items-start justify-content-between gap-2">
+                                <div>
+                                    <h5 class="mb-1">@test.Name</h5>
+                                    <p class="mb-1">
+                                        <strong>Статус:</strong> @test.Status
+                                        @if (test.TotalCount > 0)
+                                        {
+                                            <span class="text-muted">
+                                                — @test.AnsweredCount из @test.TotalCount вопросов
+                                            </span>
+                                        }
+                                    </p>
+                                    @if (test.FirstAnswerAt.HasValue)
+                                    {
+                                        <div class="small text-muted">
+                                            Первый ответ: @test.FirstAnswerAt.Value.ToString("dd.MM.yyyy HH:mm:ss")
+                                        </div>
+                                    }
+                                    @if (test.LastAnswerAt.HasValue)
+                                    {
+                                        <div class="small text-muted">
+                                            Последний ответ: @test.LastAnswerAt.Value.ToString("dd.MM.yyyy HH:mm:ss")
+                                        </div>
+                                    }
+                                    @if (!test.FirstAnswerAt.HasValue && !test.LastAnswerAt.HasValue)
+                                    {
+                                        <div class="small text-muted">Дата и время прохождения: —</div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(test.Note))
+                                    {
+                                        <div class="small text-muted mt-1">@test.Note</div>
+                                    }
+                                </div>
+
+                                <form asp-controller="Testable" asp-action="DeleteTestResults" method="post"
+                                      class="delete-test-results"
+                                      data-confirm="Удалить все результаты теста «@test.Name» за период «@period.PeriodName»? Это действие нельзя отменить.">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.ID" />
+                                    <input type="hidden" name="accessId" value="@period.AccessID" />
+                                    <input type="hidden" name="kind" value="@test.Kind" />
+                                    @if (test.Year.HasValue)
+                                    {
+                                        <input type="hidden" name="year" value="@test.Year.Value" />
+                                    }
+                                    <button class="btn btn-outline-danger btn-sm" type="submit"
+                                            disabled="@(!test.HasData)">
+                                        Удалить результаты
+                                    </button>
+                                </form>
+                            </div>
+
+                            @if (test.Scores.Count > 0)
+                            {
+                                <details class="mt-3">
+                                    <summary class="fw-semibold" style="cursor: pointer">Рассчитанные результаты</summary>
+                                    @foreach (var group in test.Scores.GroupBy(x => x.Group))
+                                    {
+                                        @if (!string.IsNullOrWhiteSpace(group.Key))
+                                        {
+                                            <h6 class="mt-3">@group.Key</h6>
+                                        }
+                                        <div class="table-responsive mt-2">
+                                            <table class="table table-sm table-striped mb-2">
+                                                <thead><tr><th>Показатель</th><th>Результат</th></tr></thead>
+                                                <tbody>
+                                                    @foreach (var score in group)
+                                                    {
+                                                        <tr><td>@score.Label</td><td>@score.Value</td></tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    }
+                                </details>
+                            }
+                            else if (test.HasData)
+                            {
+                                <div class="small text-muted mt-2">Готовые рассчитанные показатели пока отсутствуют.</div>
+                            }
+
+                            @if (test.Answers.Count > 0)
+                            {
+                                <details class="mt-3">
+                                    <summary class="fw-semibold" style="cursor: pointer">
+                                        Первичные ответы (@test.Answers.Count)
+                                    </summary>
+                                    <div class="table-responsive mt-2">
+                                        <table class="table table-sm table-bordered">
+                                            <thead><tr><th>Вопрос</th><th>Ответ</th></tr></thead>
+                                            <tbody>
+                                                @foreach (var answer in test.Answers)
+                                                {
+                                                    <tr>
+                                                        <td style="max-width: 400px">@answer.Question</td>
+                                                        <td style="white-space: pre-line">@answer.Answer</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </details>
+                            }
+
+                            @if (test.Kind == "Test360" && test.Submissions.Count > 0)
+                            {
+                                <h6 class="mt-4">Отдельные анкеты 360°</h6>
+                                @foreach (var questionnaire in test.Submissions)
+                                {
+                                    <div class="border-start border-3 ps-3 mb-3">
+                                        <div class="d-flex flex-wrap justify-content-between gap-2">
+                                            <div>
+                                                <strong>
+                                                    @(questionnaire.IsSelfMark ? "Самооценка" : "Респондент"):
+                                                    @questionnaire.RoleName
+                                                </strong>
+                                                <div class="small text-muted">
+                                                    Анкета №@questionnaire.ID —
+                                                    @questionnaire.DateTimeTest.ToString("dd.MM.yyyy HH:mm:ss")
+                                                </div>
+                                            </div>
+                                            <form asp-controller="Testable" asp-action="DeleteTestResults" method="post"
+                                                  class="delete-test-results"
+                                                  data-confirm="Удалить только анкету 360° №@questionnaire.ID? Средние оценки респондентов будут пересчитаны.">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@Model.ID" />
+                                                <input type="hidden" name="accessId" value="@period.AccessID" />
+                                                <input type="hidden" name="kind" value="Test360" />
+                                                <input type="hidden" name="questionnaireId" value="@questionnaire.ID" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    Удалить эту анкету
+                                                </button>
+                                            </form>
+                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(questionnaire.ParsingError))
+                                        {
+                                            <div class="text-danger">@questionnaire.ParsingError</div>
+                                        }
+                                        @if (questionnaire.Answers.Count > 0)
+                                        {
+                                            <details class="mt-2">
+                                                <summary style="cursor: pointer">Посмотреть 15 оценок</summary>
+                                                <div class="table-responsive mt-2">
+                                                    <table class="table table-sm table-striped">
+                                                        <thead><tr><th>Вопрос</th><th>Оценка</th></tr></thead>
+                                                        <tbody>
+                                                            @foreach (var mark in questionnaire.Answers)
+                                                            {
+                                                                <tr><td>@mark.Label</td><td>@mark.Value</td></tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </details>
+                                        }
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("form.delete-test-results").forEach(function (form) {
+        form.addEventListener("submit", function (event) {
+            if (!window.confirm(form.dataset.confirm || "Удалить результаты теста?")) {
+                event.preventDefault();
+            }
+        });
+    });
+});
+</script>
