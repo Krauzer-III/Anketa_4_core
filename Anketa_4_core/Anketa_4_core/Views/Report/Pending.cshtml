@@ -1,16 +1,38 @@
 @{
     ViewData["Title"] = "Получить отчёт";
+    bool isBatch = ViewBag.BatchCount != null;
 }
 <div class="container mt-5">
     <h2>Получить отчёт</h2>
     <div class="alert alert-info">
-        <strong>Подготовка отчёта пока не подключена.</strong>
-        <p class="mb-0">Заготовка для тестируемого с кодом @ViewBag.TestableCode.
-           @if (ViewBag.AccessID != null)
-           {
-               <span>Период: @ViewBag.PeriodName (доступ №@ViewBag.AccessID).</span>
-           }
-           TODO: загрузить шаблон и вызвать общий ReportGenerator.</p>
+        <strong>Генерация документа пока не подключена.</strong>
+        @if (isBatch)
+        {
+            <p class="mt-2 mb-1">Выбрано назначений периода: <strong>@ViewBag.BatchCount</strong>.</p>
+            <p class="mb-1">Для будущего отчёта будут загружены готовые данные из TestResult.Results:</p>
+            <ul class="mb-0">
+                @foreach (string line in (string[])ViewBag.BatchList)
+                {
+                    <li>@line</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="mt-2 mb-0">
+                Оцениваемый: <strong>@ViewBag.TestableCode</strong>.
+                @if (ViewBag.AccessID != null)
+                {
+                    <span>Период: @ViewBag.PeriodName (доступ №@ViewBag.AccessID).</span>
+                }
+            </p>
+        }
     </div>
-    <a href="javascript:history.back()" class="btn btn-outline-primary">Назад</a>
+    <p class="text-muted">
+        TODO: подключить шаблон документа и генератор, использующий уже рассчитанный JSON.
+        Повторный расчёт первичных ответов при формировании отчёта не требуется.
+    </p>
+    <button type="button" class="btn btn-outline-primary" onclick="history.back()">
+        Назад
+    </button>
 </div>
