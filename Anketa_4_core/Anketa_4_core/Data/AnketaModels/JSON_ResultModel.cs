@@ -164,62 +164,63 @@ namespace Anketa_4_core.Data.AnketaModels
         public string GetJSON() => JsonSerializer.Serialize(this);
 
         /// <summary>
-        /// Добавить результат тестирования компетенций
+        /// После ответа на ситуацию сохраняем четыре ранжированных варианта
+        /// в общем JSON, не пересчитывая итоговые баллы до завершения года.
+        /// QuestionID важен: QuestionNumber может повторяться в 1 и 2 году.
         /// </summary>
-        /// <param name="ta">Ответы, которые давал тестируемый</param>
-        public void Add_JSON_Competention(Comp_TestableAnswer[] ta)
+        public void SaveCompetentionQuestion(
+            int year, Comp_Question question, IReadOnlyCollection<Comp_TestableAnswer> answers)
         {
-            CompetentionAnswers = new List<JSON_Competention_Answers>();
-            CompetentionResult = new List<JSON_Competention_Result>();
+            if (answers.Count != 4 || answers.Select(x => x.Answer.ID).Distinct().Count() != 4)
+                throw new ArgumentException("Для каждой ситуации требуются четыре разных ответа.");
 
-            foreach (var a in ta.Select(x => x.Answer.Question).OrderBy(q => q.QuestionNumber))
+            CompetentionAnswers ??= new List<JSON_Competention_Answers>();
+            CompetentionAnswers.RemoveAll(x => x.Year == year && x.QuestionID == question.ID);
+            CompetentionAnswers.Add(new JSON_Competention_Answers
             {
-                CompetentionAnswers.Add(new JSON_Competention_Answers
-                {
-                    QuestionNumber = a.QuestionNumber,
-                    QuestionText = a.QuestionText,
-                    Answers = ta.Where(x => x.Answer.Question.QuestionNumber == a.QuestionNumber)
-                    .OrderBy(x => x.Answer.Number)
+                Year = year,
+                QuestionID = question.ID,
+                QuestionNumber = question.QuestionNumber,
+                QuestionText = question.QuestionText,
+                Answers = answers.OrderBy(x => x.Answer.Number)
                     .Select(x => new JSON_Competention_AnswerResult
                     {
+                        AnswerID = x.Answer.ID,
                         AnswerNumber = x.Answer.Number,
                         AnswerText = x.Answer.Text,
                         AnswerMark = x.Mark
                     }).ToArray()
-                });
-            }
-            using (var context = new AnketaContext())
-            {
-                var blocks = context.Comp_Blocks.Where(b => b.Year == ta[0].Answer.Question.Block.Year);
-                var list_correctAnswers_all = context.Comp_Answers.Include(x => x.Question.Block);
-                foreach (var block in blocks)
-                {
-                    Task.Factory.StartNew(() =>
-                    {
-                        int summ = 0;
+            });
+            CompetentionAnswers = CompetentionAnswers.OrderBy(x => x.Year)
+                .ThenBy(x => x.QuestionNumber).ThenBy(x => x.QuestionID).ToList();
+        }
 
-                        lock (ta)
-                        {
-                            lock (list_correctAnswers_all)
-                            {
-                                var list_correctAnswers = list_correctAnswers_all.Where(x => x.Question.Block.ID == block.ID);
-                                foreach (var ans in ta.Where(x => x.Answer.Question.Block.ID == block.ID))
-                                    if (ans.Mark == list_correctAnswers.First(x => x.ID == ans.Answer.ID).Correct_Answer)
-                                        summ++;
-                            }
-                        }
-                        lock (CompetentionResult)
-                        {
-                            CompetentionResult.Add(new JSON_Competention_Result
-                            {
-                                Block = block.BlockName,
-                                BlockWordInReport = block.WordInReport,
-                                Ball = summ
-                            });
-                        }
-                    });
-                    Task.WaitAll();
-                }
+        /// <summary>
+        /// Итог только по одному году. Балл за вариант начисляется,
+        /// когда выбранный ранг совпал с Comp_Answer.Correct_Answer.
+        /// Результаты другого года остаются без изменений.
+        /// </summary>
+        public void CalculateCompetentionYear(
+            int year, IReadOnlyCollection<Comp_Block> blocks,
+            IReadOnlyCollection<Comp_TestableAnswer> allAnswers)
+        {
+            CompetentionResult ??= new List<JSON_Competention_Result>();
+            CompetentionResult.RemoveAll(x => x.Year == year);
+
+            foreach (var block in blocks.Where(x => x.Year == year).OrderBy(x => x.ID))
+            {
+                var answers = allAnswers.Where(x => x.Answer.Question.Block.ID == block.ID)
+                    .ToArray();
+
+                CompetentionResult.Add(new JSON_Competention_Result
+                {
+                    Year = year,
+                    BlockID = block.ID,
+                    Block = block.BlockName,
+                    BlockWordInReport = block.WordInReport,
+                    Ball = answers.Count(x => x.Mark == x.Answer.Correct_Answer),
+                    MaxBall = answers.Length
+                });
             }
         }
 
@@ -505,24 +506,30 @@ namespace Anketa_4_core.Data.AnketaModels
 
         public class JSON_Competention_Answers
         {
+            public int Year { get; set; }
+            public int QuestionID { get; set; }
             public int QuestionNumber { get; set; }
-            public string QuestionText { get; set; }
-            public JSON_Competention_AnswerResult[] Answers { get; set; }
+            public string QuestionText { get; set; } = "";
+            public JSON_Competention_AnswerResult[] Answers { get; set; } =
+                Array.Empty<JSON_Competention_AnswerResult>();
         }
 
         public class JSON_Competention_AnswerResult
         {
-            public string AnswerNumber { get; set; }
-            public string AnswerText { get; set; }
+            public int AnswerID { get; set; }
+            public string AnswerNumber { get; set; } = "";
+            public string AnswerText { get; set; } = "";
             public int AnswerMark { get; set; }
         }
 
-
         public class JSON_Competention_Result
         {
-            public string Block { get; set; }
-            public string BlockWordInReport { get; set; }
+            public int Year { get; set; }
+            public int BlockID { get; set; }
+            public string Block { get; set; } = "";
+            public string BlockWordInReport { get; set; } = "";
             public int Ball { get; set; }
+            public int MaxBall { get; set; }
         }
 
 
