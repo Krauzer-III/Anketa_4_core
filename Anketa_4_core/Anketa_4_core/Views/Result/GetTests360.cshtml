@@ -1,0 +1,136 @@
+@using Anketa_4_core.Data.AnketaModels
+@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_ResultDetail
+@{
+    var surveys = Model.Data.Tests360 ?? new List<JSON_Test360>();
+    var self = surveys.Where(x => x.IsSelfMark).ToList();
+    var respondents = surveys.Where(x => !x.IsSelfMark).ToList();
+    var selfScore = Model.Data.Test360ForReportTestable;
+    var respScore = Model.Data.Test360ForReportRespondents;
+    var selfValues = selfScore == null ? Array.Empty<double>() : new double[]
+    {
+        selfScore.q01, selfScore.q02, selfScore.q03, selfScore.q04, selfScore.q05,
+        selfScore.q06, selfScore.q07, selfScore.q08, selfScore.q09, selfScore.q10,
+        selfScore.q11, selfScore.q12, selfScore.q13, selfScore.q14, selfScore.q15
+    };
+    var respValues = respScore == null ? Array.Empty<double>() : new double[]
+    {
+        respScore.q01, respScore.q02, respScore.q03, respScore.q04, respScore.q05,
+        respScore.q06, respScore.q07, respScore.q08, respScore.q09, respScore.q10,
+        respScore.q11, respScore.q12, respScore.q13, respScore.q14, respScore.q15
+    };
+}
+<div class="mb-3">
+    <h6>Оцениваемый: <strong>@Model.TestableCode</strong></h6>
+    <p class="text-muted">Период: @Model.PeriodName · доступ №@Model.AccessID</p>
+</div>
+@if (surveys.Count == 0)
+{
+    <div class="alert alert-secondary">Оценка 360° ещё не проводилась.</div>
+}
+else
+{
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="border rounded p-3">
+                <strong>Самооценка</strong>
+                <p class="mb-0">@(self.Count > 0 ? "Пройдена" : "Не пройдена")</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="border rounded p-3">
+                <strong>Оценки респондентов</strong>
+                <p class="mb-0">@respondents.Count</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="border rounded p-3">
+                <strong>Всего анкет</strong>
+                <p class="mb-0">@surveys.Count</p>
+            </div>
+        </div>
+    </div>
+
+    <h6>Оценки по ролям</h6>
+    <table class="table table-sm table-bordered">
+        <thead><tr><th>Роль</th><th>Анкет</th></tr></thead>
+        <tbody>
+        @foreach (var role in respondents.GroupBy(x => x.RespondentRoleName ?? "Роль не указана")
+                    .OrderBy(x => x.Key))
+        {
+            <tr><td>@role.Key</td><td>@role.Count()</td></tr>
+        }
+        </tbody>
+    </table>
+
+    @if (self.Count > 0 || respondents.Count > 0)
+    {
+        <h6 class="mt-4">Средние значения по вопросам</h6>
+        <p class="text-muted small">
+            Средняя оценка респондентов — простое среднее по всем отдельным анкетам;
+            самооценка в него не входит.
+        </p>
+        <div class="table-responsive">
+            <table class="table table-sm table-striped table-bordered">
+                <thead>
+                    <tr><th>Вопрос</th><th>Самооценка</th><th>Респонденты (среднее)</th></tr>
+                </thead>
+                <tbody>
+                @for (int i = 0; i < 15; i++)
+                {
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td>@(self.Count == 0 || selfValues.Length != 15 ? "—" : selfValues[i].ToString("0.##"))</td>
+                        <td>@(respondents.Count == 0 || respValues.Length != 15 ? "—" : respValues[i].ToString("0.##"))</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <h6 class="mt-4">Даты прохождения оценки</h6>
+    <table class="table table-sm table-bordered">
+        <thead><tr><th>ID</th><th>Роль</th><th>Тип</th><th>Дата и время</th></tr></thead>
+        <tbody>
+        @foreach (var test in surveys.OrderBy(x => x.DatetimeTest))
+        {
+            <tr>
+                <td>@test.ID</td>
+                <td>@test.RespondentRoleName</td>
+                <td>@(test.IsSelfMark ? "Самооценка" : "Респондент")</td>
+                <td>@test.DatetimeTest.ToString("dd.MM.yyyy HH:mm:ss")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <details class="mt-3">
+        <summary class="fw-semibold" style="cursor: pointer">Все оценки отдельных анкет</summary>
+        <div class="table-responsive mt-2">
+            <table class="table table-sm table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Роль</th>
+                        @for (int i = 1; i <= 15; i++)
+                        {
+                            <th>@i</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var t in surveys.OrderBy(x => x.ID))
+                {
+                    <tr>
+                        <td>@t.ID</td><td>@t.RespondentRoleName</td>
+                        <td>@t.q01</td><td>@t.q02</td><td>@t.q03</td>
+                        <td>@t.q04</td><td>@t.q05</td><td>@t.q06</td>
+                        <td>@t.q07</td><td>@t.q08</td><td>@t.q09</td>
+                        <td>@t.q10</td><td>@t.q11</td><td>@t.q12</td>
+                        <td>@t.q13</td><td>@t.q14</td><td>@t.q15</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </details>
+}
