@@ -15,6 +15,39 @@ namespace Anketa_4_core.Controllers
         private readonly AnketaContext _db;
         public ReportController(AnketaContext db) => _db = db;
 
+        /// <summary>
+        /// Множественный выбор из модуля результатов Anketa 3.
+        /// Это та же точка действия GetReport, что и в личном кабинете,
+        /// но пока только проверяет набор периодов и показывает заготовку.
+        /// TODO: подключить ReportGenerator к массиву уже рассчитанных JSON.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin,moderator,verificator")]
+        public async Task<IActionResult> GetReport([FromForm] int[] accessIds)
+        {
+            if (accessIds == null) return BadRequest("Не выбраны периоды.");
+            var ids = accessIds.Where(x => x > 0).Distinct().ToArray();
+            if (ids.Length == 0 || ids.Length > 100)
+                return BadRequest("Выберите от 1 до 100 назначений периода.");
+
+            var records = await _db.AccessForTestables.AsNoTracking()
+                .Where(x => ids.Contains(x.ID))
+                .Select(x => new
+                {
+                    x.ID, Code = x.Testable.Code,
+                    Period = x.TestPeriod.GroupName
+                }).OrderBy(x => x.Code).ToListAsync();
+
+            if (records.Count != ids.Length)
+                return BadRequest("Среди выбранных записей есть несуществующие периоды.");
+
+            ViewBag.BatchCount = records.Count;
+            ViewBag.BatchList = records.Select(x =>
+                x.Code + " — " + x.Period + " (доступ №" + x.ID + ")").ToArray();
+            return View("Pending");
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetReport(int? testableId)
         {
