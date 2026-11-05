@@ -1,0 +1,60 @@
+@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_CompetentionLoginModel
+@{
+    ViewData["Title"] = $"Компетенции ({Model.Year} год)";
+}
+<div class="container mt-4 mb-5">
+    <h2>@ViewData["Title"]</h2>
+    <div class="mb-4">
+        <a asp-controller="Competention" asp-action="Index" asp-route-year="1"
+           class="btn @(Model.Year == 1 ? "btn-primary" : "btn-outline-primary")">
+            Компетенции (1 год)
+        </a>
+        <a asp-controller="Competention" asp-action="Index" asp-route-year="2"
+           class="btn @(Model.Year == 2 ? "btn-primary" : "btn-outline-primary")">
+            Компетенции (2 год)
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Инструкция</h5>
+            <p>Уважаемый коллега!</p>
+            <p>
+                Вам будут предложены ситуации, с которыми может столкнуться руководитель
+                в ходе своей работы: анализ информации и принятие управленческих решений,
+                планирование деятельности подразделения и организация работы подчинённых.
+            </p>
+            <p>
+                Внимательно прочитайте каждую ситуацию и проанализируйте четыре варианта действий
+                (А, Б, В, Г). Распределите их по эффективности:
+            </p>
+            <ol>
+                <li><strong>1</strong> — самое эффективное действие;</li>
+                <li><strong>2</strong> — скорее эффективное действие;</li>
+                <li><strong>3</strong> — скорее неэффективное действие;</li>
+                <li><strong>4</strong> — самое неэффективное действие.</li>
+            </ol>
+            <p class="mb-0">
+                <strong>Все четыре приоритета должны быть использованы ровно по одному разу.</strong>
+                После каждой ситуации ответ сохраняется. Если закрыть страницу,
+                прохождение можно продолжить с места остановки.
+            </p>
+        </div>
+    </div>
+
+    <form asp-controller="Competention" asp-action="Index" method="post">
+        @Html.AntiForgeryToken()
+        <input asp-for="Year" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <div class="mb-3">
+            <label asp-for="Code" class="form-label">Код тестируемого</label>
+            <input asp-for="Code" class="form-control" required />
+            <span asp-validation-for="Code" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary">Начать или продолжить тест</button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
