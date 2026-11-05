@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Anketa_4_core.Data;
 using Anketa_4_core.Data.AnketaModels;
 using Anketa_4_core.Models.AnketaModels.MVC_Models;
+using Anketa_4_core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -367,9 +368,34 @@ namespace Anketa_4_core.Controllers
                 UserName = await _db.Set<TestableUser>().Where(u => u.testable.ID == id).Select(u => u.UserName).FirstOrDefaultAsync(),
                 LK_Data = await _db.Set<TestableUser>().Where(u => u.testable.ID == id).Select(u => u.LK_Data).FirstOrDefaultAsync(),
                 BoundTestPeriods = boundPeriods,
-                Reports = new List<string> { "Индивидуальный отчёт (PDF)", "Сводный отчёт (XLSX)" }
+                Reports = new List<string> { "Индивидуальный отчёт (PDF)", "Сводный отчёт (XLSX)" },
+                TestResults = await new TestableResultsService(_db).LoadAsync(id)
             };
             return View(vm);
+        }
+
+        /// <summary>
+        /// Удаление одного теста за конкретный период либо одной анкеты 360°.
+        /// Первичные ответы и общий JSON обновляются в одной транзакции.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin,moderator")]
+        public async Task<IActionResult> DeleteTestResults(
+            int id, int accessId, string kind, int? year = null, int? questionnaireId = null)
+        {
+            try
+            {
+                int count = await new TestableResultsService(_db)
+                    .DeleteAsync(id, accessId, kind, year, questionnaireId);
+                TempData["ResultsSuccess"] = $"Результаты удалены. Первичных записей: {count}.";
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException
+                or System.Text.Json.JsonException or NotSupportedException)
+            {
+                TempData["ResultsError"] = "Удаление отменено: " + ex.Message;
+            }
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         // === Заглушки действий по тестам/ЛК (заполните позже) ===
