@@ -1,14 +1,13 @@
-﻿@{
-    ViewData["Title"] = "Тест Кэттелла – завершён";
-    int accessId = (int)(ViewBag.AccessID ?? 0);
-    int years = (int)(ViewBag.Years ?? 0);
-    string gender = (string)(ViewBag.Gender ?? "");
+@{
+    ViewData["Title"] = "Психологическое тестирование завершено";
 }
-<h2>@ViewData["Title"]</h2>
-
-<p>Спасибо, что прошли тест.</p>
-
-<p>
-    (AccessID: @accessId, возраст: @years, пол: @gender)
-</p>
-
+<div class="container mt-5">
+    <div class="alert alert-success" role="alert">
+        <h2>Психологическое тестирование завершено</h2>
+        <p class="mb-0">
+            Спасибо за участие! Все ответы сохранены,
+            результаты тестирования рассчитаны.
+        </p>
+    </div>
+    <a asp-controller="PersonalCabinet" asp-action="Index" class="btn btn-primary">Вернуться в личный кабинет</a>
+</div>
