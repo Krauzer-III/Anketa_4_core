@@ -1,48 +1,67 @@
-﻿@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_KettelModel_Question
+@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_KettelModel_Question
 @{
-    ViewData["Title"] = "Тест Кэттелла – вопрос " + Model.Number;
-    int total = (int)(ViewBag.TotalQuestions ?? 0);
-    int accessId = (int)(ViewBag.AccessID ?? 0);
-    int years = (int)(ViewBag.Years ?? 0);
-    string gender = (string)(ViewBag.Gender ?? "");
+    ViewData["Title"] = "Психологическое тестирование";
 }
-<h2>@ViewData["Title"]</h2>
+<div class="container mt-4 mb-5">
+    <h2>Психологическое тестирование</h2>
 
-<p class="text-muted">
-    Вопрос @Model.Number из @total
-</p>
-
-<form asp-action="Question" method="post">
-    <input type="hidden" name="number" value="@Model.Number" />
-    <input type="hidden" name="accessId" value="@accessId" />
-    <input type="hidden" name="years" value="@years" />
-    <input type="hidden" name="gender" value="@gender" />
-
-    <div class="mb-3">
-        <p>@Model.Text</p>
+    <p class="text-muted">Вопрос @Model.Position из @Model.TotalQuestions</p>
+    <div class="progress mb-4" role="progressbar" aria-label="Прогресс тестирования"
+         aria-valuenow="@Model.Position" aria-valuemin="0" aria-valuemax="@Model.TotalQuestions">
+        <div class="progress-bar"
+             style="width: @(Model.TotalQuestions == 0 ? 0 : (100.0 * (Model.Position - 1) / Model.TotalQuestions).ToString(System.Globalization.CultureInfo.InvariantCulture))%">
+        </div>
     </div>
 
-    <div class="mb-3">
-        @foreach (var ans in Model.Answers)
-        {
-            <div class="form-check mb-1">
-                <input class="form-check-input"
-                       type="radio"
-                       name="selectedAnswerId"
-                       id="ans_@ans.ID"
-                       value="@ans.ID" />
-                <label class="form-check-label" for="ans_@ans.ID">
-                    <strong>@ans.AnswerNumber)</strong> @ans.AnswerText
-                </label>
-            </div>
-        }
-    </div>
+    <section class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Вопрос @Model.Number</h5>
+            <p class="card-text">@Model.Text</p>
 
-    <button type="submit" class="btn btn-primary">
-        @(Model.Number == total ? "Завершить тест" : "Следующий вопрос")
-    </button>
-</form>
+            <form asp-controller="Kettel" asp-action="Question" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="AccessID" value="@Model.AccessID" />
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+                <fieldset class="mb-4">
+                    <legend class="fs-6">Выберите один вариант ответа</legend>
+                    @foreach (var ans in Model.Answers)
+                    {
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio"
+                                   name="SelectedAnswerID" id="ans_@ans.ID"
+                                   value="@ans.ID" required />
+                            <label class="form-check-label" for="ans_@ans.ID">
+                                <strong>@(ans.AnswerNumber).</strong> @ans.AnswerText
+                            </label>
+                        </div>
+                    }
+                </fieldset>
+
+                <button type="submit" class="btn btn-primary"
+                        id="submitAnswer">
+                    @(Model.Position == Model.TotalQuestions ? "Завершить тестирование" : "Следующий вопрос")
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <p class="text-muted mt-3">
+        Каждый отправленный ответ сохраняется автоматически.
+        Можно закрыть страницу и продолжить тестирование позже.
+    </p>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form[action*="Question"]');
+    const button = document.getElementById('submitAnswer');
+    if (form && button) {
+        form.addEventListener('submit', function () {
+            if (form.checkValidity()) {
+                button.disabled = true;
+                button.textContent = 'Сохранение ответа...';
+            }
+        });
+    }
+});
+</script>
