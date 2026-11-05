@@ -58,7 +58,7 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
         public List<MVC_ResultRow> Items { get; set; } = new();
         public int Total { get; set; }
         public int Page { get; set; }
-        public int PageSize { get; set; } = 50;
+        public int PageSize { get; set; } = 100;
         public int Pages => (int)Math.Ceiling((double)Total / PageSize);
         public string? Error { get; set; }
     }
