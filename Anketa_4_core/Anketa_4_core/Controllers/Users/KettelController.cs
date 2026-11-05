@@ -310,6 +310,8 @@ namespace Anketa_4_core.Controllers
             _db.KT_TestableAnswers.Add(answer);
             await _db.SaveChangesAsync();
 
+            bool isLastAnswer = questions.All(x => x.ID == next.ID || answeredIds.Contains(x.ID));
+
             // Не перезаписываем остальные разделы JSON_ResultModel.
             var stored = await _db.TestResults.Include(x => x.Access)
                 .FirstOrDefaultAsync(x => x.Access.ID == access.ID);
@@ -318,7 +320,7 @@ namespace Anketa_4_core.Controllers
                 : JsonSerializer.Deserialize<JSON_ResultModel>(stored.Results)
                     ?? throw new InvalidOperationException("Не удалось прочитать общий JSON результатов.");
 
-            if (answeredIds.Length + 1 == questions.Length)
+            if (isLastAnswer)
             {
                 // Последний ответ: берём все сохранённые ответы и пересчитываем
                 // сырые баллы по KT_Keys и готовые оценки по KT_Marks.
@@ -358,7 +360,7 @@ namespace Anketa_4_core.Controllers
             await _db.SaveChangesAsync();
             await tx.CommitAsync();
 
-            if (answeredIds.Length + 1 == questions.Length)
+            if (isLastAnswer)
                 return RedirectToAction(nameof(Finish), new { accessId = access.ID });
 
             return RedirectToAction(nameof(Question), new { accessId = access.ID });
