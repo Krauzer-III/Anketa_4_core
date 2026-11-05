@@ -112,22 +112,86 @@ namespace Anketa_4_core.Controllers.Users
             if (access == null || access.ID != submitted.ID)
                 return Error(error ?? "Период тестирования изменился.");
 
-            if (!result.IsAgree && string.IsNullOrWhiteSpace(result.Question_YES_NO))
+            // Условия заполнения совпадают со старой анкетой:
+            // при отказе нужны только должность, рекомендатель и причина;
+            // при согласии — должность, рекомендатель и все вопросы 01–09.
+            if (result.IsAgree == false)
             {
-                ModelState.AddModelError(nameof(result.Question_YES_NO), "Укажите причину отказа.");
-                return View(result);
+                if (string.IsNullOrWhiteSpace(result.Question_YES_NO))
+                    ModelState.AddModelError(nameof(result.Question_YES_NO),
+                        "Укажите причину отказа от участия в кадровом резерве.");
+            }
+            else if (result.IsAgree == true)
+            {
+                void Require(string key, string? answer)
+                {
+                    if (string.IsNullOrWhiteSpace(answer))
+                        ModelState.AddModelError(key, "Заполните все вопросы анкеты.");
+                }
+
+                Require(nameof(result.Question_01), result.Question_01);
+                Require(nameof(result.Question_02), result.Question_02);
+                Require(nameof(result.Question_03), result.Question_03);
+                Require(nameof(result.Question_04), result.Question_04);
+                Require(nameof(result.Question_05), result.Question_05);
+                Require(nameof(result.Question_06_1), result.Question_06_1);
+                Require(nameof(result.Question_06_2), result.Question_06_2);
+                Require(nameof(result.Question_07), result.Question_07);
+                Require(nameof(result.Question_09), result.Question_09);
+
+                var allowedRegions = new[]
+                {
+                    "Надымский регион", "Белоярский регион", "Свердловский регион",
+                    "Филиалы г. Югорска", "Не имеет значения"
+                };
+
+                if (result.Question_08 == null || result.Question_08.Length == 0)
+                    ModelState.AddModelError(nameof(result.Question_08),
+                        "Выберите хотя бы один регион.");
+                else if (result.Question_08.Any(x => !allowedRegions.Contains(x)))
+                    ModelState.AddModelError(nameof(result.Question_08),
+                        "Выбран неизвестный вариант региона.");
+
+                foreach (var (key, value) in new[]
+                {
+                    (nameof(result.Question_01), result.Question_01),
+                    (nameof(result.Question_04), result.Question_04),
+                    (nameof(result.Question_05), result.Question_05),
+                    (nameof(result.Question_07), result.Question_07),
+                    (nameof(result.Question_09), result.Question_09)
+                })
+                {
+                    if (!string.IsNullOrWhiteSpace(value) && value != "Да" && value != "Нет")
+                        ModelState.AddModelError(key, "Выберите ответ «Да» или «Нет».");
+                }
             }
 
+            if (!ModelState.IsValid)
+                return View("MotivationTest", result);
+
+            bool agreed = result.IsAgree == true;
+            string Clean(string? value) => value?.Trim() ?? "";
+
+            // Не меняем существующий формат первичных результатов.
+            // Вопрос 06 объединяет два текстовых поля из старой формы.
             var raw = new Motivation_Result
             {
-                RecomendPosition = result.RecomendPosition,
-                Recomendator = result.Recomendator,
-                Question_01 = result.Question_01, Question_02 = result.Question_02,
-                Question_03 = result.Question_03, Question_04 = result.Question_04,
-                Question_05 = result.Question_05, Question_06 = result.Question_06,
-                Question_07 = result.Question_07, Question_08 = result.Question_08,
-                Question_09 = result.Question_09,
-                Question_YES_NO = result.IsAgree ? "Да" : result.Question_YES_NO
+                RecomendPosition = Clean(result.RecomendPosition),
+                Recomendator = Clean(result.Recomendator),
+                Question_01 = agreed ? Clean(result.Question_01) : "",
+                Question_02 = agreed ? Clean(result.Question_02) : "",
+                Question_03 = agreed ? Clean(result.Question_03) : "",
+                Question_04 = agreed ? Clean(result.Question_04) : "",
+                Question_05 = agreed ? Clean(result.Question_05) : "",
+                Question_06 = agreed
+                    ? $"Профессиональный рост: {Clean(result.Question_06_1)}\\nКарьерный рост: {Clean(result.Question_06_2)}"
+                    : "",
+                Question_07 = agreed ? Clean(result.Question_07) : "",
+                Question_08 = agreed
+                    ? string.Join("; ", result.Question_08.Distinct())
+                    : "",
+                Question_09 = agreed ? Clean(result.Question_09) : "",
+                Question_YES_NO = agreed ? "Да" : Clean(result.Question_YES_NO)
             };
 
             await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -141,7 +205,7 @@ namespace Anketa_4_core.Controllers.Users
             {
                 AccessTest = access,
                 DatetimeTest = DateTime.UtcNow,
-                IsAgree = result.IsAgree,
+                IsAgree = agreed,
                 Results = JsonSerializer.Serialize(raw)
             };
             _context.MotivationTests.Add(entity);
