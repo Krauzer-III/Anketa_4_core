@@ -1,0 +1,279 @@
+@model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_ResultIndex
+@{
+    ViewData["Title"] = "Просмотр процедуры оценки";
+}
+<div class="container-fluid py-3 result-module">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div>
+            <h2>Просмотр процедуры оценки</h2>
+            <p class="text-muted mb-0">Статусы и показатели из заранее рассчитанных JSON-результатов.</p>
+        </div>
+    </div>
+
+    <form id="resultFilters" asp-controller="Result" asp-action="SearchResult" method="get"
+          class="card shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label" for="Code">Код оцениваемого</label>
+                    <input class="form-control" name="Code" id="Code" placeholder="Код или его часть" />
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label" for="PeriodID">Период оценки</label>
+                    <select name="PeriodID" id="PeriodID" class="form-select">
+                        <option value="">Все периоды</option>
+                        @foreach (var period in Model.Periods)
+                        {
+                            <option value="@period.Value">@period.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label" for="FilialID">Филиал</label>
+                    <select name="FilialID" id="FilialID" class="form-select">
+                        <option value="">Все филиалы</option>
+                        @foreach (var filial in Model.Filials)
+                        {
+                            <option value="@filial.Value">@filial.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label" for="ReservLevelID">Уровень резерва</label>
+                    <select name="ReservLevelID" id="ReservLevelID" class="form-select">
+                        <option value="">Все уровни</option>
+                        @foreach (var level in Model.ReservLevels)
+                        {
+                            <option value="@level.Value">@level.Text</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <hr />
+            <h5>Статус прохождения оценки</h5>
+            <div class="row g-3">
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label" for="Self360">360° — самооценка</label>
+                    <select class="form-select" id="Self360" name="Self360">
+                        <option value="all">Любой</option>
+                        <option value="done">Пройдена</option>
+                        <option value="not">Не пройдена</option>
+                    </select>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label" for="RespondentsLessThan">360° — количество респондентов</label>
+                    <select class="form-select" id="RespondentsLessThan" name="RespondentsLessThan">
+                        <option value="">Любое количество</option>
+                        @for (int i = 1; i <= 20; i++)
+                        {
+                            <option value="@i">Менее @i</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label" for="Motivation">Мотивационный опросник</label>
+                    <select class="form-select" name="Motivation" id="Motivation">
+                        <option value="all">Любой</option>
+                        <option value="done">Пройден</option>
+                        <option value="not">Не пройден</option>
+                    </select>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label" for="Kettel">Психологическое тестирование (Кеттел)</label>
+                    <select class="form-select" name="Kettel" id="Kettel">
+                        <option value="all">Любой</option>
+                        <option value="done">Пройден</option>
+                        <option value="progress">В процессе</option>
+                        <option value="not">Не начат</option>
+                    </select>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label" for="Competence1">Компетенции (1 год)</label>
+                    <select class="form-select" name="Competence1" id="Competence1">
+                        <option value="all">Любой</option>
+                        <option value="done">Пройден</option>
+                        <option value="progress">В процессе</option>
+                        <option value="not">Не начат</option>
+                    </select>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <label class="form-label" for="Competence2">Компетенции (2 год)</label>
+                    <select class="form-select" name="Competence2" id="Competence2">
+                        <option value="all">Любой</option>
+                        <option value="done">Пройден</option>
+                        <option value="progress">В процессе</option>
+                        <option value="not">Не начат</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 justify-content-end mt-4">
+                <button class="btn btn-outline-secondary" type="reset" id="resultReset">Сбросить фильтры</button>
+                <button class="btn btn-primary" type="submit" id="resultSearch">Применить фильтры</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-outline-primary btn-sm" id="resultCheckPage">
+                Выделить на странице
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="resultClearSelection">
+                Снять выделение
+            </button>
+            <span id="resultSelectedCount" class="align-self-center small text-muted">
+                Выбрано: 0
+            </span>
+        </div>
+        <form asp-controller="Report" asp-action="GetReport" method="post" id="resultReportForm">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-success" id="resultReportButton" disabled>
+                Получить отчёт
+            </button>
+        </form>
+    </div>
+    <p class="small text-muted">
+        Выбор тестируемых сохраняется при переходе между страницами текущего поиска.
+        Формирование файла будет подключено позднее; сейчас откроется заготовка отчёта.
+    </p>
+
+    <div id="resultSearchError" role="alert" class="alert alert-danger" hidden></div>
+    <div id="resultLoading" class="text-muted text-center py-4" hidden>
+        <div class="spinner-border spinner-border-sm" role="status"></div>
+        Загрузка результатов...
+    </div>
+    <div id="resultRows"></div>
+</div>
+
+<div class="modal fade" id="resultDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="resultDetailTitle" class="modal-title">Результаты тестирования</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body" id="resultDetailBody">
+                Загрузка...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("resultFilters");
+    const rows = document.getElementById("resultRows");
+    const loading = document.getElementById("resultLoading");
+    const error = document.getElementById("resultSearchError");
+    const modalElement = document.getElementById("resultDetailModal");
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    const reportForm = document.getElementById("resultReportForm");
+    const reportButton = document.getElementById("resultReportButton");
+    const selectedCount = document.getElementById("resultSelectedCount");
+    const selection = new Set();
+    let requestId = 0;
+
+    function message(value) {
+        error.textContent = value || "";
+        error.hidden = !value;
+    }
+    function showSelected() {
+        selectedCount.textContent = "Выбрано: " + selection.size;
+        reportButton.disabled = selection.size === 0;
+    }
+    function clearSelected() {
+        selection.clear();
+        rows.querySelectorAll(".result-select").forEach(el => el.checked = false);
+        showSelected();
+    }
+    async function search(page = 1, clear = true) {
+        const token = ++requestId;
+        if (clear) clearSelected();
+        message("");
+        loading.hidden = false;
+        const params = new URLSearchParams(new FormData(form));
+        params.set("Page", String(page));
+        try {
+            const response = await fetch(form.action + "?" + params.toString(),
+                { headers: { "X-Requested-With": "XMLHttpRequest" }, cache: "no-store" });
+            if (!response.ok)
+                throw new Error(await response.text() || "Не удалось получить результаты.");
+            const html = await response.text();
+            if (token !== requestId) return;
+            rows.innerHTML = html;
+            rows.querySelectorAll(".result-select").forEach(box => {
+                box.checked = selection.has(Number(box.value));
+            });
+            showSelected();
+        } catch (e) {
+            if (token === requestId) message(e.message || "Ошибка загрузки.");
+        } finally {
+            if (token === requestId) loading.hidden = true;
+        }
+    }
+    form.addEventListener("submit", e => {
+        e.preventDefault();
+        search(1, true);
+    });
+    document.getElementById("resultReset").addEventListener("click", () => {
+        window.setTimeout(() => search(1, true), 0);
+    });
+    rows.addEventListener("click", async e => {
+        const page = e.target.closest("[data-result-page]");
+        if (page) {
+            await search(Number(page.dataset.resultPage), false);
+            return;
+        }
+        const button = e.target.closest("[data-result-url]");
+        if (!button) return;
+        document.getElementById("resultDetailTitle").textContent =
+            button.dataset.resultTitle || "Результаты";
+        const target = document.getElementById("resultDetailBody");
+        target.textContent = "Загрузка...";
+        modal.show();
+        try {
+            const response = await fetch(button.dataset.resultUrl, { cache: "no-store" });
+            if (!response.ok) throw new Error(await response.text() || "Не удалось загрузить детали.");
+            target.innerHTML = await response.text();
+        } catch (ex) {
+            target.textContent = ex.message || "Ошибка загрузки.";
+        }
+    });
+    rows.addEventListener("change", e => {
+        if (!e.target.matches(".result-select")) return;
+        const id = Number(e.target.value);
+        if (e.target.checked) selection.add(id);
+        else selection.delete(id);
+        showSelected();
+    });
+    document.getElementById("resultCheckPage").addEventListener("click", () => {
+        rows.querySelectorAll(".result-select").forEach(x => {
+            x.checked = true;
+            selection.add(Number(x.value));
+        });
+        showSelected();
+    });
+    document.getElementById("resultClearSelection").addEventListener("click", clearSelected);
+    reportForm.addEventListener("submit", e => {
+        reportForm.querySelectorAll('input[name="accessIds"]').forEach(x => x.remove());
+        if (selection.size === 0) {
+            e.preventDefault();
+            message("Выберите хотя бы одного тестируемого.");
+            return;
+        }
+        [...selection].forEach(id => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "accessIds";
+            input.value = String(id);
+            reportForm.appendChild(input);
+        });
+    });
+    search();
+});
+</script>
