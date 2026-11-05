@@ -188,7 +188,10 @@ namespace Anketa_4_core.Data.AnketaModels
                         AnswerID = x.Answer.ID,
                         AnswerNumber = x.Answer.Number,
                         AnswerText = x.Answer.Text,
-                        AnswerMark = x.Mark
+                        AnswerMark = x.Mark,
+                        CorrectAnswer = x.Answer.Correct_Answer,
+                        IsCorrect = x.Mark == x.Answer.Correct_Answer,
+                        DateTimeAnswer = x.DateTimeAnswer
                     }).ToArray()
             });
             CompetentionAnswers = CompetentionAnswers.OrderBy(x => x.Year)
@@ -520,6 +523,10 @@ namespace Anketa_4_core.Data.AnketaModels
             public string AnswerNumber { get; set; } = "";
             public string AnswerText { get; set; } = "";
             public int AnswerMark { get; set; }
+            // Заполняются при новых прохождениях, у старых JSON могут быть null.
+            public int? CorrectAnswer { get; set; }
+            public bool? IsCorrect { get; set; }
+            public DateTime DateTimeAnswer { get; set; }
         }
 
         public class JSON_Competention_Result
