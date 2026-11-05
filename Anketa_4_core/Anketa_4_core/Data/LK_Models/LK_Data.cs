@@ -16,6 +16,14 @@ namespace Anketa_4_core.Data.LK_Models
         /// </summary>
         public List<LK_ViceBoss> LK_ViceBoss { get; set; }
         /// <summary>
+        /// Отчёты по прочитанным книгам (ранее класс существовал отдельно от корневого JSON)
+        /// </summary>
+        public List<LK_ReportBook> ReportBooks { get; set; }
+        /// <summary>
+        /// Отчёты по тренинговым программам
+        /// </summary>
+        public List<LK_TrainingProgramm> TrainingProgramms { get; set; }
+        /// <summary>
         /// Карта развивающих действий
         /// </summary>
         public LK_DevelopmentalActionMap DevelopmentalActionMaproperty { get; set; }
