@@ -342,7 +342,7 @@ namespace Anketa_4_core.Data.AnketaModels
             Mark_05 = 0;
             Mark_06 = 0;
 
-            if (Question_YES_NO.Contains("Да")) Mark_01 = 1;
+            if (m.IsAgree && string.Equals(Question_YES_NO?.Trim(), "Да", StringComparison.Ordinal)) Mark_01 = 1;
             if (Question_05.Contains("Да")) Mark_02 = 1;
             if (Question_01.Contains("Да")) Mark_03 = 1;
             if (Question_04.Contains("Да")) Mark_04 = 1;
