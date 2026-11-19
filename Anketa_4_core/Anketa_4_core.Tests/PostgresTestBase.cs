@@ -153,7 +153,7 @@ public abstract class PostgresTestBase : IAsyncLifetime
             {
                 UserName = username,
                 testable = testable,
-                LK_Data = lkData
+                LK_Data = lkData ?? "{}"
             });
         }
 
