@@ -550,7 +550,7 @@ namespace Anketa_4_core.Controllers
 
             if (existing == null)
             {
-                existing = new TestableUser { testable = testable, UserName = userName, LK_Data = null };
+                existing = new TestableUser { testable = testable, UserName = userName, LK_Data = "{}" };
                 _db.Add(existing);
             }
             else
