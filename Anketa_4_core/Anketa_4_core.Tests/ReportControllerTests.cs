@@ -37,7 +37,7 @@ public sealed class ReportControllerTests : PostgresTestBase
         await using (var db = CreateAnketaContext())
         {
             var controller = CreateController(db, environment, "unknown", "testable_user");
-            Assert.IsType<NotFoundResult>(await controller.GetReport(null));
+            Assert.IsType<NotFoundResult>(await controller.GetReport((int?)null));
         }
 
         await using (var db = CreateAnketaContext())
