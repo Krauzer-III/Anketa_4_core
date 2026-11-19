@@ -73,13 +73,7 @@ public sealed class TestableControllerTests : PostgresTestBase
     public async Task Import_ValidCsvCreatesTestableUserAndPeriodAssignment()
     {
         await CreateUserAsync("qa_import_user", "testable_user");
-        var seeded = await SeedAccessAsync(code: "11005", periodName: "Период импорта");
-        await using (var db = CreateAnketaContext())
-        {
-            db.Testables.Remove(await db.Testables.FindAsync(seeded.TestableId) ?? throw new Exception());
-            await db.SaveChangesAsync();
-        }
-
+        await SeedAccessAsync(code: "11005", periodName: "Период импорта");
         var csv = "code,filial,rezerv_level,testperiod,username\n" +
                   "11006,Филиал 1,0,Период импорта,qa_import_user";
         await using (var db = CreateAnketaContext())
