@@ -90,7 +90,7 @@ public sealed class ModeratorControllerTests : PostgresTestBase
         await using var verifyDb = CreateAnketaContext();
         var period = await verifyDb.TestPeriods.SingleAsync(x => x.ID == first.PeriodId);
         Assert.Equal("Обновлённый", period.GroupName);
-        var links = await verifyDb.AccessForTestables
+        var links = await verifyDb.AccessForTestables.Include(x => x.Testable)
             .Where(x => x.TestPeriod.ID == first.PeriodId).OrderBy(x => x.Testable.ID).ToArrayAsync();
         Assert.Equal(2, links.Length);
         Assert.False(links.Single(x => x.Testable.ID == first.TestableId).isActive);
