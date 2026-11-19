@@ -83,7 +83,7 @@ public sealed class ModeratorControllerTests : PostgresTestBase
                     new() { TestableId = first.TestableId, IsActive = false }
                 },
                 AddTestableIds = new List<int> { second.TestableId, second.TestableId, 999999 }
-            });
+            }, null);
             Assert.Equal("Details", Assert.IsType<RedirectToActionResult>(result).ActionName);
         }
 
