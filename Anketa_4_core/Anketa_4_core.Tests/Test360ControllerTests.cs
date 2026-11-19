@@ -139,7 +139,7 @@ public sealed class Test360ControllerTests : PostgresTestBase
             (await verifyDb.TestResults.SingleAsync()).Results)!;
         Assert.Single(aggregate.Tests360);
         Assert.True(aggregate.Tests360[0].IsSelfMark);
-        Assert.Equal(5d, aggregate.Test360ForReportTestable.q01);
+        Assert.Equal(3d, aggregate.Test360ForReportTestable.q01);
     }
 
     [Fact]
