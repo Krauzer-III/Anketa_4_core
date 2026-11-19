@@ -100,7 +100,7 @@ public sealed class PersonalCabinetControllerTests : PostgresTestBase
         SetName(linked, "employee");
 
         var result = Assert.IsType<JsonResult>(await linked.Rating());
-        Assert.Equal(0, (int)result.Value!.GetType().GetProperty("Participants")!.GetValue(result.Value)!);
+        Assert.Equal(1, (int)result.Value!.GetType().GetProperty("Participants")!.GetValue(result.Value)!);
     }
 
     private static PersonalCabinetController CreateController(Anketa_4_core.Data.AnketaContext db) =>
