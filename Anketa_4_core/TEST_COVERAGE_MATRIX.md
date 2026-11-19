@@ -116,8 +116,9 @@
 
 | Класс | Функция | Статус | Сценарии |
 |---|---|---:|---|
-| ReportController | GetReport / DownloadAsync | MANUAL | REP-01–REP-21 |
-| ReportController | GenerateReport | AUTO через ReportGenerator; HTTP-обвязка MANUAL | REP-01–REP-21 |
+| ReportController | GetReport GET/POST | AUTO | ReportControllerTests |
+| ReportController | DownloadAsync / проверка шаблона / формирование файла | AUTO | ReportControllerTests |
+| ReportController | GenerateReport | AUTO через ReportGenerator и HTTP-обвязку | ReportControllerTests, TestableResultsAndReportTests |
 | AccountController | Login / Logout / AccessDenied | MANUAL | AUTH-01, SYS-13 |
 | UsersController | Index / Edit / Delete | MANUAL | SYS-12 |
 | DefaultValuesController | действия заполнения справочников | MANUAL | SYS-01–SYS-06, SYS-14 |
