@@ -1,0 +1,47 @@
+name: Anketa tests
+
+on:
+  push:
+    branches:
+      - qa/unit-and-scenarios
+  pull_request:
+    branches:
+      - lk-cabinet-fields
+      - Dev
+  workflow_dispatch:
+
+jobs:
+  dotnet-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      ANKETA_TEST_CONNECTION: Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 7.0.x
+      - name: Restore
+        run: dotnet restore Anketa_4_core/Anketa_4_core.sln
+      - name: Run unit and integration tests
+        run: dotnet test Anketa_4_core/Anketa_4_core.Tests/Anketa_4_core.Tests.csproj --configuration Release --logger "trx;LogFileName=anketa-tests.trx"
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: anketa-test-results
+          path: "**/TestResults/*.trx"
+          if-no-files-found: ignore

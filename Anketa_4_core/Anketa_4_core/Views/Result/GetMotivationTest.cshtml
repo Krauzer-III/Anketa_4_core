@@ -1,6 +1,23 @@
 @model Anketa_4_core.Models.AnketaModels.MVC_Models.MVC_ResultDetail
 @{
     var m = Model.Data.MotivationTest;
+    var responses = m == null
+        ? Array.Empty<(string Label, string? Value)>()
+        : new (string Label, string? Value)[]
+        {
+            (Label: "Рекомендуемая должность", Value: m.RecomendPosition),
+            (Label: "По чьей рекомендации", Value: m.Recomendator),
+            (Label: "Хотите участвовать в кадровом резерве / причина отказа", Value: m.Question_YES_NO),
+            (Label: "1. Участие в программе подготовки", Value: m.Question_01),
+            (Label: "2. Понятие «карьерный рост»", Value: m.Question_02),
+            (Label: "3. Польза участия в резерве", Value: m.Question_03),
+            (Label: "4. Личное время на обучение", Value: m.Question_04),
+            (Label: "5. Обучение за свой счёт", Value: m.Question_05),
+            (Label: "6. Профессиональный и карьерный рост", Value: m.Question_06),
+            (Label: "7. Перемещение в другие филиалы", Value: m.Question_07),
+            (Label: "8. Регионы возможного перевода", Value: m.Question_08),
+            (Label: "9. Подтверждение официальной позиции", Value: m.Question_09)
+        };
 }
 <h6>Оцениваемый: <strong>@Model.TestableCode</strong></h6>
 <p class="text-muted">Период: @Model.PeriodName · доступ №@Model.AccessID</p>
@@ -52,23 +69,6 @@ else
     }
 
     <h6 class="mt-4">Ответы на вопросы</h6>
-    @{
-        var responses = new[]
-        {
-            new { Label = "Рекомендуемая должность", Value = m.RecomendPosition },
-            new { Label = "По чьей рекомендации", Value = m.Recomendator },
-            new { Label = "Хотите участвовать в кадровом резерве / причина отказа", Value = m.Question_YES_NO },
-            new { Label = "1. Участие в программе подготовки", Value = m.Question_01 },
-            new { Label = "2. Понятие «карьерный рост»", Value = m.Question_02 },
-            new { Label = "3. Польза участия в резерве", Value = m.Question_03 },
-            new { Label = "4. Личное время на обучение", Value = m.Question_04 },
-            new { Label = "5. Обучение за свой счёт", Value = m.Question_05 },
-            new { Label = "6. Профессиональный и карьерный рост", Value = m.Question_06 },
-            new { Label = "7. Перемещение в другие филиалы", Value = m.Question_07 },
-            new { Label = "8. Регионы возможного перевода", Value = m.Question_08 },
-            new { Label = "9. Подтверждение официальной позиции", Value = m.Question_09 }
-        };
-    }
     <div class="table-responsive">
         <table class="table table-sm table-striped table-bordered">
             <thead><tr><th style="width:45%">Вопрос</th><th>Ответ</th></tr></thead>

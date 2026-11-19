@@ -550,7 +550,7 @@ namespace Anketa_4_core.Controllers
 
             if (existing == null)
             {
-                existing = new TestableUser { testable = testable, UserName = userName, LK_Data = null };
+                existing = new TestableUser { testable = testable, UserName = userName, LK_Data = "{}" };
                 _db.Add(existing);
             }
             else
@@ -564,7 +564,8 @@ namespace Anketa_4_core.Controllers
         {
             if (selectedPeriodId == null)
                 return;
-            var existing = await _db.AccessForTestables.Where(a => a.Testable.ID == testableId).ToListAsync();
+            var existing = await _db.AccessForTestables.Include(a => a.TestPeriod)
+                .Where(a => a.Testable.ID == testableId).ToListAsync();
             var existingIds = existing.Select(e => e.TestPeriod.ID).ToHashSet();
             var targetId = selectedPeriodId;
 
