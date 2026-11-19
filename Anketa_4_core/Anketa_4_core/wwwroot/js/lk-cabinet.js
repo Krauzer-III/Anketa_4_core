@@ -4,7 +4,7 @@
 (function () {
     "use strict";
 
-    const field = (key, label, type = "text") => ({ key, label, type });
+    const field = (key, label, type = "text", options = []) => ({ key, label, type, options });
     const group = (key, label, fields) => ({ key, label, type: "list", fields });
     const statuses = field("Status", "Статус", "number");
 
@@ -73,38 +73,205 @@
             field("MeasuresOfDeviationOfFactResult", "Меры предупреждения", "textarea"),
             field("FeedBack", "Обратная связь наставника", "textarea"),
             field("Conclusion", "Выводы", "textarea")
+        ]),
+        group("CompetenceDevelopment", "План развития компетенций", [
+            field("CompetenceName", "Компетенция"),
+            field("CurrentLevel", "Текущий уровень"),
+            field("TargetLevel", "Планируемый уровень"),
+            field("DevelopmentActions", "Развивающие действия", "textarea"),
+            field("Deadline", "Срок выполнения", "date"),
+            field("ExpectedResult", "Ожидаемый результат", "textarea"),
+            statuses
         ])
     ];
 
     const sections = [
-        group("ProfTasks", "Профессиональные задачи", taskFields),
-        group("Internships", "Стажировки", [
+        group("ProfTasks", "1. Профессиональные задачи (пункты 1.1–1.3)", [
+            field("Number", "№", "number"),
+            field("ProfTaskName", "Название профессиональной задачи"),
+            field("CompetenceZone", "Профессиональная компетенция (зона развития)"),
             field("DateFrom", "Начало", "date"),
             field("DateTo", "Окончание", "date"),
+            field("AnalisEffect", "Анализ эффективности", "textarea"),
+            field("WhatCouldBeDoneDifferently", "Что можно было сделать по-другому?", "textarea"),
+            field("Difficult", "Сложности", "textarea"),
+            field("BossComment", "Комментарий руководителя", "textarea"),
             statuses
         ]),
-        group("LK_ViceBoss", "Замещения руководителя", [
+        group("TrainingProgramms", "2. Тренинговая программа", [
+            field("Theme", "Тема тренинга"),
+            field("Organizer", "Организатор"),
+            field("Date", "Дата проведения", "date"),
+            field("Format", "Формат"),
+            field("DurationHours", "Продолжительность, часов", "number"),
+            field("LiveSityations", "Что из материала применено на практике? Примеры", "textarea"),
+            field("Difficult", "Какие сложности возникли?", "textarea"),
+            field("InfluenceAsWorker", "Влияние на результаты моей деятельности", "textarea"),
+            field("InfluenceAsFilial", "Влияние на результаты филиала", "textarea"),
+            statuses
+        ]),
+        group("DistanceLearning", "3. Дистанционное обучение, вебинары и кейсы (выбрать не менее двух курсов)", [
+            field("IsPlanned", "Включить это мероприятие в ИПП", "checkbox"),
+            field("ActivityType", "Тип мероприятия (курс / вебинар / кейс)"),
+            field("Title", "Название"),
+            field("Platform", "Платформа / организатор"),
+            field("DateFrom", "Начало", "date"),
+            field("DateTo", "Окончание", "date"),
+            field("DurationHours", "Продолжительность, часов", "number"),
+            field("MainIdeas", "Основные знания и идеи", "textarea"),
+            field("ApplicationInWork", "Применение в работе", "textarea"),
+            field("Certificate", "Сертификат / подтверждение прохождения"),
+            statuses
+        ]),
+        group("AdvancedTrainingCourses", "4. Курсы повышения квалификации", [
+            field("ProgramName", "Название программы"),
+            field("Organization", "Организация"),
+            field("DateFrom", "Начало", "date"),
+            field("DateTo", "Окончание", "date"),
+            field("DurationHours", "Продолжительность, часов", "number"),
+            field("AcquiredSkills", "Полученные знания и навыки", "textarea"),
+            field("ApplicationInWork", "Применение в работе", "textarea"),
+            field("Result", "Результат", "textarea"),
+            field("Certificate", "Документ о прохождении"),
+            statuses
+        ]),
+        group("LanguageTrainings", "5. Языковая подготовка", [
+            field("Language", "Иностранный язык"),
+            field("Organization", "Организация / преподаватель"),
+            field("Format", "Формат обучения"),
+            field("DateFrom", "Начало", "date"),
+            field("DateTo", "Окончание", "date"),
+            field("CurrentLevel", "Текущий уровень"),
+            field("TargetLevel", "Планируемый уровень"),
+            field("Result", "Результат обучения", "textarea"),
+            statuses
+        ]),
+        group("TeachingActivities", "6. Техническая учёба и преподавательская деятельность (приложение №5)", [
+            field("ActivityType", "Вид деятельности"),
+            field("Topic", "Тема"),
+            field("Audience", "Аудитория"),
+            field("Role", "Ваша роль (ведущий / участник)"),
+            field("DateFrom", "Начало", "date"),
+            field("DateTo", "Окончание", "date"),
+            field("DurationHours", "Продолжительность, часов", "number"),
+            field("PracticalUse", "Практическая полезность участия", "textarea"),
+            field("Effect", "Что было эффективно?", "textarea"),
+            field("WhatBetter", "Что можно было сделать по-другому и как?", "textarea"),
+            field("WhatHelped", "Что помогало при реализации?", "textarea"),
+            field("WhatHindered", "Что мешало при реализации?", "textarea"),
+            field("Result", "Результат", "textarea"),
+            statuses
+        ]),
+        group("LK_ViceBoss", "7. Замещение руководителя", [
+            field("Position", "Замещаемая должность"),
             field("DateFrom", "Начало", "date"),
             field("DateTo", "Окончание", "date"),
             field("Target", "Цель замещения", "textarea"),
-            group("ViceBoss_Tasks", "Задачи замещения", viceTaskFields)
+            group("ViceBoss_Tasks", "Задачи замещения", viceTaskFields),
+            field("GeneralResult", "Общий результат", "textarea"),
+            field("SupervisorComment", "Комментарий руководителя", "textarea"),
+            statuses
         ]),
-        group("ReportBooks", "Отчёты по прочитанным книгам", [
+        group("Internships", "8. Стажировки (отчётная форма №3)", [
+            field("DateFrom", "Начало общего периода", "date"),
+            field("DateTo", "Окончание общего периода", "date"),
+            group("Tasks", "Строки отчёта: период, цель, мероприятия и оценка", [
+                field("DateFrom", "Начало периода", "date"),
+                field("DateTo", "Окончание периода", "date"),
+                field("Goal", "Цель стажировки", "textarea"),
+                field("Activities", "Перечень мероприятий / задач", "textarea"),
+                field("Report", "Отчёт о выполнении (выводы сотрудника)", "textarea"),
+                field("SupervisorAssessment", "Оценка руководителя", "textarea")
+            ]),
+            statuses
+        ]),
+        group("Mentorships", "9. Кураторство и наставничество", [
+            field("MenteePosition", "Должность сотрудника"),
+            field("Goal", "Цель наставничества", "textarea"),
+            field("DateFrom", "Начало", "date"),
+            field("DateTo", "Окончание", "date"),
+            field("Activities", "Проведённые мероприятия", "textarea"),
+            field("Result", "Результат", "textarea"),
+            field("SupervisorFeedback", "Обратная связь руководителя", "textarea"),
+            statuses
+        ]),
+        group("ReportBooks", "10. Чтение литературы (1 профессиональная и 2 по личностно-деловым / управленческим компетенциям)", [
+            field("BookCategory", "Категория книги", "select", [
+                "Профессиональные компетенции",
+                "Личностно-деловые и управленческие компетенции"
+            ]),
             field("BookName", "Название книги"),
             field("Author", "Автор"),
-            field("Gold", "Ценность книги", "textarea"),
-            field("PractiсeSkills", "Практические приёмы", "textarea"),
+            field("DateFrom", "Начало чтения", "date"),
+            field("DateTo", "Окончание чтения", "date"),
+            field("Gold", "Что было наиболее ценным?", "textarea"),
+            field("PractiсeSkills", "Какие практические приёмы будете использовать?", "textarea"),
             statuses
         ]),
-        group("TrainingProgramms", "Тренинговые программы", [
-            field("LiveSityations", "Применённые приёмы и примеры", "textarea"),
-            field("Difficult", "Сложности", "textarea"),
-            field("InfluenceAsWorker", "Влияние на мою деятельность", "textarea"),
-            field("InfluenceAsFilial", "Влияние на филиал", "textarea"),
+        group("ProfessionalRetrainings", "11. Профессиональная переподготовка", [
+            field("ProgramName", "Название программы"),
+            field("Organization", "Образовательная организация"),
+            field("DateFrom", "Начало", "date"),
+            field("DateTo", "Окончание", "date"),
+            field("Qualification", "Полученная квалификация"),
+            field("Result", "Результат", "textarea"),
+            field("Certificate", "Документ о прохождении"),
             statuses
         ]),
-        { key: "DevelopmentalActionMaproperty", label: "Карта развивающих действий",
-          type: "object", fields: mapFields }
+        group("ProjectActivities", "12. Проектная деятельность (приложение №5)", [
+            field("ProjectName", "Название проекта"),
+            field("Role", "Ваша роль (ведущий / участник)"),
+            field("DateFrom", "Начало", "date"),
+            field("DateTo", "Окончание", "date"),
+            field("Goal", "Цель проекта", "textarea"),
+            field("Tasks", "Выполненные задачи", "textarea"),
+            field("PracticalUse", "Практическая полезность участия", "textarea"),
+            field("Effect", "Что было эффективно?", "textarea"),
+            field("WhatBetter", "Что можно было сделать по-другому и как?", "textarea"),
+            field("WhatHelped", "Что помогало при реализации?", "textarea"),
+            field("WhatHindered", "Что мешало при реализации?", "textarea"),
+            field("Result", "Результат проекта", "textarea"),
+            field("Difficulties", "Сложности", "textarea"),
+            statuses
+        ]),
+        group("ConferencesAndCompetitions", "13. Конференции и конкурсы профессионального мастерства (приложение №5)", [
+            field("EventType", "Тип мероприятия"),
+            field("EventName", "Название"),
+            field("Organizer", "Организатор"),
+            field("Date", "Дата", "date"),
+            field("Role", "Ваша роль (ведущий / участник)"),
+            field("PracticalUse", "Практическая полезность участия", "textarea"),
+            field("Effect", "Что было эффективно?", "textarea"),
+            field("WhatBetter", "Что можно было сделать по-другому и как?", "textarea"),
+            field("WhatHelped", "Что помогало при реализации?", "textarea"),
+            field("WhatHindered", "Что мешало при реализации?", "textarea"),
+            field("Result", "Результат / достижение", "textarea"),
+            statuses
+        ]),
+        group("PsychologicalConsultations", "14. Психологическое консультирование", [
+            field("DateFrom", "Начало периода", "date"),
+            field("DateTo", "Окончание периода", "date"),
+            field("DurationMinutes", "Продолжительность консультации, минут", "number"),
+            field("Format", "Формат"),
+            field("GeneralResult", "Общий результат (без личного содержания консультаций)", "textarea"),
+            statuses
+        ]),
+        { key: "DevelopmentalActionMaproperty", label: "15. Карта развивающих действий",
+          type: "object", fields: mapFields },
+        { key: "PersonnelMotivation", label: "Практическое задание «Мотивация персонала»",
+          type: "object", fields: [
+            field("WorkSignificanceAction1", "«Значимость работы» — действие 1", "textarea"),
+            field("WorkSignificanceAction2", "«Значимость работы» — действие 2", "textarea"),
+            field("WorkVarietyAction1", "«Разнообразие работы» — действие 1", "textarea"),
+            field("WorkVarietyAction2", "«Разнообразие работы» — действие 2", "textarea"),
+            field("WorkIdentityAction1", "«Отождествляемость работы с конечным результатом» — действие 1", "textarea"),
+            field("WorkIdentityAction2", "«Отождествляемость работы с конечным результатом» — действие 2", "textarea"),
+            field("WorkAutonomyAction1", "«Автономность работы» — действие 1", "textarea"),
+            field("WorkAutonomyAction2", "«Автономность работы» — действие 2", "textarea"),
+            field("FeedbackAction1", "«Обратная связь» — действие 1", "textarea"),
+            field("FeedbackAction2", "«Обратная связь» — действие 2", "textarea"),
+            field("AdditionalComment", "Дополнительный комментарий", "textarea")
+        ] }
     ];
 
     const dom = (tag, classes, text) => {
@@ -126,6 +293,7 @@
     function cellText(value, f) {
         if (f.type === "list") return (Array.isArray(value) ? value.length : 0) + " записей";
         if (f.type === "date") return dateText(value) || "—";
+        if (f.type === "checkbox") return value ? "Да" : "Нет";
         if (value === undefined || value === null || value === "") return "—";
         return String(value);
     }
@@ -134,6 +302,7 @@
         if (f.type === "list") return [];
         if (f.type === "object") return emptyRecord(f.fields);
         if (f.type === "number") return 0;
+        if (f.type === "checkbox") return false;
         return "";
     }
     function emptyRecord(fields) {
@@ -153,6 +322,8 @@
                     ? dateText(val) + "T00:00:00" : "0001-01-01T00:00:00";
             } else if (f.type === "number") {
                 result[f.key] = Number.isFinite(Number(val)) ? Number(val) : 0;
+            } else if (f.type === "checkbox") {
+                result[f.key] = Boolean(val);
             } else {
                 result[f.key] = val == null ? "" : String(val);
             }
@@ -219,12 +390,32 @@
             drawTable(body, value, schema.fields);
         } else {
             const map = value || {};
-            const dates = dom("p", "small text-muted");
-            dates.textContent = "Период: " + (dateText(map.DateFrom) || "—") +
-                " — " + (dateText(map.DateTo) || "—");
-            body.appendChild(dates);
+            const hasPeriod = schema.fields.some(f => f.key === "DateFrom" || f.key === "DateTo");
+            if (hasPeriod) {
+                const dates = dom("p", "small text-muted");
+                dates.textContent = "Период: " + (dateText(map.DateFrom) || "—") +
+                    " — " + (dateText(map.DateTo) || "—");
+                body.appendChild(dates);
+            }
             schema.fields.filter(f => f.type === "list")
                 .forEach(f => drawTable(body, map[f.key], f.fields, f.label));
+            const simpleFields = schema.fields.filter(f =>
+                f.type !== "list" && f.key !== "DateFrom" && f.key !== "DateTo");
+            if (simpleFields.length) {
+                const table = dom("table", "table table-sm table-bordered");
+                const tbody = dom("tbody");
+                simpleFields.forEach(f => {
+                    const tr = dom("tr");
+                    tr.appendChild(dom("th", "w-50", f.label));
+                    const td = dom("td", "text-break");
+                    td.style.whiteSpace = "pre-line";
+                    td.textContent = cellText(map[f.key], f);
+                    tr.appendChild(td);
+                    tbody.appendChild(tr);
+                });
+                table.appendChild(tbody);
+                body.appendChild(table);
+            }
         }
         section.appendChild(body);
         parent.appendChild(section);
@@ -242,26 +433,57 @@
                 return;
             }
             const col = dom("div", f.type === "textarea" ? "col-12" : "col-md-6");
-            const label = dom("label", "form-label", f.label);
-            let control;
-            if (f.type === "textarea") {
-                control = dom("textarea", "form-control");
-                control.rows = 3;
+            if (f.type === "checkbox") {
+                const wrap = dom("div", "form-check mt-2");
+                const control = dom("input", "form-check-input");
+                control.type = "checkbox";
+                control.checked = Boolean(record[f.key]);
+                control.addEventListener("change", () => {
+                    record[f.key] = control.checked;
+                    update(false);
+                });
+                const label = dom("label", "form-check-label", f.label);
+                label.prepend(control);
+                wrap.appendChild(label);
+                col.appendChild(wrap);
             } else {
-                control = dom("input", "form-control");
-                control.type = f.type === "date" ? "date"
-                    : f.type === "number" ? "number" : "text";
-                if (f.type === "number") control.step = "1";
+                const label = dom("label", "form-label", f.label);
+                let control;
+                if (f.type === "textarea") {
+                    control = dom("textarea", "form-control");
+                    control.rows = 3;
+                } else if (f.type === "select") {
+                    control = dom("select", "form-select");
+                    const placeholder = dom("option", "", "— выберите —");
+                    placeholder.value = "";
+                    control.appendChild(placeholder);
+                    (f.options || []).forEach(optionValue => {
+                        const option = dom("option", "", optionValue);
+                        option.value = optionValue;
+                        control.appendChild(option);
+                    });
+                } else {
+                    control = dom("input", "form-control");
+                    control.type = f.type === "date" ? "date"
+                        : f.type === "number" ? "number" : "text";
+                    if (f.type === "number") control.step = "1";
+                }
+                control.value = f.type === "date" ? dateText(record[f.key])
+                    : (record[f.key] == null ? "" : String(record[f.key]));
+                control.addEventListener("input", () => {
+                    record[f.key] = f.type === "number"
+                        ? (parseInt(control.value, 10) || 0) : control.value;
+                    update(false);
+                });
+                if (f.type === "select") {
+                    control.addEventListener("change", () => {
+                        record[f.key] = control.value;
+                        update(false);
+                    });
+                }
+                label.appendChild(control);
+                col.appendChild(label);
             }
-            control.value = f.type === "date" ? dateText(record[f.key])
-                : (record[f.key] == null ? "" : String(record[f.key]));
-            control.addEventListener("input", () => {
-                record[f.key] = f.type === "number"
-                    ? (parseInt(control.value, 10) || 0) : control.value;
-                update(false);
-            });
-            label.appendChild(control);
-            col.appendChild(label);
             row.appendChild(col);
         });
         parent.appendChild(row);
@@ -418,7 +640,7 @@
                     "Период: " + rating.period + ". Участников: " + rating.participants +
                     ". Ваше место: " + rating.current.place + "."));
                 for (const item of [
-                    ["Заполненность таблиц", rating.current.tableCompletion],
+                    ["Заполненность ИПП", rating.current.tableCompletion],
                     ["Завершённость тестов", rating.current.testCompletion],
                     ["Результат тестов компетенций", rating.current.competenceQuality],
                     ["Общий рейтинг", rating.current.totalScore]
@@ -441,7 +663,7 @@
                 const table = dom("table", "table table-sm table-striped");
                 const thead = dom("thead");
                 const header = dom("tr");
-                ["Место", "Код", "Таблицы, %", "Тесты, %", "Результат, %"]
+                ["Место", "Код", "ИПП, %", "Тесты, %", "Результат, %"]
                     .forEach(x => header.appendChild(dom("th", "", x)));
                 thead.appendChild(header);
                 table.appendChild(thead);
