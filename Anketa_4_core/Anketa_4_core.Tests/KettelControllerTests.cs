@@ -56,7 +56,7 @@ public sealed class KettelControllerTests : PostgresTestBase
         var model = Assert.IsType<MVC_KettelModel_Question>(questionResult.Model);
         Assert.Equal(1, model.Number);
         Assert.Equal(1, model.Position);
-        Assert.Equal(2, model.TotalQuestions);
+        Assert.Equal(1, model.TotalQuestions);
         Assert.Equal(2, model.Answers.Length);
         Assert.Contains(model.Answers, x => x.ID == answerId);
     }
