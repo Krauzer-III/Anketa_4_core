@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Security.Claims;
 using System.Text.Json;
 using Anketa_4_core.Data;
@@ -7,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Npgsql;
 
 namespace Anketa_4_core.Tests;
@@ -19,12 +19,17 @@ public abstract class PostgresTestBase : IAsyncLifetime
     private string _anketaDatabase = "";
     private string _identityDatabase = "";
     private ServiceProvider? _identityServices;
+    private readonly ConcurrentBag<AnketaContext> _createdContexts = new();
 
-    protected AnketaContext CreateAnketaContext() =>
-        new(new DbContextOptionsBuilder<AnketaContext>()
+    protected AnketaContext CreateAnketaContext()
+    {
+        var context = new AnketaContext(new DbContextOptionsBuilder<AnketaContext>()
             .UseNpgsql(_anketaConnection)
             .EnableDetailedErrors()
             .Options);
+        _createdContexts.Add(context);
+        return context;
+    }
 
     protected ApplicationDbContext IdentityDb =>
         _identityServices!.GetRequiredService<ApplicationDbContext>();
@@ -75,29 +80,31 @@ public abstract class PostgresTestBase : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
+        foreach (var context in _createdContexts)
+        {
+            try { await context.DisposeAsync(); }
+            catch { }
+        }
+
         if (_identityServices != null)
         {
             await _identityServices.DisposeAsync();
             _identityServices = null;
         }
 
-        try
+        if (!string.IsNullOrWhiteSpace(_anketaDatabase))
         {
-            await using var db = CreateAnketaContext();
+            await using var db = new AnketaContext(
+                new DbContextOptionsBuilder<AnketaContext>()
+                    .UseNpgsql(_anketaConnection).Options);
             await db.Database.EnsureDeletedAsync();
-        }
-        catch
-        {
-            // Preserve the original test failure if the database was already removed.
         }
 
         if (!string.IsNullOrWhiteSpace(_identityDatabase))
         {
-            var builder = new NpgsqlConnectionStringBuilder(_identityConnection);
-            builder.Database = _identityDatabase;
             await using var db = new ApplicationDbContext(
                 new DbContextOptionsBuilder<ApplicationDbContext>()
-                    .UseNpgsql(builder.ConnectionString).Options);
+                    .UseNpgsql(_identityConnection).Options);
             await db.Database.EnsureDeletedAsync();
         }
     }
