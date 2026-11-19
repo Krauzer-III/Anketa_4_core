@@ -30,7 +30,7 @@ public sealed class CompetentionControllerTests : PostgresTestBase
         int questionId;
         await using (var db = CreateAnketaContext())
         {
-            var block = new Comp_Block { BlockName = "Блок 1", Year = 1 };
+            var block = new Comp_Block { BlockName = "Блок 1", WordInReport = "A", Year = 1 };
             var question = new Comp_Question
             {
                 QuestionNumber = 1, QuestionText = "Ситуация", Block = block
@@ -122,7 +122,7 @@ public sealed class CompetentionControllerTests : PostgresTestBase
         int[] answerIds;
         await using (var db = CreateAnketaContext())
         {
-            var block = new Comp_Block { BlockName = "Блок", Year = 1 };
+            var block = new Comp_Block { BlockName = "Блок", WordInReport = "A", Year = 1 };
             var question = new Comp_Question { QuestionNumber = 1, QuestionText = "Q", Block = block };
             db.Comp_Blocks.Add(block);
             db.Comp_Questions.Add(question);
@@ -165,7 +165,7 @@ public sealed class CompetentionControllerTests : PostgresTestBase
         {
             foreach (var year in new[] { 1, 2 })
             {
-                var block = new Comp_Block { BlockName = "Блок " + year, Year = year };
+                var block = new Comp_Block { BlockName = "Блок " + year, WordInReport = year.ToString(), Year = year };
                 var question = new Comp_Question
                 {
                     QuestionNumber = 1, QuestionText = "Вопрос " + year, Block = block
