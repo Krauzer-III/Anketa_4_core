@@ -123,7 +123,7 @@ public sealed class RegistrationControllerTests : PostgresTestBase
         var link = await db.TestableUsers.Include(x => x.testable)
             .SingleAsync(x => x.UserName == "qa_testable");
         Assert.Equal(seeded.TestableId, link.testable.ID);
-        Assert.Null(link.LK_Data);
+        Assert.Equal("{}", link.LK_Data);
     }
 
     [Fact]
