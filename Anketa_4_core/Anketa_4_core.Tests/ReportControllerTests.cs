@@ -43,7 +43,7 @@ public sealed class ReportControllerTests : PostgresTestBase
         await using (var db = CreateAnketaContext())
         {
             var controller = CreateController(db, environment, "qa_report_owner");
-            Assert.IsType<ForbidResult>(await controller.GetReport(null));
+            Assert.IsType<ForbidResult>(await controller.GetReport((int?)null));
         }
     }
 
