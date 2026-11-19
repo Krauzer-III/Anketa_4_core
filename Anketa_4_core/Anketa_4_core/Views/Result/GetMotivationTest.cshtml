@@ -3,7 +3,7 @@
     var m = Model.Data.MotivationTest;
     var responses = m == null
         ? Array.Empty<(string Label, string? Value)>()
-        : new[]
+        : new (string Label, string? Value)[]
         {
             (Label: "Рекомендуемая должность", Value: m.RecomendPosition),
             (Label: "По чьей рекомендации", Value: m.Recomendator),
