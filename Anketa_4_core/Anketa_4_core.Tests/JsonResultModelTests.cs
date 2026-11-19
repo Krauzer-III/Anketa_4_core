@@ -65,7 +65,7 @@ public sealed class JsonResultModelTests
         Assert.Equal(1, saved.Year);
         Assert.Equal(10, saved.QuestionID);
         Assert.Equal(4, saved.Answers.Length);
-        Assert.Equal(new[] { 1, 2, 3, 4 }, saved.Answers.Select(x => x.AnswerMark));
+        Assert.Equal(new[] { 4, 3, 2, 1 }, saved.Answers.Select(x => x.AnswerMark));
         Assert.Contains(saved.Answers, x => x.AnswerMark == x.CorrectAnswer && x.IsCorrect == true);
     }
 
