@@ -67,8 +67,11 @@ public sealed class Test360ControllerTests : PostgresTestBase
 
         var other = await SeedAccessAsync(code: "6003", filialName: "Другой филиал");
         await using var verifyDb = CreateAnketaContext();
+        var respondentRole = new RespondentRole { Name = "Эксперт", isSelfMark = false };
+        verifyDb.RespondentRoles.Add(respondentRole);
+        await verifyDb.SaveChangesAsync();
         var wrongBranch = Assert.IsType<ViewResult>(await CreateController(verifyDb, user).StartTest(
-            new MVC_Test360_StartTest_Model { Code = "6003", RoleID = 1 }));
+            new MVC_Test360_StartTest_Model { Code = "6003", RoleID = respondentRole.ID }));
         Assert.IsType<MVC_Test360_StartTest_Model>(wrongBranch.Model);
         Assert.True(other.TestableId > 0);
     }
@@ -136,7 +139,7 @@ public sealed class Test360ControllerTests : PostgresTestBase
             (await verifyDb.TestResults.SingleAsync()).Results)!;
         Assert.Single(aggregate.Tests360);
         Assert.True(aggregate.Tests360[0].IsSelfMark);
-        Assert.Equal(5, aggregate.Test360ForReportTestable.q01);
+        Assert.Equal(5d, aggregate.Test360ForReportTestable.q01);
     }
 
     [Fact]
