@@ -103,8 +103,12 @@ public sealed class PersonalCabinetControllerTests : PostgresTestBase
         Assert.Equal(1, (int)result.Value!.GetType().GetProperty("Participants")!.GetValue(result.Value)!);
     }
 
-    private static PersonalCabinetController CreateController(Anketa_4_core.Data.AnketaContext db) =>
-        new(db, NullLogger<PersonalCabinetController>.Instance);
+    private static PersonalCabinetController CreateController(Anketa_4_core.Data.AnketaContext db)
+    {
+        var controller = new PersonalCabinetController(db, NullLogger<PersonalCabinetController>.Instance);
+        controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        return controller;
+    }
 
     private static void SetName(Controller controller, string username)
     {
