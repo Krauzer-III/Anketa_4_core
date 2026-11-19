@@ -86,7 +86,7 @@
     ];
 
     const sections = [
-        group("ProfTasks", "1. Профессиональные задачи (пункты 1.1–1.3)", [
+        group("ProfTasks", "Профессиональные задачи (пункты 1.1–1.3)", [
             field("Number", "№", "number"),
             field("ProfTaskName", "Название профессиональной задачи"),
             field("CompetenceZone", "Профессиональная компетенция (зона развития)"),
@@ -98,7 +98,7 @@
             field("BossComment", "Комментарий руководителя", "textarea"),
             statuses
         ]),
-        group("TrainingProgramms", "2. Тренинговая программа", [
+        group("TrainingProgramms", "Тренинговая программа (п. 4.1)", [
             field("Theme", "Тема тренинга"),
             field("Organizer", "Организатор"),
             field("Date", "Дата проведения", "date"),
@@ -110,7 +110,7 @@
             field("InfluenceAsFilial", "Влияние на результаты филиала", "textarea"),
             statuses
         ]),
-        group("DistanceLearning", "3. Дистанционное обучение, вебинары и кейсы (выбрать не менее двух курсов)", [
+        group("DistanceLearning", "Дистанционное обучение, вебинары и кейсы (п. 4.4, 5.3; выбрать не менее двух курсов)", [
             field("IsPlanned", "Включить это мероприятие в ИПП", "checkbox"),
             field("ActivityType", "Тип мероприятия (курс / вебинар / кейс)"),
             field("Title", "Название"),
@@ -123,7 +123,7 @@
             field("Certificate", "Сертификат / подтверждение прохождения"),
             statuses
         ]),
-        group("AdvancedTrainingCourses", "4. Курсы повышения квалификации", [
+        group("AdvancedTrainingCourses", "Курсы повышения квалификации (п. 4.2)", [
             field("ProgramName", "Название программы"),
             field("Organization", "Организация"),
             field("DateFrom", "Начало", "date"),
@@ -135,7 +135,7 @@
             field("Certificate", "Документ о прохождении"),
             statuses
         ]),
-        group("LanguageTrainings", "5. Языковая подготовка", [
+        group("LanguageTrainings", "Языковая подготовка (п. 4.3)", [
             field("Language", "Иностранный язык"),
             field("Organization", "Организация / преподаватель"),
             field("Format", "Формат обучения"),
@@ -146,7 +146,7 @@
             field("Result", "Результат обучения", "textarea"),
             statuses
         ]),
-        group("TeachingActivities", "6. Техническая учёба и преподавательская деятельность (приложение №5)", [
+        group("TeachingActivities", "Техническая учёба и преподавательская деятельность (п. 2.4–2.5, приложение №5)", [
             field("ActivityType", "Вид деятельности"),
             field("Topic", "Тема"),
             field("Audience", "Аудитория"),
@@ -162,7 +162,7 @@
             field("Result", "Результат", "textarea"),
             statuses
         ]),
-        group("LK_ViceBoss", "7. Замещение руководителя", [
+        group("LK_ViceBoss", "Замещение руководителя (п. 2.2)", [
             field("Position", "Замещаемая должность"),
             field("DateFrom", "Начало", "date"),
             field("DateTo", "Окончание", "date"),
@@ -172,7 +172,7 @@
             field("SupervisorComment", "Комментарий руководителя", "textarea"),
             statuses
         ]),
-        group("Internships", "8. Стажировки (отчётная форма №3)", [
+        group("Internships", "Стажировки (п. 2.1, отчётная форма №3)", [
             field("DateFrom", "Начало общего периода", "date"),
             field("DateTo", "Окончание общего периода", "date"),
             group("Tasks", "Строки отчёта: период, цель, мероприятия и оценка", [
@@ -185,7 +185,7 @@
             ]),
             statuses
         ]),
-        group("Mentorships", "9. Кураторство и наставничество", [
+        group("Mentorships", "Кураторство и наставничество (п. 2.3)", [
             field("MenteePosition", "Должность сотрудника"),
             field("Goal", "Цель наставничества", "textarea"),
             field("DateFrom", "Начало", "date"),
@@ -195,7 +195,7 @@
             field("SupervisorFeedback", "Обратная связь руководителя", "textarea"),
             statuses
         ]),
-        group("ReportBooks", "10. Чтение литературы (1 профессиональная и 2 по личностно-деловым / управленческим компетенциям)", [
+        group("ReportBooks", "Чтение литературы (п. 5.1–5.2: 1 профессиональная и 2 по личностно-деловым / управленческим компетенциям)", [
             field("BookCategory", "Категория книги", "select", [
                 "Профессиональные компетенции",
                 "Личностно-деловые и управленческие компетенции"
@@ -208,7 +208,7 @@
             field("PractiсeSkills", "Какие практические приёмы будете использовать?", "textarea"),
             statuses
         ]),
-        group("ProfessionalRetrainings", "11. Профессиональная переподготовка", [
+        group("ProfessionalRetrainings", "Профессиональная переподготовка (дополнительное развивающее действие)", [
             field("ProgramName", "Название программы"),
             field("Organization", "Образовательная организация"),
             field("DateFrom", "Начало", "date"),
@@ -218,7 +218,7 @@
             field("Certificate", "Документ о прохождении"),
             statuses
         ]),
-        group("ProjectActivities", "12. Проектная деятельность (приложение №5)", [
+        group("ProjectActivities", "Проектная деятельность (п. 3.1, приложение №5)", [
             field("ProjectName", "Название проекта"),
             field("Role", "Ваша роль (ведущий / участник)"),
             field("DateFrom", "Начало", "date"),
@@ -234,7 +234,7 @@
             field("Difficulties", "Сложности", "textarea"),
             statuses
         ]),
-        group("ConferencesAndCompetitions", "13. Конференции и конкурсы профессионального мастерства (приложение №5)", [
+        group("ConferencesAndCompetitions", "Конференции и конкурсы профессионального мастерства (п. 2.6–2.7, приложение №5)", [
             field("EventType", "Тип мероприятия"),
             field("EventName", "Название"),
             field("Organizer", "Организатор"),
@@ -248,7 +248,7 @@
             field("Result", "Результат / достижение", "textarea"),
             statuses
         ]),
-        group("PsychologicalConsultations", "14. Психологическое консультирование", [
+        group("PsychologicalConsultations", "Психологическое консультирование (дополнительное развивающее действие)", [
             field("DateFrom", "Начало периода", "date"),
             field("DateTo", "Окончание периода", "date"),
             field("DurationMinutes", "Продолжительность консультации, минут", "number"),
@@ -256,9 +256,9 @@
             field("GeneralResult", "Общий результат (без личного содержания консультаций)", "textarea"),
             statuses
         ]),
-        { key: "DevelopmentalActionMaproperty", label: "15. Карта развивающих действий",
+        { key: "DevelopmentalActionMaproperty", label: "Карта развивающих действий (п. 1.4)",
           type: "object", fields: mapFields },
-        { key: "PersonnelMotivation", label: "Практическое задание «Мотивация персонала»",
+        { key: "PersonnelMotivation", label: "Практическое задание «Мотивация персонала» (п. 5.3.1)",
           type: "object", fields: [
             field("WorkSignificanceAction1", "«Значимость работы» — действие 1", "textarea"),
             field("WorkSignificanceAction2", "«Значимость работы» — действие 2", "textarea"),

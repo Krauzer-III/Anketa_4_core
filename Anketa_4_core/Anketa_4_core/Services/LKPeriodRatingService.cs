@@ -171,8 +171,9 @@ namespace Anketa_4_core.Services
             try { root = LKCabinetService.ParseRoot(json); }
             catch (InvalidOperationException) { return 0; }
 
-            // Three professional tasks, one training programme and at least two
-            // distance-learning activities are treated as required plan entries.
+            // Required entries from the IПП instruction: three professional tasks,
+            // one training programme, at least two selected distance courses,
+            // one professional book and two books for personal/business competencies.
             // Optional directions affect completion only after the testable adds
             // at least one record to that section.
             var sections = new List<double>
