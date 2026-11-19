@@ -432,6 +432,7 @@ GitHub Actions запускает тот же набор автоматичес�
 - Исправлены шесть предикатов в `LKPeriodRatingService`, из-за которых проект не компилировался (результат `Filled` типа int использовался как bool).
 - Исправлен вложенный Razor-блок в `Views/Result/GetMotivationTest.cshtml`.
 - При создании нового `TestableUser` в регистрации и импорте теперь задаётся начальный JSON `{}`; ранее в NOT NULL поле `LK_Data` записывался null, что приводило к ошибке PostgreSQL.
+- В `TestableController.UpsertAccessForTestable` добавлена загрузка навигации `TestPeriod`; без Include редактирование назначения периода падало с NullReferenceException.
 
 ## 20. Критерии приёмки
 
