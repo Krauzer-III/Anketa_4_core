@@ -149,7 +149,7 @@ public sealed class CompetentionControllerTests : PostgresTestBase
             }).ToArray()
         }));
 
-        Assert.Equal("Question", result.ViewName);
+        Assert.IsType<MVC_CompetentionModel_Question>(result.Model);
         Assert.True(controller.ModelState.ErrorCount > 0);
         Assert.Equal(0, await readDb.Comp_TestableAnswers.CountAsync());
     }
