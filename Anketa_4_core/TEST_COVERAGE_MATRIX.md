@@ -36,12 +36,16 @@
 | Класс / метод | Статус | Тесты |
 |---|---:|---|
 | JSON_ResultModel(string) — корректный JSON round-trip | AUTO | JsonResultModelTests |
+| JSON_ResultModel(int) — загрузка существующего результата | BLOCKED | пропущенный тест KNOWN DEFECT |
+| JSON_Test360(Test360, RespondentRole) — корректный JSON | AUTO | JsonResultModelTests |
+| JSON_Test360(Test360, RespondentRole) — повреждённый JSON | BLOCKED | пропущенный тест KNOWN DEFECT |
 | JSON_ResultModel(string) — повреждённый JSON и безопасные значения по умолчанию | BLOCKED | пропущенный тест KNOWN DEFECT |
 | Add_JSON_Test360_ToReport_Testable | AUTO | JsonResultModelTests |
 | Add_JSON_Test360_ToReport_Respondents | AUTO | JsonResultModelTests |
 | SaveCompetentionQuestion | AUTO | JsonResultModelTests |
 | CalculateCompetentionYear | AUTO | JsonResultModelTests |
 | JSON_Kettel.RecordAnswer | AUTO | JsonResultModelTests |
+| JSON_ResultModel.Add_JSON_Kettel_Answer | AUTO | JsonResultModelTests |
 | JSON_Kettel.Calculate / расчёт категорий | AUTO | JsonResultModelTests |
 | JSON_Motivation_Result(MotivationTest) — валидные поля | AUTO | JsonResultModelTests |
 | JSON_Motivation_Result(MotivationTest) — null в необязательных полях | BLOCKED | пропущенный тест KNOWN DEFECT |
