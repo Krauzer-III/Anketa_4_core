@@ -113,7 +113,7 @@ public sealed class ModeratorControllerTests : PostgresTestBase
                 new() { TestableId = seeded.TestableId, IsActive = true },
                 new() { TestableId = seeded.TestableId, IsActive = false }
             }
-        }));
+        }, null));
     }
 
     [Fact]
