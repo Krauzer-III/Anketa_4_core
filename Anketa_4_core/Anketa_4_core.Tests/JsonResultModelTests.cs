@@ -54,7 +54,7 @@ public sealed class JsonResultModelTests
         Assert.Equal(7, result.RespondentRoleID);
         Assert.Equal("Эксперт", result.RespondentRoleName);
         Assert.False(result.IsSelfMark);
-        Assert.Equal(15, result.q15);
+        Assert.Equal(15d, result.q15);
     }
 
     [Fact(Skip = "KNOWN DEFECT: JSON_ResultModel(int) contains a TODO and does not hydrate the existing result.")]
