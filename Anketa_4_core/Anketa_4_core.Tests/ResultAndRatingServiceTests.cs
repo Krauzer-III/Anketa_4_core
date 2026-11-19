@@ -215,7 +215,6 @@ public sealed class ResultAndRatingServiceTests : PostgresTestBase
         };
         await SaveResultAsync(best.AccessId, aggregate);
 
-        await AddAccessToExistingTestableAsync(best.TestableId, best.PeriodId);
         await AddAccessToExistingTestableAsync(other.TestableId, best.PeriodId);
 
         await using var db = CreateAnketaContext();
@@ -225,10 +224,10 @@ public sealed class ResultAndRatingServiceTests : PostgresTestBase
         Assert.NotNull(snapshot.Current);
         Assert.Equal(1, snapshot.Current!.Place);
         Assert.Equal("2010", snapshot.Current.Code);
-        Assert.Equal(100, snapshot.Current.TableCompletion);
-        Assert.Equal(100, snapshot.Current.TestCompletion);
-        Assert.Equal(80, snapshot.Current.CompetenceQuality);
-        Assert.Equal(95, snapshot.Current.TotalScore);
+        Assert.Equal(100d, snapshot.Current.TableCompletion);
+        Assert.Equal(100d, snapshot.Current.TestCompletion);
+        Assert.Equal(80d, snapshot.Current.CompetenceQuality);
+        Assert.Equal(95d, snapshot.Current.TotalScore);
         Assert.Equal(2, snapshot.Top.Count);
     }
 
