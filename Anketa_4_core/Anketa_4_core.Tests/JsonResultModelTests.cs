@@ -5,6 +5,75 @@ namespace Anketa_4_core.Tests;
 
 public sealed class JsonResultModelTests
 {
+
+    [Fact]
+    public void AddKettelAnswer_UpdatesAggregateWithoutRecalculatingIncompleteTest()
+    {
+        var result = new JSON_ResultModel();
+        var main = new KT_Main { ID = 12, Years = 41, Gender = "Женщина" };
+        var question = new KT_Question { ID = 22, Number = 1, Text = "Вопрос" };
+        var answer = new KT_Answer
+        {
+            ID = 33, Question = question, AnswerNumber = "2", AnswerText = "Ответ"
+        };
+        var selected = new KT_TestableAnswers
+        {
+            ID = 44, MainInfo = main, Answer = answer, DateTimeAnswer = DateTime.UtcNow
+        };
+
+        result.Add_JSON_Kettel_Answer(main, selected);
+
+        var saved = Assert.Single(result.KettelTest.QA);
+        Assert.Equal(22, saved.QuestionID);
+        Assert.Equal(33, saved.AnswerID);
+        Assert.Equal(41, result.KettelTest.Years);
+        Assert.Equal("Женщина", result.KettelTest.Gender);
+        Assert.False(result.KettelTest.IsCompleted);
+    }
+
+    [Fact]
+    public void Test360Constructor_MapsRespondentRoleAndAllAnswers()
+    {
+        var entity = new Test360
+        {
+            ID = 55,
+            IsSelfMark = false,
+            DatetimeTest = DateTime.UtcNow,
+            results = System.Text.Json.JsonSerializer.Serialize(new Test360_Result
+            {
+                q01 = 1, q02 = 2, q03 = 3, q04 = 4, q05 = 5,
+                q06 = 1, q07 = 2, q08 = 3, q09 = 4, q10 = 5,
+                q11 = 1, q12 = 2, q13 = 3, q14 = 4, q15 = 5
+            })
+        };
+        var role = new RespondentRole { ID = 7, Name = "Эксперт", isSelfMark = false };
+
+        var result = new JSON_Test360(entity, role);
+
+        Assert.Equal(55, result.ID);
+        Assert.Equal(7, result.RespondentRoleID);
+        Assert.Equal("Эксперт", result.RespondentRoleName);
+        Assert.False(result.IsSelfMark);
+        Assert.Equal(15, result.q15);
+    }
+
+    [Fact(Skip = "KNOWN DEFECT: JSON_ResultModel(int) contains a TODO and does not hydrate the existing result.")]
+    public void ResultJson_AccessIdConstructorShouldLoadExistingResult()
+    {
+        var result = new JSON_ResultModel(1);
+        Assert.NotNull(result.Tests360);
+        Assert.NotNull(result.CompetentionAnswers);
+    }
+
+    [Fact(Skip = "KNOWN DEFECT: JSON_Test360 does not safely handle malformed/null survey JSON.")]
+    public void Test360Constructor_MalformedSurveyJsonShouldNotThrow()
+    {
+        var entity = new Test360 { results = "{broken" };
+        var role = new RespondentRole { ID = 1, Name = "Эксперт", isSelfMark = false };
+        var result = new JSON_Test360(entity, role);
+        Assert.NotNull(result);
+    }
+
     [Fact]
     public void AddRespondent360_RecalculatesAveragesAndDoesNotCountSelfAssessment()
     {
