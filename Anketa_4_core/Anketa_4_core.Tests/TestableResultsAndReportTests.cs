@@ -186,9 +186,7 @@ public sealed class TestableResultsAndReportTests : PostgresTestBase
         var aggregateSelf = Assert.Single(result.Tests360);
         Assert.True(aggregateSelf.IsSelfMark);
         Assert.Equal(4, aggregateSelf.q01);
-        Assert.Empty(result.Test360ForReportRespondents == null
-            ? Array.Empty<double>()
-            : new[] { result.Test360ForReportRespondents.q01 });
+        Assert.Equal(0d, result.Test360ForReportRespondents.q01, 3);
     }
 
     [Fact]
