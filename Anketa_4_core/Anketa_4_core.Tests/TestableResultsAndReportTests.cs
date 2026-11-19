@@ -196,8 +196,8 @@ public sealed class TestableResultsAndReportTests : PostgresTestBase
         await using (var db = CreateAnketaContext())
         {
             var access = await db.AccessForTestables.FirstAsync(x => x.ID == seeded.AccessId);
-            var block1 = new Comp_Block { BlockName = "Год 1", Year = 1 };
-            var block2 = new Comp_Block { BlockName = "Год 2", Year = 2 };
+            var block1 = new Comp_Block { BlockName = "Год 1", WordInReport = "A", Year = 1 };
+            var block2 = new Comp_Block { BlockName = "Год 2", WordInReport = "B", Year = 2 };
             var question1 = new Comp_Question { QuestionNumber = 1, QuestionText = "Q1", Block = block1 };
             var question2 = new Comp_Question { QuestionNumber = 1, QuestionText = "Q2", Block = block2 };
             var answer1 = new Comp_Answer { Question = question1, Number = "1", Text = "A1", Correct_Answer = 1 };
