@@ -72,8 +72,7 @@ public abstract class PostgresTestBase : IAsyncLifetime
             options.User.RequireUniqueEmail = false;
         })
         .AddRoles<IdentityRole>()
-        .AddEntityFrameworkStores<ApplicationDbContext>()
-        .AddDefaultTokenProviders();
+        .AddEntityFrameworkStores<ApplicationDbContext>();
 
         _identityServices = services.BuildServiceProvider();
         await IdentityDb.Database.EnsureCreatedAsync();
@@ -123,18 +122,21 @@ public abstract class PostgresTestBase : IAsyncLifetime
         await using var db = CreateAnketaContext();
         var filial = new Filial { FilialName = filialName };
         var period = new TestPeriod { GroupName = periodName };
+        var reservLevel = new ReservLevel
+        {
+            ReservLevelName = reservLevelName ?? "Уровень " + code
+        };
         var testable = new Testable
         {
             Code = code,
             YearTraining = yearTraining,
             isArchived = false,
             filial = filial,
-            reservLevel = reservLevelName == null
-                ? null!
-                : new ReservLevel { ReservLevelName = reservLevelName }
+            reservLevel = reservLevel
         };
         db.Testables.Add(testable);
         db.TestPeriods.Add(period);
+        db.ReservLevels.Add(reservLevel);
         await db.SaveChangesAsync();
 
         var access = new AccessForTestable
@@ -156,7 +158,7 @@ public abstract class PostgresTestBase : IAsyncLifetime
         }
 
         await db.SaveChangesAsync();
-        return new SeededAccess(testable.ID, access.ID, period.ID, filial.ID);
+        return new SeededAccess(testable.ID, access.ID, period.ID, filial.ID, reservLevel.ID);
     }
 
     protected async Task AddAccessToExistingTestableAsync(
@@ -233,5 +235,6 @@ public abstract class PostgresTestBase : IAsyncLifetime
         int TestableId,
         int AccessId,
         int PeriodId,
-        int FilialId);
+        int FilialId,
+        int ReservLevelId);
 }
