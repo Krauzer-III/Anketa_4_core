@@ -143,7 +143,7 @@ public sealed class Test360ControllerTests : PostgresTestBase
     }
 
     [Fact]
-    public async Task SubmitTest_CurrentImplementationAcceptsOutOfRangeMarks()
+    public async Task SubmitTest_ClampsAllOutOfRangeMarksToNearestBoundary()
     {
         var user = await CreateUserAsync("qa_360_range", "testable_user");
         var seeded = await SeedAccessAsync(code: "6006", username: user.UserName);
@@ -161,7 +161,9 @@ public sealed class Test360ControllerTests : PostgresTestBase
             var result = await CreateController(db, user).SubmitTest(new MVC_Test360Model
             {
                 AccesTestID = seeded.AccessId, RespondentRoleID = roleId,
-                q01 = -100, q02 = 999
+                q01 = -100, q02 = -4, q03 = -3, q04 = -2, q05 = -1,
+                q06 = 0, q07 = 1, q08 = 2, q09 = 3, q10 = 4,
+                q11 = 5, q12 = 100, q13 = -999, q14 = 3, q15 = -3
             });
             Assert.Equal("TestCompleted", Assert.IsType<ViewResult>(result).ViewName);
         }
@@ -169,8 +171,26 @@ public sealed class Test360ControllerTests : PostgresTestBase
         await using var verifyDb = CreateAnketaContext();
         var raw = await verifyDb.Test360.SingleAsync();
         var answers = JsonSerializer.Deserialize<Test360_Result>(raw.results)!;
-        Assert.Equal(-100, answers.q01);
-        Assert.Equal(999, answers.q02);
+        Assert.Equal(-3, answers.q01);
+        Assert.Equal(-3, answers.q02);
+        Assert.Equal(-3, answers.q03);
+        Assert.Equal(-2, answers.q04);
+        Assert.Equal(-1, answers.q05);
+        Assert.Equal(0, answers.q06);
+        Assert.Equal(1, answers.q07);
+        Assert.Equal(2, answers.q08);
+        Assert.Equal(3, answers.q09);
+        Assert.Equal(3, answers.q10);
+        Assert.Equal(3, answers.q11);
+        Assert.Equal(3, answers.q12);
+        Assert.Equal(-3, answers.q13);
+        Assert.Equal(3, answers.q14);
+        Assert.Equal(-3, answers.q15);
+
+        var aggregate = JsonSerializer.Deserialize<JSON_ResultModel>(
+            (await verifyDb.TestResults.SingleAsync()).Results)!;
+        Assert.Equal(-3d, aggregate.Tests360.Single().q01);
+        Assert.Equal(3d, aggregate.Tests360.Single().q12);
     }
 
     private Test360Controller CreateController(AnketaContext db, Microsoft.AspNetCore.Identity.IdentityUser user)
