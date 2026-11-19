@@ -125,6 +125,7 @@ public sealed class TestableControllerTests : PostgresTestBase
                 Code = "11007-EDIT",
                 Year = 2,
                 Filial = seeded.FilialId,
+                RezervLevel = seeded.ReservLevelId,
                 UserName = user.UserName,
                 SelectedTestPeriodId = nextPeriod.PeriodId
             });
