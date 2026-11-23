@@ -52,7 +52,7 @@ else
     }
 
     <h6 class="mt-4">Ответы на вопросы</h6>
-    @{
+    
         var responses = new[]
         {
             new { Label = "Рекомендуемая должность", Value = m.RecomendPosition },
@@ -68,7 +68,7 @@ else
             new { Label = "8. Регионы возможного перевода", Value = m.Question_08 },
             new { Label = "9. Подтверждение официальной позиции", Value = m.Question_09 }
         };
-    }
+    
     <div class="table-responsive">
         <table class="table table-sm table-striped table-bordered">
             <thead><tr><th style="width:45%">Вопрос</th><th>Ответ</th></tr></thead>

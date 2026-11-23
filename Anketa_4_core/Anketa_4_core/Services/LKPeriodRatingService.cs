@@ -218,7 +218,7 @@ namespace Anketa_4_core.Services
             if (node is not JsonArray arr || arr.Count == 0) return 0;
             var records = arr.OfType<JsonObject>().ToArray();
             if (records.Length == 0) return 0;
-            return records.Average(x => fields.Count(field => Filled(x[field])) / (double)fields.Length);
+            return records.Average(x => fields.Count(field => FilledBool(x[field])) / (double)fields.Length);
         }
 
         private static int Filled(JsonNode? value)
@@ -228,6 +228,13 @@ namespace Anketa_4_core.Services
             return text.Length == 0 || text == "0" ||
                    text.StartsWith("0001-01-01", StringComparison.Ordinal)
                    ? 0 : 1;
+        }
+
+        private static bool FilledBool(JsonNode? value)
+        {
+            if (value == null) return false;
+            string text = value.ToString().Trim();
+            return text.Length > 0 && text != "0" && !text.StartsWith("0001-01-01", StringComparison.Ordinal);
         }
     }
 }
