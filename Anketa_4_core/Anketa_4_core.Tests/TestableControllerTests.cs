@@ -100,6 +100,10 @@ public sealed class TestableControllerTests : PostgresTestBase
         var user = await CreateUserAsync("qa_testable_edit", "testable_user");
         var seeded = await SeedAccessAsync(code: "11007", username: user.UserName);
         var nextPeriod = await SeedAccessAsync(code: "11008", periodName: "Новый период");
+        await SaveResultAsync(seeded.AccessId, new JSON_ResultModel
+        {
+            MotivationTest = new JSON_Motivation_Result { ID = 999 }
+        });
 
         await using (var db = CreateAnketaContext())
         {
@@ -136,7 +140,13 @@ public sealed class TestableControllerTests : PostgresTestBase
         var saved = await verifyDb.Testables.SingleAsync(x => x.ID == seeded.TestableId);
         Assert.Equal("11007-EDIT", saved.Code);
         Assert.Equal(2, saved.YearTraining);
-        Assert.Equal(2, await verifyDb.AccessForTestables.CountAsync(x => x.Testable.ID == seeded.TestableId));
+        var assignment = await verifyDb.AccessForTestables.Include(x => x.TestPeriod)
+            .SingleAsync(x => x.Testable.ID == seeded.TestableId);
+        Assert.Equal(seeded.AccessId, assignment.ID);
+        Assert.Equal(nextPeriod.PeriodId, assignment.TestPeriod.ID);
+        Assert.Equal(1, await verifyDb.TestResults.CountAsync(x => x.Access.ID == seeded.AccessId));
+        Assert.Contains("\"ID\":999", (await verifyDb.TestResults.SingleAsync(x =>
+            x.Access.ID == seeded.AccessId)).Results);
     }
 
     [Fact]
@@ -183,19 +193,66 @@ public sealed class TestableControllerTests : PostgresTestBase
     }
 
     [Fact]
-    public async Task CreateAndReportActions_AreCurrentlyStubs()
+    public async Task Create_GetAndPost_CreatesExactlyOneAssignmentAndUserBinding()
     {
-        var seeded = await SeedAccessAsync(code: "11011");
+        var period = await SeedAccessAsync(code: "11011");
+        var user = await CreateUserAsync("qa_single_create", "testable_user");
+
+        await using (var db = CreateAnketaContext())
+        {
+            var controller = CreateController(db);
+            var get = Assert.IsType<ViewResult>(await controller.Create());
+            Assert.Equal("Create", get.ViewName);
+            var model = Assert.IsType<MVC_TestableAddPageVM>(get.Model);
+            Assert.Equal(period.PeriodId, model.Single.SelectedTestPeriodId);
+            Assert.Contains(user.UserName!, model.FreeUsers);
+        }
+
+        await using (var db = CreateAnketaContext())
+        {
+            var result = Assert.IsType<RedirectToActionResult>(
+                await CreateController(db).Create(new MVC_TestableEditFull
+                {
+                    Code = "11012", Year = 2026,
+                    Filial = period.FilialId, RezervLevel = period.ReservLevelId,
+                    UserName = user.UserName, SelectedTestPeriodId = period.PeriodId
+                }));
+            Assert.Equal("Details", result.ActionName);
+        }
+
+        await using var verifyDb = CreateAnketaContext();
+        var testable = await verifyDb.Testables.SingleAsync(x => x.Code == "11012");
+        var assignment = await verifyDb.AccessForTestables.Include(x => x.TestPeriod)
+            .SingleAsync(x => x.Testable.ID == testable.ID);
+        Assert.Equal(period.PeriodId, assignment.TestPeriod.ID);
+        var link = await verifyDb.TestableUsers.SingleAsync(x => x.testable.ID == testable.ID);
+        Assert.Equal(user.UserName, link.UserName);
+        Assert.Equal("{}", link.LK_Data);
+    }
+
+    [Fact]
+    public async Task Create_RejectsUnknownPeriodAndDuplicateCodeWithoutSaving()
+    {
+        var existing = await SeedAccessAsync(code: "11014");
         await using var db = CreateAnketaContext();
         var controller = CreateController(db);
+        var invalid = Assert.IsType<ViewResult>(await controller.Create(new MVC_TestableEditFull
+        {
+            Code = "11014", Year = 2026, Filial = existing.FilialId,
+            RezervLevel = existing.ReservLevelId, SelectedTestPeriodId = 999999
+        }));
+        Assert.Equal("Create", invalid.ViewName);
+        Assert.True(controller.ModelState.ErrorCount > 0);
+        Assert.Single(await db.Testables.ToArrayAsync());
+        Assert.Single(await db.AccessForTestables.ToArrayAsync());
+    }
 
-        var createGet = Assert.IsType<ViewResult>(await controller.Create());
-        Assert.Equal("Create", createGet.ViewName);
-        var createPost = Assert.IsType<RedirectToActionResult>(
-            await controller.Create(new MVC_TestableEditFull { Code = "11012" }));
-        Assert.Equal("Details", createPost.ActionName);
-        Assert.False(await db.Testables.AnyAsync(x => x.Code == "11012"));
-
+    [Fact]
+    public async Task ReportActionStubs_AreStillExplicit()
+    {
+        var seeded = await SeedAccessAsync(code: "11015");
+        await using var db = CreateAnketaContext();
+        var controller = CreateController(db);
         Assert.IsType<NoContentResult>(controller.GenerateReportPdf(seeded.TestableId));
         Assert.IsType<NoContentResult>(controller.GenerateReportXlsx(seeded.TestableId));
         Assert.IsType<NoContentResult>(controller.SaveLKData(seeded.TestableId, "{}"));
