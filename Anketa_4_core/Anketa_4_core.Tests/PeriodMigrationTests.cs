@@ -1,6 +1,8 @@
 using Anketa_4_core.Data;
 using Anketa_4_core.Data.AnketaModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 using Xunit;
 
@@ -51,7 +53,7 @@ public sealed class PeriodMigrationTests : PostgresTestBase
     {
         await WithMigrationDatabase(async db =>
         {
-            await db.Database.MigrateAsync("20231219101011_migr_03");
+            await db.GetService<IMigrator>().MigrateAsync("20231219101011_migr_03");
             var p1 = new TestPeriod { GroupName = "Прежний" };
             var p2 = new TestPeriod { GroupName = "Поздний" };
             var testable = new Testable
