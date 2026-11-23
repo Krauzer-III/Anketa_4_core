@@ -1,8 +1,83 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    bool signedIn = User.Identity?.IsAuthenticated == true;
+    bool filialUser = User.IsInRole("filial_user");
+    ViewData["Title"] = filialUser ? "Выбор тестирования" : "Главная";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (filialUser)
+{
+    <section class="app-hero">
+        <div class="app-hero-content">
+            <span class="app-eyebrow">Рабочее место филиала</span>
+            <h1>Выберите тестирование</h1>
+            <p>Для филиальной учётной записи тестирование начинается с ввода кода сотрудника.
+               Система проверит филиал, назначенный период и возможность прохождения.</p>
+        </div>
+        <div class="app-hero-symbol" aria-hidden="true">360°</div>
+    </section>
+
+    <section class="app-section-heading">
+        <h2>Доступные тесты</h2>
+        <p>Откройте нужный раздел, чтобы начать или продолжить прохождение.</p>
+    </section>
+
+    <div class="app-tile-grid">
+        <a class="app-tile" asp-controller="Test360" asp-action="StartTest">
+            <span class="app-tile-number">01</span>
+            <strong>Оценка 360°</strong>
+            <span>Самооценка и анкеты респондентов</span>
+            <span class="app-tile-action">Перейти к тесту →</span>
+        </a>
+        <a class="app-tile" asp-controller="Motivation" asp-action="Index">
+            <span class="app-tile-number">02</span>
+            <strong>Мотивационный опросник</strong>
+            <span>Готовность участвовать в кадровом резерве</span>
+            <span class="app-tile-action">Перейти к тесту →</span>
+        </a>
+        <a class="app-tile" asp-controller="Kettel" asp-action="Index">
+            <span class="app-tile-number">03</span>
+            <strong>Психологическое тестирование</strong>
+            <span>Опросник Кеттела с сохранением ответов</span>
+            <span class="app-tile-action">Перейти к тесту →</span>
+        </a>
+        <a class="app-tile" asp-controller="Competention" asp-action="Index" asp-route-year="1">
+            <span class="app-tile-number">04</span>
+            <strong>Компетенции (1 год)</strong>
+            <span>Приоритеты действий в управленческих ситуациях</span>
+            <span class="app-tile-action">Перейти к тесту →</span>
+        </a>
+        <a class="app-tile" asp-controller="Competention" asp-action="Index" asp-route-year="2">
+            <span class="app-tile-number">05</span>
+            <strong>Компетенции (2 год)</strong>
+            <span>Задания второго года обучения</span>
+            <span class="app-tile-action">Перейти к тесту →</span>
+        </a>
+    </div>
+}
+else if (!signedIn)
+{
+    <section class="app-hero app-public-hero">
+        <div class="app-hero-content">
+            <span class="app-eyebrow">Автоматизированная система</span>
+            <h1>Оценка персонала</h1>
+            <p>Тестирование, индивидуальные планы развития и результаты оценки
+               в единой системе.</p>
+            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-light app-hero-btn">
+                Войти в систему
+            </a>
+        </div>
+        <div class="app-hero-symbol" aria-hidden="true">ОП</div>
+    </section>
+    <div class="app-info-strip">
+        <span>Вход по выданной учётной записи.</span>
+        <span>Если у вас нет доступа, обратитесь к администратору системы.</span>
+    </div>
+}
+else
+{
+    <section class="app-empty-state">
+        <h1>Нет доступных разделов</h1>
+        <p>Для вашей учётной записи не назначена рабочая роль.
+           Обратитесь к администратору системы.</p>
+    </section>
+}

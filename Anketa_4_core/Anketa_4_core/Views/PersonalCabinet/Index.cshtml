@@ -5,17 +5,29 @@
     ViewData["LKSaveUrl"] = Url.Action("SaveSection", "PersonalCabinet");
     ViewData["LKRatingUrl"] = Url.Action("Rating", "PersonalCabinet");
 }
-<div class="container-fluid py-3">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-        <div>
-            <h2 class="mb-1">Личный кабинет</h2>
-            <p class="text-muted mb-0">
-                Все таблицы размещены на этой странице. Для изменения данных
-                нажмите «Редактировать» у нужного раздела; сохранение происходит без перезагрузки.
-            </p>
-        </div>
-        <a asp-controller="Report" asp-action="GetReport"
-           class="btn btn-success">Получить отчёт</a>
+
+<section class="cabinet-hero">
+    <div class="app-hero-content">
+        <span class="app-eyebrow">Личный кабинет тестируемого</span>
+        <h1>Мой план развития</h1>
+        <p>Мероприятия индивидуального плана, сохранённые результаты и
+           прогресс заполнения в одном месте. Для изменения таблицы откройте её редактор.</p>
     </div>
-    <partial name="_LKDashboard" />
-</div>
+    <div class="cabinet-hero-actions">
+        <a asp-controller="Report" asp-action="GetReport"
+           class="btn btn-light">Получить отчёт</a>
+    </div>
+</section>
+
+<section class="cabinet-quick-tests" aria-label="Доступные тесты">
+    <h2>Пройти тестирование</h2>
+    <p class="mb-3">Проверка периода и возможности прохождения выполняется при открытии теста.</p>
+    <div class="cabinet-test-links">
+        <a asp-controller="Test360" asp-action="StartTest">Оценка 360°</a>
+        <a asp-controller="Motivation" asp-action="Index">Мотивационный опросник</a>
+        <a asp-controller="Kettel" asp-action="Index">Психологическое тестирование</a>
+        <a asp-controller="Competention" asp-action="Index">Компетенции (мой год обучения)</a>
+    </div>
+</section>
+
+<partial name="_LKDashboard" />
