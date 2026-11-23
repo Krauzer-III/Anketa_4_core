@@ -1,26 +1,36 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @model UserManager<IdentityUser>
 @{
-    var roles = ViewData["rolemanager"] as RoleManager<IdentityRole>;
+    ViewData["Title"] = "Пользователи системы";
 }
-
-<table class="table">
-    <thead></thead>
-    <tbody>
-        @foreach (var user in Model.Users.ToList())
-        {
-            <tr>
-                <td>
-                    @user.UserName
-                </td>
-                <td>
-                    @{
-                        var masRoles = await Model.GetRolesAsync(user);
-                        var string_r = String.Join(", ", masRoles);
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-2">Пользователи системы</h1>
+        <p class="text-muted mb-0">Учётные записи и назначенные им роли.</p>
+    </div>
+    <a class="btn btn-primary" asp-controller="Registration" asp-action="Index">Зарегистрировать пользователей</a>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Логин</th>
+                        <th scope="col">Роли</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.Users.ToList().OrderBy(u => u.UserName))
+                    {
+                        var roles = await Model.GetRolesAsync(user);
+                        <tr>
+                            <td>@user.UserName</td>
+                            <td>@(roles.Count > 0 ? string.Join(", ", roles) : "Роли не назначены")</td>
+                        </tr>
                     }
-                    @string_r
-                    </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

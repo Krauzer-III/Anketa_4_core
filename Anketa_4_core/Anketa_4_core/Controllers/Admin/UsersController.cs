@@ -1,10 +1,10 @@
-﻿using Anketa_4_core.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Anketa_4_core.Controllers.Admin
 {
+    [Authorize(Roles = "admin")]
     public class UsersController : Controller
     {
         private readonly UserManager<IdentityUser> userManager;
@@ -16,16 +16,15 @@ namespace Anketa_4_core.Controllers.Admin
             this.roleManager = roleManager;
         }
 
+        [HttpGet]
         public IActionResult Index()
         {
             ViewData["rolemanager"] = roleManager;
             return View(userManager);
         }
 
+        // The editor does not have an implementation yet; no broken link is exposed.
         [HttpGet]
-        public IActionResult UserEditor(string UserID)
-        {
-            return View();
-        }
+        public IActionResult UserEditor(string UserID) => RedirectToAction(nameof(Index));
     }
 }

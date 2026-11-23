@@ -5,29 +5,26 @@
     ViewData["LKSaveUrl"] = Url.Action("SaveSection", "PersonalCabinet");
     ViewData["LKRatingUrl"] = Url.Action("Rating", "PersonalCabinet");
 }
-
-<section class="cabinet-hero">
-    <div class="app-hero-content">
-        <span class="app-eyebrow">Личный кабинет тестируемого</span>
-        <h1>Мой план развития</h1>
-        <p>Мероприятия индивидуального плана, сохранённые результаты и
-           прогресс заполнения в одном месте. Для изменения таблицы откройте её редактор.</p>
+<div class="lk-page">
+    <section class="lk-page-heading">
+        <div>
+            <div class="lk-page-heading__label">Моё рабочее пространство</div>
+            <h1>Личный кабинет</h1>
+            <p>Индивидуальный план подготовки, развивающие мероприятия, отчётные формы и прогресс по текущему периоду.</p>
+        </div>
+        <div class="lk-page-heading__actions">
+            <a asp-controller="Test360" asp-action="StartTest" class="btn btn-outline-primary">Самооценка 360°</a>
+            <a asp-controller="Report" asp-action="GetReport" class="btn btn-primary">Получить отчёт</a>
+        </div>
+    </section>
+    <div class="lk-help-strip">
+        <span class="lk-help-strip__symbol" aria-hidden="true">i</span>
+        <span>
+            Все разделы ИПП расположены ниже. Чтобы изменить данные, нажмите
+            <strong>«Редактировать»</strong> у соответствующей таблицы. Изменения
+            сохраняются без перезагрузки страницы. Необязательные мероприятия
+            можно заполнять по мере включения их в план.
+        </span>
     </div>
-    <div class="cabinet-hero-actions">
-        <a asp-controller="Report" asp-action="GetReport"
-           class="btn btn-light">Получить отчёт</a>
-    </div>
-</section>
-
-<section class="cabinet-quick-tests" aria-label="Доступные тесты">
-    <h2>Пройти тестирование</h2>
-    <p class="mb-3">Проверка периода и возможности прохождения выполняется при открытии теста.</p>
-    <div class="cabinet-test-links">
-        <a asp-controller="Test360" asp-action="StartTest">Оценка 360°</a>
-        <a asp-controller="Motivation" asp-action="Index">Мотивационный опросник</a>
-        <a asp-controller="Kettel" asp-action="Index">Психологическое тестирование</a>
-        <a asp-controller="Competention" asp-action="Index">Компетенции (мой год обучения)</a>
-    </div>
-</section>
-
-<partial name="_LKDashboard" />
+    <partial name="_LKDashboard" />
+</div>

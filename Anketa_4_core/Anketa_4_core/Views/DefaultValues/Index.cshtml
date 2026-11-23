@@ -1,3 +1,11 @@
-﻿<form asp-action="AddDefaultValues" asp-controller="DefaultValues" method="get">
-    <button type="submit">Заполнить дефолтные значения</button>
-</form>
+@{
+    ViewData["Title"] = "Первичная настройка";
+}
+<div class="portal-public-note">
+    <h1 class="h3">Первичная настройка справочников</h1>
+    <p class="mb-3">Этот раздел предназначен только для администратора. Заполнение справочников может изменить исходные данные системы. Перед повторным запуском проверьте, выполнялась ли инициализация ранее.</p>
+    <form asp-controller="DefaultValues" asp-action="AddDefaultValues" method="post">
+        @Html.AntiForgeryToken()
+        <button class="btn btn-primary" type="submit">Заполнить справочники</button>
+    </form>
+</div>

@@ -1,46 +1,39 @@
 @{
     ViewData["Title"] = "Тестируемые";
 }
-
-<section class="app-page-heading">
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
     <div>
-        <span class="app-page-eyebrow">Управление оценкой</span>
-        <h1>Тестируемые</h1>
-        <p>Поиск сотрудников по коду, просмотр карточек, назначений и результатов.</p>
+        <h1 class="h3 mb-2">Тестируемые</h1>
+        <p class="text-muted mb-0">Поиск по коду, список тестируемых и переход к карточкам.</p>
     </div>
-    <div class="app-page-actions">
-        <a class="btn btn-primary" asp-controller="Testable" asp-action="Create">Добавить тестируемого</a>
-        <a class="btn btn-outline-primary" asp-controller="Testable" asp-action="Import">Импорт</a>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-primary" asp-action="Import">Импорт</a>
+        <a class="btn btn-primary" asp-action="Create">Добавить тестируемого</a>
     </div>
-</section>
+</div>
 
-<div class="card app-data-card">
-    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <h2 class="h5 mb-0">Список тестируемых</h2>
-        <div class="app-search-field">
-            <label class="visually-hidden" for="searchBox">Поиск по коду тестируемого</label>
-            <input id="searchBox" type="search" class="form-control"
-                   autocomplete="off" placeholder="Поиск по коду тестируемого..." />
-        </div>
+<div class="card">
+    <div class="card-body">
+        <label for="searchBox" class="form-label fw-semibold">Поиск тестируемого</label>
+        <input id="searchBox" class="form-control" style="max-width:420px"
+               placeholder="Введите код или его часть" autocomplete="off" />
     </div>
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-striped align-middle mb-0">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Код</th>
-                    <th>Филиал</th>
-                    <th>Год</th>
-                    <th>Архив</th>
-                    <th class="text-end">Действия</th>
+                    <th scope="col">№</th>
+                    <th scope="col">Код</th>
+                    <th scope="col">Филиал</th>
+                    <th scope="col">Год обучения</th>
+                    <th scope="col">Архив</th>
+                    <th scope="col">Действия</th>
                 </tr>
             </thead>
             <tbody id="infiniteBody"></tbody>
         </table>
     </div>
-    <div id="loading" class="app-list-loading text-muted" role="status" aria-live="polite">
-        Загрузка списка...
-    </div>
+    <div id="loading" class="text-muted text-center p-3" role="status">Загрузка записей...</div>
 </div>
 
 @section Scripts {
@@ -49,70 +42,26 @@
         const body = document.getElementById('infiniteBody');
         const loadingEl = document.getElementById('loading');
         const searchBox = document.getElementById('searchBox');
-        let searchRevision = 0;
-        let searchDelay = null;
 
         async function loadMore(reset = false) {
-            if (reset) {
-                searchRevision++;
-                skip = 0;
-                done = false;
-                body.replaceChildren();
-            }
-            if (loading || done) return;
-            loading = true;
-            loadingEl.textContent = 'Загрузка списка...';
-            loadingEl.style.display = 'block';
-            const revision = searchRevision;
-            const url = '@Url.Action("List")?skip=' + skip + '&take=' + take + '&q=' + encodeURIComponent(q);
-            try {
-                const resp = await fetch(url, { cache: 'no-store' });
-                if (!resp.ok) throw new Error('Не удалось загрузить список тестируемых.');
-                const html = await resp.text();
-                if (revision !== searchRevision) return;
-                if (html.trim().length === 0) {
-                    done = true;
-                    if (skip === 0) {
-                        loadingEl.textContent = 'По запросу ничего не найдено.';
-                        loadingEl.style.display = 'block';
-                    }
-                    return;
-                }
-                body.insertAdjacentHTML('beforeend', html);
-                skip += take;
-            } catch (error) {
-                if (revision === searchRevision) {
-                    loadingEl.textContent = error.message || 'Ошибка загрузки.';
-                    loadingEl.style.display = 'block';
-                    return;
-                }
-            } finally {
-                loading = false;
-                if (revision !== searchRevision) {
-                    loadMore();
-                } else if (!done) {
-                    loadingEl.textContent = 'Прокрутите вниз для загрузки следующих записей';
-                    loadingEl.style.display = 'block';
-                    if (loadingEl.getBoundingClientRect().top < window.innerHeight + 200) {
-                        requestAnimationFrame(() => loadMore());
-                    }
-                } else if (skip > 0) {
-                    loadingEl.style.display = 'none';
-                }
-            }
+            if (loading || done) return; loading = true; loadingEl.style.display = 'block';
+            const url = `@Url.Action("List")?skip=${reset ? 0 : skip}&take=${take}&q=${encodeURIComponent(q)}`;
+            const resp = await fetch(url);
+            const html = await resp.text();
+            if (reset) { body.innerHTML = ''; skip = 0; done = false; }
+            if (html.trim().length === 0) { done = true; }
+            else { body.insertAdjacentHTML('beforeend', html); skip += take; }
+            loading = false; loadingEl.style.display = 'none';
         }
 
         const observer = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting) loadMore();
-        }, { rootMargin: '200px 0px' });
+            if (entries[0].isIntersecting) { loadMore(); }
+        });
         observer.observe(loadingEl);
 
         searchBox.addEventListener('input', () => {
-            clearTimeout(searchDelay);
-            searchDelay = setTimeout(() => {
-                q = searchBox.value.trim();
-                loadMore(true);
-            }, 250);
+            q = searchBox.value || '';
+            done = false; skip = 0; loadMore(true);
         });
 
         loadMore();

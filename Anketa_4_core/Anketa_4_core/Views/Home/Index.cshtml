@@ -1,83 +1,160 @@
 @{
+    ViewData["Title"] = "Главная";
     bool signedIn = User.Identity?.IsAuthenticated == true;
-    bool filialUser = User.IsInRole("filial_user");
-    ViewData["Title"] = filialUser ? "Выбор тестирования" : "Главная";
+    bool isFilial = User.IsInRole("filial_user");
+    bool canManage = User.IsInRole("admin") || User.IsInRole("moderator");
+    bool canReview = canManage || User.IsInRole("verificator");
 }
+<section class="portal-hero">
+    <div class="portal-hero__content">
+        <span class="portal-eyebrow">Рабочее пространство</span>
+        <h1>
+            @if (!signedIn)
+            {
+                <text>Добро пожаловать</text>
+            }
+            else if (isFilial)
+            {
+                <text>Тестирование сотрудников филиала</text>
+            }
+            else if (canReview)
+            {
+                <text>Панель управления оценкой</text>
+            }
+            else
+            {
+                <text>Оценка персонала</text>
+            }
+        </h1>
+        <p>
+            @if (!signedIn)
+            {
+                <text>Единая система прохождения тестирований, ведения индивидуальных планов развития и просмотра результатов оценки.</text>
+            }
+            else if (isFilial)
+            {
+                <text>Выберите тестирование. На следующем шаге потребуется код тестируемого; система проверит принадлежность к вашему филиалу и доступность тестирования.</text>
+            }
+            else if (canReview)
+            {
+                <text>Переходите к результатам, периодам и управлению тестируемыми через доступные разделы системы.</text>
+            }
+            else
+            {
+                <text>Доступ к разделам зависит от роли вашей учётной записи.</text>
+            }
+        </p>
+        @if (!signedIn)
+        {
+            <a class="btn btn-light btn-lg portal-hero__cta" asp-area="Identity" asp-page="/Account/Login">
+                Войти в систему
+            </a>
+        }
+    </div>
+    <div class="portal-hero__symbol" aria-hidden="true">О</div>
+</section>
 
-@if (filialUser)
+@if (canReview)
 {
-    <section class="app-hero">
-        <div class="app-hero-content">
-            <span class="app-eyebrow">Рабочее место филиала</span>
-            <h1>Выберите тестирование</h1>
-            <p>Для филиальной учётной записи тестирование начинается с ввода кода сотрудника.
-               Система проверит филиал, назначенный период и возможность прохождения.</p>
-        </div>
-        <div class="app-hero-symbol" aria-hidden="true">360°</div>
-    </section>
-
-    <section class="app-section-heading">
-        <h2>Доступные тесты</h2>
-        <p>Откройте нужный раздел, чтобы начать или продолжить прохождение.</p>
-    </section>
-
-    <div class="app-tile-grid">
-        <a class="app-tile" asp-controller="Test360" asp-action="StartTest">
-            <span class="app-tile-number">01</span>
+    <div class="portal-section-heading">
+        <h2>Рабочие разделы</h2>
+        <p>Инструменты, доступные вашей роли</p>
+    </div>
+    <div class="portal-grid">
+        <a class="portal-card" asp-controller="Result" asp-action="IndexModerator">
+            <span class="portal-card__number">01</span>
+            <strong>Результаты оценки</strong>
+            <span>Просмотр заполненных тестов, фильтрация и сводные показатели по периодам.</span>
+            <span class="portal-card__action">Перейти в раздел <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="portal-card" asp-controller="Period" asp-action="Index">
+            <span class="portal-card__number">02</span>
+            <strong>Периоды тестирования</strong>
+            <span>Список периодов, назначенные тестируемые и параметры доступа.</span>
+            <span class="portal-card__action">Перейти в раздел <span aria-hidden="true">→</span></span>
+        </a>
+        @if (canManage)
+        {
+            <a class="portal-card" asp-controller="Testable" asp-action="Index">
+                <span class="portal-card__number">03</span>
+                <strong>Тестируемые</strong>
+                <span>Поиск по коду, карточки, назначения и управление записями.</span>
+                <span class="portal-card__action">Перейти в раздел <span aria-hidden="true">→</span></span>
+            </a>
+            <a class="portal-card" asp-controller="Registration" asp-action="Index">
+                <span class="portal-card__number">04</span>
+                <strong>Регистрация пользователей</strong>
+                <span>Создание личных и филиальных учётных записей, назначение ролей.</span>
+                <span class="portal-card__action">Перейти в раздел <span aria-hidden="true">→</span></span>
+            </a>
+            <a class="portal-card" asp-controller="NewsAdmin" asp-action="Index">
+                <span class="portal-card__number">05</span>
+                <strong>Управление новостями</strong>
+                <span>Публикация и редактирование информационных сообщений.</span>
+                <span class="portal-card__action">Перейти в раздел <span aria-hidden="true">→</span></span>
+            </a>
+        }
+        @if (User.IsInRole("admin"))
+        {
+            <a class="portal-card" asp-controller="Users" asp-action="Index">
+                <span class="portal-card__number">06</span>
+                <strong>Пользователи системы</strong>
+                <span>Просмотр списка учётных записей и назначенных ролей.</span>
+                <span class="portal-card__action">Перейти в раздел <span aria-hidden="true">→</span></span>
+            </a>
+        }
+    </div>
+}
+else if (isFilial)
+{
+    <div class="portal-section-heading">
+        <h2>Выберите тестирование</h2>
+        <p>Доступность каждого теста будет проверена после ввода кода тестируемого</p>
+    </div>
+    <div class="portal-grid">
+        <a class="portal-card" asp-controller="Test360" asp-action="StartTest">
+            <span class="portal-card__number">360°</span>
             <strong>Оценка 360°</strong>
-            <span>Самооценка и анкеты респондентов</span>
-            <span class="app-tile-action">Перейти к тесту →</span>
+            <span>Оценка качеств и компетенций по ролям респондентов.</span>
+            <span class="portal-card__action">Открыть тестирование <span aria-hidden="true">→</span></span>
         </a>
-        <a class="app-tile" asp-controller="Motivation" asp-action="Index">
-            <span class="app-tile-number">02</span>
+        <a class="portal-card" asp-controller="Motivation" asp-action="Index">
+            <span class="portal-card__number">01</span>
             <strong>Мотивационный опросник</strong>
-            <span>Готовность участвовать в кадровом резерве</span>
-            <span class="app-tile-action">Перейти к тесту →</span>
+            <span>Анкета о мотивации, готовности к развитию и включении в резерв.</span>
+            <span class="portal-card__action">Открыть тестирование <span aria-hidden="true">→</span></span>
         </a>
-        <a class="app-tile" asp-controller="Kettel" asp-action="Index">
-            <span class="app-tile-number">03</span>
+        <a class="portal-card" asp-controller="Kettel" asp-action="Index">
+            <span class="portal-card__number">02</span>
             <strong>Психологическое тестирование</strong>
-            <span>Опросник Кеттела с сохранением ответов</span>
-            <span class="app-tile-action">Перейти к тесту →</span>
+            <span>Опросник Кеттелла с сохранением ответа на каждый вопрос.</span>
+            <span class="portal-card__action">Открыть тестирование <span aria-hidden="true">→</span></span>
         </a>
-        <a class="app-tile" asp-controller="Competention" asp-action="Index" asp-route-year="1">
-            <span class="app-tile-number">04</span>
+        <a class="portal-card" asp-controller="Competention" asp-action="Index" asp-route-year="1">
+            <span class="portal-card__number">I</span>
             <strong>Компетенции (1 год)</strong>
-            <span>Приоритеты действий в управленческих ситуациях</span>
-            <span class="app-tile-action">Перейти к тесту →</span>
+            <span>Оценка ситуаций с распределением приоритетов от 1 до 4.</span>
+            <span class="portal-card__action">Открыть тестирование <span aria-hidden="true">→</span></span>
         </a>
-        <a class="app-tile" asp-controller="Competention" asp-action="Index" asp-route-year="2">
-            <span class="app-tile-number">05</span>
+        <a class="portal-card" asp-controller="Competention" asp-action="Index" asp-route-year="2">
+            <span class="portal-card__number">II</span>
             <strong>Компетенции (2 год)</strong>
-            <span>Задания второго года обучения</span>
-            <span class="app-tile-action">Перейти к тесту →</span>
+            <span>Вторая программа оценки компетенций и сохранение прогресса.</span>
+            <span class="portal-card__action">Открыть тестирование <span aria-hidden="true">→</span></span>
         </a>
     </div>
 }
 else if (!signedIn)
 {
-    <section class="app-hero app-public-hero">
-        <div class="app-hero-content">
-            <span class="app-eyebrow">Автоматизированная система</span>
-            <h1>Оценка персонала</h1>
-            <p>Тестирование, индивидуальные планы развития и результаты оценки
-               в единой системе.</p>
-            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-light app-hero-btn">
-                Войти в систему
-            </a>
-        </div>
-        <div class="app-hero-symbol" aria-hidden="true">ОП</div>
+    <section class="portal-public-note">
+        <h2>Для работы нужна авторизация</h2>
+        <p>После входа открываются разделы, соответствующие вашей роли. Личные учётные записи сразу переходят в собственный кабинет.</p>
     </section>
-    <div class="app-info-strip">
-        <span>Вход по выданной учётной записи.</span>
-        <span>Если у вас нет доступа, обратитесь к администратору системы.</span>
-    </div>
 }
 else
 {
-    <section class="app-empty-state">
-        <h1>Нет доступных разделов</h1>
-        <p>Для вашей учётной записи не назначена рабочая роль.
-           Обратитесь к администратору системы.</p>
+    <section class="portal-public-note">
+        <h2>Разделы пока не назначены</h2>
+        <p>Ваша учётная запись авторизована, но для неё не найдены доступные рабочие разделы. Обратитесь к администратору.</p>
     </section>
 }

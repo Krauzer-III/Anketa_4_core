@@ -380,9 +380,19 @@
         parent.appendChild(container);
     }
     function drawSection(parent, schema, value, edit) {
-        const section = dom("section", "card shadow-sm mb-3");
+        const section = dom("section", "card shadow-sm mb-3 lk-section");
+        section.id = "lk-section-" + schema.key;
         const head = dom("div", "card-header d-flex justify-content-between align-items-center gap-2");
-        head.appendChild(dom("h5", "h6 mb-0", schema.label));
+        const titleArea = dom("div");
+        titleArea.appendChild(dom("h5", "h6 mb-1", schema.label));
+        if (schema.type === "list") {
+            const count = Array.isArray(value) ? value.length : 0;
+            titleArea.appendChild(dom("span", "text-muted small",
+                count === 0 ? "Записей пока нет" : "Записей: " + count));
+        } else {
+            titleArea.appendChild(dom("span", "text-muted small", "Раздел индивидуального плана"));
+        }
+        head.appendChild(titleArea);
         head.appendChild(btn("Редактировать", "btn-outline-primary btn-sm", () => edit(schema)));
         section.appendChild(head);
         const body = dom("div", "card-body");
@@ -536,6 +546,39 @@
 
         function renderMain(target) {
             target.replaceChildren();
+
+            if (target === main) {
+                const shortcuts = [
+                    ["ProfTasks", "Профессиональные задачи"],
+                    ["TrainingProgramms", "Тренинги"],
+                    ["DistanceLearning", "Дистанционные курсы"],
+                    ["AdvancedTrainingCourses", "Повышение квалификации"],
+                    ["LanguageTrainings", "Языки"],
+                    ["TeachingActivities", "Техническая учёба"],
+                    ["LK_ViceBoss", "Замещение"],
+                    ["Internships", "Стажировка"],
+                    ["Mentorships", "Наставничество"],
+                    ["ReportBooks", "Книги"],
+                    ["ProfessionalRetrainings", "Переподготовка"],
+                    ["ProjectActivities", "Проекты"],
+                    ["ConferencesAndCompetitions", "Конференции и конкурсы"],
+                    ["PsychologicalConsultations", "Консультации"],
+                    ["DevelopmentalActionMaproperty", "Карта развития"],
+                    ["PersonnelMotivation", "Мотивация персонала"]
+                ];
+                const nav = dom("nav", "lk-quick-nav");
+                nav.setAttribute("aria-label", "Быстрый переход к разделам личного кабинета");
+                nav.appendChild(dom("div", "lk-quick-nav__heading", "Быстрый переход к разделам"));
+                const links = dom("div", "lk-quick-nav__links");
+                shortcuts.forEach(([key, title]) => {
+                    const anchor = dom("a", "lk-quick-nav__link", title);
+                    anchor.href = "#lk-section-" + key;
+                    links.appendChild(anchor);
+                });
+                nav.appendChild(links);
+                target.appendChild(nav);
+            }
+
             sections.forEach(s => drawSection(target, s, state.data[s.key],
                 schema => openEditor(schema)));
         }

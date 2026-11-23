@@ -3,18 +3,19 @@
 
 @if (SignInManager.IsSignedIn(User))
 {
-    <div class="app-session">
-        <span class="app-session-name" title="@User.Identity?.Name">@User.Identity?.Name</span>
-        <form method="post" asp-area="Identity" asp-page="/Account/Logout"
-              asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-sm app-signout">Выйти</button>
+    <div class="app-account">
+        <a class="app-account__name" asp-area="Identity" asp-page="/Account/Manage/Index"
+           title="Настройки аккаунта">
+            <span class="app-account__avatar" aria-hidden="true">@@</span>
+            <span class="app-account__username">@User.Identity?.Name</span>
+        </a>
+        <form class="app-account__logout" asp-area="Identity" asp-page="/Account/Logout"
+              asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">Выйти</button>
         </form>
     </div>
 }
 else
 {
-    <a class="btn btn-sm app-signin" asp-area="Identity" asp-page="/Account/Login">
-        Войти
-    </a>
+    <a class="btn btn-primary app-account__signin" asp-area="Identity" asp-page="/Account/Login">Войти</a>
 }
