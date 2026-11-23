@@ -9,6 +9,8 @@
 
 | Класс | Функция | Статус | Тесты |
 |---|---|---:|---|
+| PeriodAssignmentService | AssignAsync: перенос, повтор, неизвестные ID, конкурентные запросы, сохранение всех видов результатов | AUTO | PeriodAssignmentServiceTests |
+| PostgreSQL / EF migration | Уникальный индекс TestableID, свежая схема, защита прежних дублей при миграции | AUTO | PeriodAssignmentServiceTests, PeriodMigrationTests |
 | LKCabinetService | ParseRoot | AUTO | LKCabinetServiceTests |
 | LKCabinetService | LoadForUserAsync | AUTO | LKCabinetServiceTests |
 | LKCabinetService | LoadForTestableAsync | AUTO | LKCabinetServiceTests |
@@ -88,7 +90,7 @@
 | RegistrationController | RegisterAll / rollback | AUTO (сценарии успеха и ошибок) | RegistrationControllerTests |
 | TestableController | Index | MANUAL | TEST-01 |
 | TestableController | List | AUTO | TestableControllerTests |
-| TestableController | Create GET/POST | BLOCKED | TestableControllerTests фиксирует заглушку |
+| TestableController | Create GET/POST | AUTO | TestableControllerTests: один период, пользователь, валидация |
 | TestableController | NextCode / GetNextCodeAsync | AUTO | TestableControllerTests |
 | TestableController | Import GET/POST | AUTO (POST) | TestableControllerTests |
 | TestableController | GetFreeTestableUsersAsync | AUTO (через Import) | TestableControllerTests |
@@ -101,12 +103,12 @@
 | TestableController | GenerateReportXlsx | BLOCKED | TestableControllerTests фиксирует NoContent |
 | TestableController | SaveLKData | BLOCKED | TestableControllerTests фиксирует NoContent |
 | TestableController | Delete GET/POST | AUTO (POST) | TestableControllerTests |
-| TestableController | FillLookups / UpsertTestableUser / UpsertAccessForTestable | AUTO (через Edit/Import) | TestableControllerTests |
+| TestableController | FillLookups / UpsertTestableUser / UpsertAccessForTestable | AUTO (через Create/Edit/Import) | TestableControllerTests |
 | PeriodController | Index / Details | AUTO | ModeratorControllerTests |
 | PeriodController | Create GET | MANUAL | PERIOD-04–PERIOD-08 |
-| PeriodController | Create POST | AUTO | ModeratorControllerTests |
+| PeriodController | Create POST | AUTO | ModeratorControllerTests: перенос, проверка ID |
 | PeriodController | Edit GET | MANUAL | PERIOD-09–PERIOD-10 |
-| PeriodController | Edit POST | AUTO | ModeratorControllerTests |
+| PeriodController | Edit POST | AUTO | ModeratorControllerTests: перенос, флаг активности, дубли |
 | NewsAdminController | Index | AUTO | ModeratorControllerTests |
 | NewsAdminController | Create GET | MANUAL | NEWS-01–NEWS-06 |
 | NewsAdminController | Create POST | AUTO | ModeratorControllerTests |
