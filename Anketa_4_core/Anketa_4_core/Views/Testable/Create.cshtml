@@ -12,6 +12,7 @@
         <button class="nav-link" id="bulk-tab" data-bs-toggle="tab" data-bs-target="#bulk-pane" type="button" role="tab">Добавить много</button>
     </li>
 </ul>
+<div asp-validation-summary="All" class="text-danger mb-2"></div>
 <div class="tab-content border border-top-0 p-3 rounded-bottom" id="addTabsContent">
     <div class="tab-pane fade show active" id="single-pane" role="tabpanel" aria-labelledby="single-tab">
         <form asp-action="Create" method="post">
