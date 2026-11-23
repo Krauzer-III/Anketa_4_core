@@ -196,7 +196,7 @@ public sealed class ResultAndRatingServiceTests : PostgresTestBase
     }
 
     [Fact]
-    public async Task Rating_DeduplicatesAssignmentsAndCalculatesWeightedScore()
+    public async Task Rating_UsesMovedSingleAssignmentsAndCalculatesWeightedScore()
     {
         var fullPlan = FullPlanJson();
         var best = await SeedAccessAsync(
@@ -219,6 +219,9 @@ public sealed class ResultAndRatingServiceTests : PostgresTestBase
         await AddAccessToExistingTestableAsync(other.TestableId, best.PeriodId);
 
         await using var db = CreateAnketaContext();
+        Assert.Equal(2, await db.AccessForTestables.CountAsync());
+        Assert.True(await db.AccessForTestables.AnyAsync(x =>
+            x.ID == other.AccessId && x.TestPeriod.ID == best.PeriodId));
         var snapshot = await new LKPeriodRatingService(db).GetForTestableAsync(best.TestableId);
 
         Assert.Equal(2, snapshot.Participants);
