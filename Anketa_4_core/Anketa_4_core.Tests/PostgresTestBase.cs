@@ -33,6 +33,8 @@ public abstract class PostgresTestBase : IAsyncLifetime
         return context;
     }
 
+    protected string AnketaConnectionString => _anketaConnection;
+
     protected ApplicationDbContext IdentityDb =>
         _identityServices!.GetRequiredService<ApplicationDbContext>();
 
