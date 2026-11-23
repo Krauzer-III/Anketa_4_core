@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Anketa_4_core.Data;
 using Anketa_4_core.Data.AnketaModels;
+using Anketa_4_core.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -165,17 +166,8 @@ public abstract class PostgresTestBase : IAsyncLifetime
         int testableId, int periodId, bool active = true)
     {
         await using var db = CreateAnketaContext();
-        var testable = await db.Testables.FindAsync(testableId)
-            ?? throw new InvalidOperationException("Testable not found");
-        var period = await db.TestPeriods.FindAsync(periodId)
-            ?? throw new InvalidOperationException("TestPeriod not found");
-        db.AccessForTestables.Add(new AccessForTestable
-        {
-            Testable = testable,
-            TestPeriod = period,
-            isActive = active
-        });
-        await db.SaveChangesAsync();
+        await new PeriodAssignmentService(db).AssignAsync(testableId, periodId);
+        // The helper now performs a move: it must not create duplicate access rows.
     }
 
     protected async Task SaveResultAsync(int accessId, JSON_ResultModel result)
