@@ -85,11 +85,16 @@
             }
         </div>
         <div class="form-text">
-                Новые привязки добавятся с <b>"Активен"</b>. Уже привязанные пользователи здесь не отображаются.
+                Выбор тестируемого из другого периода перенесёт его сюда с сохранением AccessID и всех результатов. Дубли не создаются.
         </div>
     }
 </div>
 
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+        <a class="btn btn-secondary" asp-action="Details" asp-route-id="@Model.Id">Отмена</a>
+    </div>
 </form>
 
 @section Scripts {

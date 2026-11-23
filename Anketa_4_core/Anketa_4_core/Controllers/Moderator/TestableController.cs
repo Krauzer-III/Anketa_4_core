@@ -80,22 +80,86 @@ namespace Anketa_4_core.Controllers
         [Authorize(Roles = "admin,moderator")]
         public async Task<IActionResult> Create()
         {
-            //TODO : Подготовка данных для создания нового Testable
-            return View("Create");
+            var vm = new MVC_TestableAddPageVM
+            {
+                Single = new MVC_TestableEditFull
+                {
+                    Code = await GetNextCodeAsync(),
+                    Year = DateTime.UtcNow.Year,
+                    SelectedTestPeriodId = await _db.TestPeriods
+                        .OrderByDescending(x => x.ID).Select(x => x.ID).FirstOrDefaultAsync()
+                }
+            };
+            await FillCreateLookupsAsync(vm);
+            return View("Create", vm);
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind(Prefix = "Single")] MVC_TestableEditFull single)
         {
+            single.Code = single.Code?.Trim() ?? string.Empty;
+            single.UserName = single.UserName?.Trim();
 
-            //TODO : Создание нового Testable на основе данных из single
-            return RedirectToAction(nameof(Details));
+            if (string.IsNullOrWhiteSpace(single.Code))
+                ModelState.AddModelError(nameof(single.Code), "Укажите код тестируемого.");
+            if (await _db.Testables.AnyAsync(x => x.Code.ToLower() == single.Code.ToLower()))
+                ModelState.AddModelError(nameof(single.Code), "Код тестируемого уже существует.");
+            var filial = await _db.Filials.FindAsync(single.Filial);
+            if (filial == null)
+                ModelState.AddModelError(nameof(single.Filial), "Выберите существующий филиал.");
+            var reserve = await _db.ReservLevels.FindAsync(single.RezervLevel);
+            if (reserve == null)
+                ModelState.AddModelError(nameof(single.RezervLevel), "Выберите уровень резерва.");
+            var periodId = single.SelectedTestPeriodId.GetValueOrDefault();
+            if (periodId <= 0 || !await _db.TestPeriods.AnyAsync(x => x.ID == periodId))
+                ModelState.AddModelError(nameof(single.SelectedTestPeriodId), "Выберите один существующий период.");
+            if (single.Year <= 0)
+                ModelState.AddModelError(nameof(single.Year), "Укажите корректный год.");
+
+            if (!string.IsNullOrWhiteSpace(single.UserName))
+            {
+                var free = await GetFreeTestableUsersAsync();
+                if (!free.Contains(single.UserName, StringComparer.OrdinalIgnoreCase))
+                    ModelState.AddModelError(nameof(single.UserName),
+                        "Учётная запись не существует, имеет неверную роль или уже занята.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var invalid = new MVC_TestableAddPageVM { Single = single };
+                await FillCreateLookupsAsync(invalid);
+                return View("Create", invalid);
+            }
+
+            await using var tx = await _db.Database.BeginTransactionAsync();
+            var testable = new Testable
+            {
+                Code = single.Code,
+                YearTraining = single.Year,
+                isArchived = false,
+                filial = filial!,
+                reservLevel = reserve!
+            };
+            _db.Testables.Add(testable);
+            await _db.SaveChangesAsync();
+
+            if (!string.IsNullOrWhiteSpace(single.UserName))
+                await UpsertTestableUser(testable, single.UserName);
+            await new PeriodAssignmentService(_db).AssignAsync(testable.ID, periodId);
+
+            await tx.CommitAsync();
+            return RedirectToAction(nameof(Details), new { id = testable.ID });
         }
 
-
-
+        private async Task FillCreateLookupsAsync(MVC_TestableAddPageVM page)
+        {
+            await FillLookupsAsync(page.Single);
+            page.FreeUsers = await GetFreeTestableUsersAsync();
+            page.FilialNames = page.Single.Filials?.Select(x => x.name).ToList() ?? new();
+            page.ReservLevels = page.Single.ReservLevels ?? new();
+            page.TestPeriods = page.Single.TestPeriods ?? new();
+        }
 
         [HttpGet]
         public async Task<string> NextCode()
@@ -194,6 +258,12 @@ namespace Anketa_4_core.Controllers
                             if (!periodByName.TryGetValue(periodName, out int pid))
                             { errors.Add($"Строка {line}: период '{periodName}' не найден"); continue; }
                             period = pid;
+                        }
+
+                        if (period <= 0)
+                        {
+                            errors.Add($"Строка {line}: в системе нет периода для назначения.");
+                            continue;
                         }
 
                         string? userToBind = null;
@@ -311,12 +381,26 @@ namespace Anketa_4_core.Controllers
         public async Task<IActionResult> Edit(int id, MVC_TestableEditFull vm)
         {
             if (id != vm.ID) return BadRequest();
+            vm.Code = vm.Code?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(vm.Code))
+                ModelState.AddModelError(nameof(vm.Code), "Укажите код тестируемого.");
+            if (await _db.Testables.AnyAsync(x => x.ID != id &&
+                x.Code.ToLower() == vm.Code.ToLower()))
+                ModelState.AddModelError(nameof(vm.Code), "Код тестируемого уже существует.");
+
+            // A missing period means "keep the existing assignment".
+            int newPeriodId = vm.SelectedTestPeriodId.GetValueOrDefault();
+            if (newPeriodId > 0 &&
+                !await _db.TestPeriods.AnyAsync(x => x.ID == newPeriodId))
+                ModelState.AddModelError(nameof(vm.SelectedTestPeriodId), "Период не найден.");
+
             if (!ModelState.IsValid)
             {
                 await FillLookupsAsync(vm);
                 return View(vm);
             }
 
+            await using var tx = await _db.Database.BeginTransactionAsync();
             var t = await _db.Testables
                 .Include(x => x.filial)
                 .Include(x => x.reservLevel)
@@ -329,12 +413,9 @@ namespace Anketa_4_core.Controllers
             t.reservLevel = vm.RezervLevel > 0 ? await _db.ReservLevels.FindAsync(vm.RezervLevel) : null;
 
             await _db.SaveChangesAsync();
-
-            // Обновить привязку аккаунта
             await UpsertTestableUser(t, vm.UserName);
-
-            // Обновить периоды
             await UpsertAccessForTestable(t.ID, vm.SelectedTestPeriodId);
+            await tx.CommitAsync();
 
             return RedirectToAction(nameof(Details), new { id });
         }
@@ -550,7 +631,7 @@ namespace Anketa_4_core.Controllers
 
             if (existing == null)
             {
-                existing = new TestableUser { testable = testable, UserName = userName, LK_Data = null };
+                existing = new TestableUser { testable = testable, UserName = userName, LK_Data = "{}" };
                 _db.Add(existing);
             }
             else
@@ -562,32 +643,9 @@ namespace Anketa_4_core.Controllers
 
         private async Task UpsertAccessForTestable(int testableId, int? selectedPeriodId)
         {
-            if (selectedPeriodId == null)
+            if (selectedPeriodId.GetValueOrDefault() <= 0)
                 return;
-            var existing = await _db.AccessForTestables.Where(a => a.Testable.ID == testableId).ToListAsync();
-            var existingIds = existing.Select(e => e.TestPeriod.ID).ToHashSet();
-            var targetId = selectedPeriodId;
-
-            if (!existingIds.Any(e => e == targetId))
-            {
-                var period = await _db.TestPeriods.FindAsync(targetId);
-                if (period != null)
-                {
-                    var testable = await _db.Testables.FindAsync(testableId);
-                    if (testable != null)
-                    {
-                        _db.AccessForTestables.Add(new AccessForTestable
-                        {
-                            Testable = testable,
-                            TestPeriod = period,
-                            isActive = true
-                        });
-                    }
-                }
-            }
-
-
-            await _db.SaveChangesAsync();
+            await new PeriodAssignmentService(_db).AssignAsync(testableId, selectedPeriodId!.Value);
         }
     }
 }

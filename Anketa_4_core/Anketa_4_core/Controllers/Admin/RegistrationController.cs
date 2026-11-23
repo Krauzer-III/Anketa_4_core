@@ -647,7 +647,7 @@ namespace Anketa_4_core.Controllers
                             {
                                 UserName = login.Trim(),
                                 testable = existingTestable,
-                                LK_Data = null
+                                LK_Data = "{}"
                             });
                             break;
 
@@ -673,7 +673,7 @@ namespace Anketa_4_core.Controllers
                             {
                                 UserName = login.Trim(),
                                 testable = testable,
-                                LK_Data = null
+                                LK_Data = "{}"
                             });
                             _anketaDb.AccessForTestables.Add(new AccessForTestable
                             {

@@ -19,7 +19,7 @@
                 <option value="@t.id">@t.name @(string.IsNullOrEmpty(t.filial) ? "" : $"({t.filial})")</option>
             }
         </select>
-        <div class="form-text">Выберите одного или несколько тестируемых, которым будет назначен этот период (isActive = true).</div>
+        <div class="form-text">Выбранные тестируемые будут переназначены на новый период. Прежняя связь не дублируется, все результаты сохраняются.</div>
     </div>
 
     <div class="d-flex gap-2">

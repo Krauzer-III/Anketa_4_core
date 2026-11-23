@@ -43,7 +43,8 @@ namespace Anketa_4_core.Migrations
 
                     b.HasIndex("TestPeriodID");
 
-                    b.HasIndex("TestableID");
+                    b.HasIndex("TestableID")
+                        .IsUnique();
 
                     b.ToTable("AccessForTestables");
                 });

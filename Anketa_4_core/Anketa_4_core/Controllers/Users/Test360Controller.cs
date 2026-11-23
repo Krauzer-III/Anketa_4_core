@@ -150,13 +150,15 @@ namespace Anketa_4_core.Controllers
             if (access == null || access.ID != submittedAccess.ID)
                 return TestError(error ?? "Период оценки изменился. Начните тест заново.");
 
+            // Server-side normalization: every answer is constrained to [-3; 3].
+            // This applies even when a request bypasses the browser controls.
             var answer = new Test360_Result
             {
-                q01 = model.q01, q02 = model.q02, q03 = model.q03,
-                q04 = model.q04, q05 = model.q05, q06 = model.q06,
-                q07 = model.q07, q08 = model.q08, q09 = model.q09,
-                q10 = model.q10, q11 = model.q11, q12 = model.q12,
-                q13 = model.q13, q14 = model.q14, q15 = model.q15
+                q01 = ClampMark(model.q01), q02 = ClampMark(model.q02), q03 = ClampMark(model.q03),
+                q04 = ClampMark(model.q04), q05 = ClampMark(model.q05), q06 = ClampMark(model.q06),
+                q07 = ClampMark(model.q07), q08 = ClampMark(model.q08), q09 = ClampMark(model.q09),
+                q10 = ClampMark(model.q10), q11 = ClampMark(model.q11), q12 = ClampMark(model.q12),
+                q13 = ClampMark(model.q13), q14 = ClampMark(model.q14), q15 = ClampMark(model.q15)
             };
 
             // Блокировка строки доступа сериализует обновления общего JSON
@@ -222,6 +224,8 @@ namespace Anketa_4_core.Controllers
             ViewBag.SuccessMessage = "Ваши ответы успешно сохранены!";
             return View("TestCompleted");
         }
+
+        private static int ClampMark(int value) => Math.Clamp(value, -3, 3);
 
         private IActionResult TestError(string message)
         {

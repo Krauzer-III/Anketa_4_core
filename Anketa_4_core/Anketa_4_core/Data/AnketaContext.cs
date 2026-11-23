@@ -42,6 +42,15 @@ namespace Anketa_4_core.Data
 
         public DbSet<MVC_TestableView> MVC_TestableView { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            // The shadow foreign key is named TestableID in the existing schema.
+            modelBuilder.Entity<AccessForTestable>()
+                .HasIndex("TestableID")
+                .IsUnique();
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
