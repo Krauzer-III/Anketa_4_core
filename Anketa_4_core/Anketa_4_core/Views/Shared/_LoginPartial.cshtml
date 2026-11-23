@@ -6,7 +6,7 @@
     <div class="app-account">
         <a class="app-account__name" asp-area="Identity" asp-page="/Account/Manage/Index"
            title="Настройки аккаунта">
-            <span class="app-account__avatar" aria-hidden="true">@@</span>
+            <span class="app-account__avatar" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.2" /><path d="M4.7 20c.4-4.2 3-6.4 7.3-6.4s6.9 2.2 7.3 6.4" /></svg></span>
             <span class="app-account__username">@User.Identity?.Name</span>
         </a>
         <form class="app-account__logout" asp-area="Identity" asp-page="/Account/Logout"

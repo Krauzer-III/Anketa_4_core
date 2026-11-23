@@ -128,7 +128,7 @@ namespace Anketa_4_core.Areas.Identity.Pages.Account
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    ModelState.AddModelError(string.Empty, "Неверный логин или пароль.");
                     return Page();
                 }
             }
