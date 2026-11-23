@@ -54,7 +54,7 @@ public sealed class ModeratorControllerTests : PostgresTestBase
                 PeriodName = "Новый период",
                 SelectedTestableIds = new List<int>
                 {
-                    existing.TestableId, existing.TestableId, additional.TestableId, 999999
+                    existing.TestableId, existing.TestableId, additional.TestableId
                 }
             });
             Assert.Equal("Details", Assert.IsType<RedirectToActionResult>(result).ActionName);
@@ -63,6 +63,11 @@ public sealed class ModeratorControllerTests : PostgresTestBase
         await using var verifyDb = CreateAnketaContext();
         var period = await verifyDb.TestPeriods.SingleAsync(x => x.GroupName == "Новый период");
         Assert.Equal(2, await verifyDb.AccessForTestables.CountAsync(x => x.TestPeriod.ID == period.ID));
+        Assert.Equal(2, await verifyDb.AccessForTestables.CountAsync());
+        Assert.True(await verifyDb.AccessForTestables.AnyAsync(x =>
+            x.ID == existing.AccessId && x.TestPeriod.ID == period.ID));
+        Assert.True(await verifyDb.AccessForTestables.AnyAsync(x =>
+            x.ID == additional.AccessId && x.TestPeriod.ID == period.ID));
     }
 
     [Fact]
@@ -82,7 +87,7 @@ public sealed class ModeratorControllerTests : PostgresTestBase
                 {
                     new() { TestableId = first.TestableId, IsActive = false }
                 },
-                AddTestableIds = new List<int> { second.TestableId, second.TestableId, 999999 }
+                AddTestableIds = new List<int> { second.TestableId, second.TestableId }
             }, null);
             Assert.Equal("Details", Assert.IsType<RedirectToActionResult>(result).ActionName);
         }
@@ -95,16 +100,18 @@ public sealed class ModeratorControllerTests : PostgresTestBase
         Assert.Equal(2, links.Length);
         Assert.False(links.Single(x => x.Testable.ID == first.TestableId).isActive);
         Assert.True(links.Single(x => x.Testable.ID == second.TestableId).isActive);
+        Assert.Equal(second.AccessId, links.Single(x => x.Testable.ID == second.TestableId).ID);
+        Assert.Equal(2, await verifyDb.AccessForTestables.CountAsync());
     }
 
     [Fact]
-    public async Task Period_Edit_DuplicateBoundIdsCurrentlyThrow()
+    public async Task Period_Edit_DuplicateBoundIdsReturnValidationWithoutChanges()
     {
         var seeded = await SeedAccessAsync(code: "10007", periodName: "Дубликаты");
         await using var db = CreateAnketaContext();
         var controller = new PeriodController(db);
 
-        await Assert.ThrowsAsync<ArgumentException>(() => controller.Edit(new MVC_TestPeriodEdit
+        var invalid = Assert.IsType<ViewResult>(await controller.Edit(new MVC_TestPeriodEdit
         {
             Id = seeded.PeriodId,
             PeriodName = "Дубликаты",
@@ -114,6 +121,42 @@ public sealed class ModeratorControllerTests : PostgresTestBase
                 new() { TestableId = seeded.TestableId, IsActive = false }
             }
         }, null));
+        Assert.IsType<MVC_TestPeriodEdit>(invalid.Model);
+        Assert.True(controller.ModelState.ErrorCount > 0);
+        Assert.Equal(1, await db.AccessForTestables.CountAsync());
+    }
+
+    [Fact]
+    public async Task Period_Create_UnknownTestableIsRejectedWithoutCreatingPeriod()
+    {
+        await using var db = CreateAnketaContext();
+        var controller = new PeriodController(db);
+        var invalid = Assert.IsType<ViewResult>(await controller.Create(new MVC_TestPeriodCreate
+        {
+            PeriodName = "Не создавать",
+            SelectedTestableIds = new() { 999999 }
+        }));
+        Assert.True(controller.ModelState.ErrorCount > 0);
+        Assert.Equal(0, await db.TestPeriods.CountAsync());
+        Assert.IsType<MVC_TestPeriodCreate>(invalid.Model);
+    }
+
+    [Fact]
+    public async Task Period_Edit_UnknownTestableDoesNotRenameOrChangeAssignments()
+    {
+        var current = await SeedAccessAsync(code: "10010", periodName: "Прежний");
+        await using var db = CreateAnketaContext();
+        var controller = new PeriodController(db);
+        var invalid = Assert.IsType<ViewResult>(await controller.Edit(new MVC_TestPeriodEdit
+        {
+            Id = current.PeriodId,
+            PeriodName = "Не применять",
+            AddTestableIds = new() { 999999 }
+        }, null));
+        Assert.True(controller.ModelState.ErrorCount > 0);
+        Assert.IsType<MVC_TestPeriodEdit>(invalid.Model);
+        Assert.Equal("Прежний", (await db.TestPeriods.FindAsync(current.PeriodId))!.GroupName);
+        Assert.Equal(1, await db.AccessForTestables.CountAsync());
     }
 
     [Fact]
