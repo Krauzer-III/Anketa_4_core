@@ -12,6 +12,11 @@ namespace Anketa_4_core.Helpers
 
         }
 
+        public AnketaDefaultValues(AnketaContext _context)
+        {
+            context = _context;
+        }
+
         /// <summary>
         /// Добавить стандартные уровни резерва
         /// </summary>

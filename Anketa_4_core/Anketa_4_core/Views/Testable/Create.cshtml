@@ -33,10 +33,11 @@
                     <label class="form-label">Пользователь (testable_user)</label>
                     <select name="UserName" class="form-select">
                         <option value="">— без привязки —</option>
-                        @foreach (var u in Model.FreeUsers)
-                        {
-                            <option value="@u">@u</option>
-                        }
+                        @if (Model != null)
+                            @foreach (var u in Model.FreeUsers)
+                            {
+                                <option value="@u">@u</option>
+                            }
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -203,8 +204,8 @@
         });
         // Сохраняем активную вкладку в hash
         const triggerTabList = [].slice.call(document.querySelectorAll('#addTabs button'))
-        triggerTabList.forEach(function (triggerEl) {
-            triggerEl.addEventListener('shown.bs.tab', function (event) {
+        triggerTabList.forEach(function(triggerEl) {
+            triggerEl.addEventListener('shown.bs.tab', function(event) {
                 history.replaceState(null, '', '#' + event.target.id);
             })
         })
@@ -219,8 +220,8 @@
 <script>
     // Сохраняем активную вкладку в hash
     const triggerTabList = [].slice.call(document.querySelectorAll('#addTabs button'))
-    triggerTabList.forEach(function (triggerEl) {
-        triggerEl.addEventListener('shown.bs.tab', function (event) {
+    triggerTabList.forEach(function(triggerEl) {
+        triggerEl.addEventListener('shown.bs.tab', function(event) {
             history.replaceState(null, '', '#' + event.target.id);
         })
     })
