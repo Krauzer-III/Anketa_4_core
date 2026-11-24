@@ -52,12 +52,12 @@
             <div class="app-sidebar__label">Рабочая панель</div>
             <a class="@linkClass("Home")" asp-controller="Home" asp-action="Index">Главная</a>
             <a class="@linkClass("Result")" asp-controller="Result" asp-action="IndexModerator">Просмотр результатов</a>
-            <a class="@linkClass("Period")" asp-controller="Period" asp-action="Index">Периоды тестирования</a>
         </div>
-        @if (canManage)
-        {
-            <div class="app-sidebar__group">
-                <div class="app-sidebar__label">Управление</div>
+        <div class="app-sidebar__group">
+            <div class="app-sidebar__label">Управление</div>
+            <a class="@linkClass("Period")" asp-controller="Period" asp-action="Index">Периоды тестирования</a>
+            @if (canManage)
+            {
                 <a class="@linkClass("Testable")" asp-controller="Testable" asp-action="Index">Тестируемые</a>
                 @if (User.IsInRole("admin"))
                 {
@@ -69,8 +69,8 @@
                     <a class="@linkClass("Users")" asp-controller="Users" asp-action="Index">Список пользователей</a>
                     <a class="@linkClass("DefaultValues")" asp-controller="DefaultValues" asp-action="Index">Первичная настройка справочников</a>
                 }
-            </div>
-        }
+            }
+        </div>
     }
     else
     {
