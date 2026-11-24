@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Anketa_4_core.Models.AnketaModels.MVC_Models
 {
@@ -37,10 +38,12 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
         [Display(Name = "Название периода")]
         public string PeriodName { get; set; } = string.Empty;
 
-        [Display(Name = "Тестируемые для привязки")]
-        public List<int> SelectedTestableIds { get; set; } = new();
+        // Привязка необязательна: период можно создать без тестируемых.
+        [Display(Name = "Тестируемые для привязки (необязательно)")]
+        public List<int>? SelectedTestableIds { get; set; }
 
-        // источники для выпадающих списков
+        // Данные для представления, а не обязательная часть POST-запроса.
+        [ValidateNever]
         public List<(int id, string name, string? filial)> AllTestables { get; set; } = new();
     }
 
@@ -56,10 +59,11 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
         // текущие привязки (с возможностью менять активность/удалять)
         public List<MVC_TestPeriodBoundTestable> BoundTestables { get; set; } = new();
 
-        // список для добавления новых
-        [Display(Name = "Добавить тестируемых")]
-        public List<int> AddTestableIds { get; set; } = new();
+        // После создания периода добавление тестируемых остаётся необязательным.
+        [Display(Name = "Добавить тестируемых (необязательно)")]
+        public List<int>? AddTestableIds { get; set; }
 
+        [ValidateNever]
         public List<(int id, string name, string? filial)> AllTestables { get; set; } = new();
     }
 }

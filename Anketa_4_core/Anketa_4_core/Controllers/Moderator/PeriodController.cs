@@ -85,50 +85,78 @@ namespace Anketa_4_core.Controllers.Moderator
         [Authorize(Roles = "admin,moderator")]
         public async Task<IActionResult> Create(MVC_TestPeriodCreate vm)
         {
+            vm.PeriodName = vm.PeriodName?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(vm.PeriodName))
+                ModelState.AddModelError(nameof(vm.PeriodName), "Укажите название периода.");
+
+            if (await _db.TestPeriods.AnyAsync(p => p.GroupName == vm.PeriodName))
+                ModelState.AddModelError(nameof(vm.PeriodName), "Такое название периода уже существует.");
+
+            // Отсутствие SelectedTestableIds — нормальная ситуация.
+            // Не назначаем никого автоматически, даже если в базе уже есть тестируемые.
+            var selectedIds = vm.SelectedTestableIds?.Distinct().ToArray()
+                ?? Array.Empty<int>();
+            var selectedTestables = new List<Testable>();
+
+            if (selectedIds.Length > 0)
+            {
+                selectedTestables = await _db.Testables
+                    .Where(t => selectedIds.Contains(t.ID))
+                    .ToListAsync();
+
+                if (selectedIds.Any(id => id <= 0) ||
+                    selectedTestables.Count != selectedIds.Length)
+                {
+                    ModelState.AddModelError(nameof(vm.SelectedTestableIds),
+                        "Один или несколько выбранных тестируемых не найдены.");
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 vm.AllTestables = await _db.Testables
-                    .Include(t => t.filial)
                     .AsNoTracking()
                     .OrderBy(t => t.Code)
-                    .Select(t => new ValueTuple<int, string, string?>(t.ID, t.Code, t.filial != null ? t.filial.FilialName : null))
+                    .Select(t => new ValueTuple<int, string, string?>(
+                        t.ID, t.Code, t.filial != null ? t.filial.FilialName : null))
                     .ToListAsync();
                 return View(vm);
             }
 
-            // название уникально по желанию — можно снять проверку
-            var exists = await _db.TestPeriods.AnyAsync(p => p.GroupName == vm.PeriodName);
-            if (exists)
+            // Создание периода и необязательных привязок атомарно.
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+            try
             {
-                ModelState.AddModelError(nameof(vm.PeriodName), "Такое название периода уже существует");
-                vm.AllTestables = await _db.Testables
-                    .Include(t => t.filial).AsNoTracking()
-                    .OrderBy(t => t.Code)
-                    .Select(t => new ValueTuple<int, string, string?>(t.ID, t.Code, t.filial != null ? t.filial.FilialName : null))
-                    .ToListAsync();
-                return View(vm);
-            }
+                var period = new TestPeriod { GroupName = vm.PeriodName };
+                _db.TestPeriods.Add(period);
 
-            var period = new TestPeriod { GroupName = vm.PeriodName };
-            _db.TestPeriods.Add(period);
-            await _db.SaveChangesAsync();
-
-            if (vm.SelectedTestableIds != null && vm.SelectedTestableIds.Count > 0)
-            {
-                var testables = await _db.Testables.Where(t => vm.SelectedTestableIds.Contains(t.ID)).ToListAsync();
-                foreach (var t in testables)
+                foreach (var testable in selectedTestables)
                 {
                     _db.AccessForTestables.Add(new AccessForTestable
                     {
-                        Testable = t,
+                        Testable = testable,
                         TestPeriod = period,
                         isActive = true
                     });
                 }
-                await _db.SaveChangesAsync();
-            }
 
-            return RedirectToAction(nameof(Details), new { id = period.ID });
+                await _db.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return RedirectToAction(nameof(Details), new { id = period.ID });
+            }
+            catch (DbUpdateException)
+            {
+                await transaction.RollbackAsync();
+                ModelState.AddModelError(string.Empty,
+                    "Не удалось создать период. Проверьте введённые данные.");
+                vm.AllTestables = await _db.Testables
+                    .AsNoTracking()
+                    .OrderBy(t => t.Code)
+                    .Select(t => new ValueTuple<int, string, string?>(
+                        t.ID, t.Code, t.filial != null ? t.filial.FilialName : null))
+                    .ToListAsync();
+                return View(vm);
+            }
         }
 
         // ============== Edit ==============
