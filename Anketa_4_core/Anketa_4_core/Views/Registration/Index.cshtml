@@ -6,7 +6,8 @@
     var success = TempData["RegistrationSuccess"] as string;
 }
 
-<h2 class="mb-4">Регистрация пользователей</h2>
+<h1 class="h3 mb-2">Регистрация пользователей</h1>
+<p class="text-muted mb-4">Создание учётных записей из текста или файла с разделителями.</p>
 
 @if (!string.IsNullOrWhiteSpace(success))
 {
@@ -47,19 +48,19 @@
         <div class="col-md-6">
             <label asp-for="Role" class="form-label">Роль</label>
             <select asp-for="Role" class="form-select" id="roleSelect">
-                <option value="admin">Админ</option>
+                <option value="admin">Администратор</option>
                 <option value="moderator">Модератор</option>
-                <option value="verificator">Verificator</option>
-                <option value="filial_user">Filial-user</option>
-                <option value="testable_user">Testable-user</option>
+                <option value="verificator">Верификатор</option>
+                <option value="filial_user">Филиальный пользователь</option>
+                <option value="testable_user">Индивидуальный пользователь</option>
             </select>
         </div>
 
         <div class="col-md-6" id="testableModeBlock">
-            <label asp-for="TestableMode" class="form-label">Сценарий Testable-user</label>
+            <label asp-for="TestableMode" class="form-label">Создание личной учётной записи</label>
             <select asp-for="TestableMode" class="form-select" id="testableModeSelect">
-                <option value="existing">Привязать к существующему Testable</option>
-                <option value="new">Создать Testable и привязать к периоду</option>
+                <option value="existing">Привязать к существующему тестируемому</option>
+                <option value="new">Создать тестируемого и привязать к периоду</option>
             </select>
         </div>
     </div>
@@ -75,7 +76,7 @@
     <div class="card mt-4">
         <div class="card-body">
             <h5 class="card-title">Источник данных</h5>
-            <p class="text-muted mb-3">Textarea и CSV проходят один и тот же pipeline. Выберите только один источник.</p>
+            <p class="text-muted mb-3">Текст и CSV-файл обрабатываются одинаково. Выберите только один источник.</p>
 
             <div class="mb-3">
                 <label asp-for="TextData" class="form-label">Текстовые данные</label>

@@ -1,0 +1,87 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    bool isPersonal = User.IsInRole("testable_user");
+    bool isFilial = User.IsInRole("filial_user");
+    bool canManage = User.IsInRole("admin") || User.IsInRole("moderator");
+    bool canReview = canManage || User.IsInRole("verificator");
+    string linkClass(string controller) =>
+        currentController.Equals(controller, StringComparison.OrdinalIgnoreCase)
+            ? "app-sidebar__link is-active" : "app-sidebar__link";
+}
+<nav class="app-sidebar" aria-label="Полное меню">
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <div class="app-sidebar__group">
+            <div class="app-sidebar__label">Начало работы</div>
+            <a class="@linkClass("Home")" asp-controller="Home" asp-action="Index">Главная</a>
+            <a class="app-sidebar__link" asp-area="Identity" asp-page="/Account/Login">Войти в систему</a>
+        </div>
+    }
+    else if (isPersonal)
+    {
+        <div class="app-sidebar__group">
+            <div class="app-sidebar__label">Мои данные</div>
+            <a class="@linkClass("PersonalCabinet")" asp-controller="PersonalCabinet" asp-action="Index">Личный кабинет</a>
+        </div>
+        <div class="app-sidebar__group">
+            <div class="app-sidebar__label">Мои тестирования</div>
+            <a class="@linkClass("Test360")" asp-controller="Test360" asp-action="StartTest">Оценка 360° — самооценка</a>
+            <a class="@linkClass("Motivation")" asp-controller="Motivation" asp-action="Index">Мотивационный опросник</a>
+            <a class="@linkClass("Kettel")" asp-controller="Kettel" asp-action="Index">Психологическое тестирование</a>
+            <a class="@linkClass("Competention")" asp-controller="Competention" asp-action="Index">Компетенции — мой год обучения</a>
+        </div>
+    }
+    else if (isFilial)
+    {
+        <div class="app-sidebar__group">
+            <div class="app-sidebar__label">Навигация</div>
+            <a class="@linkClass("Home")" asp-controller="Home" asp-action="Index">Главная</a>
+        </div>
+        <div class="app-sidebar__group">
+            <div class="app-sidebar__label">Тестирования по филиалу</div>
+            <a class="@linkClass("Test360")" asp-controller="Test360" asp-action="StartTest">Оценка 360°</a>
+            <a class="@linkClass("Motivation")" asp-controller="Motivation" asp-action="Index">Мотивационный опросник</a>
+            <a class="@linkClass("Kettel")" asp-controller="Kettel" asp-action="Index">Психологическое тестирование</a>
+            <a class="@linkClass("Competention")" asp-controller="Competention" asp-action="Index" asp-route-year="1">Компетенции (1 год)</a>
+            <a class="@linkClass("Competention")" asp-controller="Competention" asp-action="Index" asp-route-year="2">Компетенции (2 год)</a>
+        </div>
+    }
+    else if (canReview)
+    {
+        <div class="app-sidebar__group">
+            <div class="app-sidebar__label">Рабочая панель</div>
+            <a class="@linkClass("Home")" asp-controller="Home" asp-action="Index">Главная</a>
+            <a class="@linkClass("Result")" asp-controller="Result" asp-action="IndexModerator">Просмотр результатов</a>
+            <a class="@linkClass("Period")" asp-controller="Period" asp-action="Index">Периоды тестирования</a>
+        </div>
+        @if (canManage)
+        {
+            <div class="app-sidebar__group">
+                <div class="app-sidebar__label">Управление</div>
+                <a class="@linkClass("Testable")" asp-controller="Testable" asp-action="Index">Тестируемые</a>
+                <a class="@linkClass("Registration")" asp-controller="Registration" asp-action="Index">Регистрация учётных записей</a>
+                <a class="@linkClass("NewsAdmin")" asp-controller="NewsAdmin" asp-action="Index">Управление новостями</a>
+                @if (User.IsInRole("admin"))
+                {
+                    <a class="@linkClass("Users")" asp-controller="Users" asp-action="Index">Список пользователей</a>
+                    <a class="@linkClass("DefaultValues")" asp-controller="DefaultValues" asp-action="Index">Первичная настройка справочников</a>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <div class="app-sidebar__group">
+            <div class="app-sidebar__label">Доступные разделы</div>
+            <a class="@linkClass("Home")" asp-controller="Home" asp-action="Index">Главная</a>
+            <p class="app-sidebar__hint">Для этой учётной записи рабочие разделы не назначены.</p>
+        </div>
+    }
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="app-sidebar__group">
+            <div class="app-sidebar__label">Учётная запись</div>
+            <a class="app-sidebar__link" asp-area="Identity" asp-page="/Account/Manage/Index">Настройки аккаунта</a>
+        </div>
+    }
+</nav>

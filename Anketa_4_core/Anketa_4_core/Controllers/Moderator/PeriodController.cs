@@ -65,6 +65,7 @@ namespace Anketa_4_core.Controllers.Moderator
 
         // ============== Create ==============
         [HttpGet]
+        [Authorize(Roles = "admin,moderator")]
         public async Task<IActionResult> Create()
         {
             var vm = new MVC_TestPeriodCreate
@@ -81,6 +82,7 @@ namespace Anketa_4_core.Controllers.Moderator
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin,moderator")]
         public async Task<IActionResult> Create(MVC_TestPeriodCreate vm)
         {
             if (!ModelState.IsValid)
@@ -131,6 +133,7 @@ namespace Anketa_4_core.Controllers.Moderator
 
         // ============== Edit ==============
         [HttpGet]
+        [Authorize(Roles = "admin,moderator")]
         public async Task<IActionResult> Edit(int id)
         {
             var period = await _db.TestPeriods.FirstOrDefaultAsync(p => p.ID == id);
@@ -170,6 +173,7 @@ namespace Anketa_4_core.Controllers.Moderator
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin,moderator")]
         public async Task<IActionResult> Edit(MVC_TestPeriodEdit vm, string? actionBtn)
         {
             if (!ModelState.IsValid)

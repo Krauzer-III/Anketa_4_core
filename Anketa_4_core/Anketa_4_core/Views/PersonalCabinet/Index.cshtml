@@ -5,17 +5,26 @@
     ViewData["LKSaveUrl"] = Url.Action("SaveSection", "PersonalCabinet");
     ViewData["LKRatingUrl"] = Url.Action("Rating", "PersonalCabinet");
 }
-<div class="container-fluid py-3">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+<div class="lk-page">
+    <section class="lk-page-heading">
         <div>
-            <h2 class="mb-1">Личный кабинет</h2>
-            <p class="text-muted mb-0">
-                Все таблицы размещены на этой странице. Для изменения данных
-                нажмите «Редактировать» у нужного раздела; сохранение происходит без перезагрузки.
-            </p>
+            <div class="lk-page-heading__label">Моё рабочее пространство</div>
+            <h1>Личный кабинет</h1>
+            <p>Индивидуальный план подготовки, развивающие мероприятия, отчётные формы и прогресс по текущему периоду.</p>
         </div>
-        <a asp-controller="Report" asp-action="GetReport"
-           class="btn btn-success">Получить отчёт</a>
+        <div class="lk-page-heading__actions">
+            <a asp-controller="Test360" asp-action="StartTest" class="btn btn-outline-primary">Самооценка 360°</a>
+            <a asp-controller="Report" asp-action="GetReport" class="btn btn-primary">Получить отчёт</a>
+        </div>
+    </section>
+    <div class="lk-help-strip">
+        <span class="lk-help-strip__symbol" aria-hidden="true">i</span>
+        <span>
+            Все разделы ИПП расположены ниже. Чтобы изменить данные, нажмите
+            <strong>«Редактировать»</strong> у соответствующей таблицы. Изменения
+            сохраняются без перезагрузки страницы. Необязательные мероприятия
+            можно заполнять по мере включения их в план.
+        </span>
     </div>
     <partial name="_LKDashboard" />
 </div>

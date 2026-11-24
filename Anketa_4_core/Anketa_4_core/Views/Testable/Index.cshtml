@@ -1,28 +1,40 @@
-﻿@{
+@{
     ViewData["Title"] = "Тестируемые";
 }
-
-<h2 class="mb-3">Тестируемые</h2>
-<div class="d-flex gap-2 mb-3">
-    <a class="btn btn-primary" asp-action="Create">Добавить тестируемого</a>
-    <input id="searchBox" class="form-control" style="max-width: 320px" placeholder="Поиск по коду..." />
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-2">Тестируемые</h1>
+        <p class="text-muted mb-0">Поиск по коду, список тестируемых и переход к карточкам.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-primary" asp-action="Import">Импорт</a>
+        <a class="btn btn-primary" asp-action="Create">Добавить тестируемого</a>
+    </div>
 </div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Код</th>
-            <th>Филиал</th>
-            <th>Год</th>
-            <th>Архив</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody id="infiniteBody"></tbody>
-</table>
-
-<div id="loading" class="text-muted">Загрузка...</div>
+<div class="card">
+    <div class="card-body">
+        <label for="searchBox" class="form-label fw-semibold">Поиск тестируемого</label>
+        <input id="searchBox" class="form-control" style="max-width:420px"
+               placeholder="Введите код или его часть" autocomplete="off" />
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">№</th>
+                    <th scope="col">Код</th>
+                    <th scope="col">Филиал</th>
+                    <th scope="col">Год обучения</th>
+                    <th scope="col">Архив</th>
+                    <th scope="col">Действия</th>
+                </tr>
+            </thead>
+            <tbody id="infiniteBody"></tbody>
+        </table>
+    </div>
+    <div id="loading" class="text-muted text-center p-3" role="status">Загрузка записей...</div>
+</div>
 
 @section Scripts {
     <script>

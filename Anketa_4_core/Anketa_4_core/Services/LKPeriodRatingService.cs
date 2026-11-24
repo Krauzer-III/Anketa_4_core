@@ -171,51 +171,188 @@ namespace Anketa_4_core.Services
             try { root = LKCabinetService.ParseRoot(json); }
             catch (InvalidOperationException) { return 0; }
 
-            double[] sections =
+            // Required entries from the IПП instruction: three professional tasks,
+            // one training programme, at least two selected distance courses,
+            // one professional book and two books for personal/business competencies.
+            // Optional directions affect completion only after the testable adds
+            // at least one record to that section.
+            var sections = new List<double>
             {
-                ScoreList(root["ProfTasks"], "Number", "ProfTaskName", "DateFrom",
-                    "DateTo", "AnalisEffect", "Difficult"),
-                ScoreList(root["Internships"], "DateFrom", "DateTo"),
-                ScoreList(root["LK_ViceBoss"], "DateFrom", "DateTo", "Target"),
-                ScoreList(root["ReportBooks"], "BookName", "Author", "Gold", "PractiсeSkills"),
-                ScoreList(root["TrainingProgramms"], "LiveSityations", "Difficult",
-                    "InfluenceAsWorker", "InfluenceAsFilial"),
-                ScoreMap(root["DevelopmentalActionMaproperty"])
+                ScoreListRequired(root["ProfTasks"], 3, "Number", "ProfTaskName",
+                    "CompetenceZone", "DateFrom", "DateTo", "AnalisEffect",
+                    "WhatCouldBeDoneDifferently", "Difficult"),
+                ScoreListRequired(root["TrainingProgramms"], 1, "LiveSityations",
+                    "Difficult", "InfluenceAsWorker", "InfluenceAsFilial"),
+                ScorePlannedListRequired(root["DistanceLearning"], 2, "Title",
+                    "DateFrom", "DateTo", "Certificate"),
+                ScoreBooksRequired(root["ReportBooks"])
             };
-            return sections.Average() * 100.0;
+
+            AddOptionalList(sections, root["Internships"], "DateFrom", "DateTo");
+            AddOptionalNestedList(sections, root["Internships"], "Tasks",
+                "DateFrom", "DateTo", "Goal", "Activities", "Report", "SupervisorAssessment");
+            AddOptionalList(sections, root["LK_ViceBoss"], "Position", "DateFrom",
+                "DateTo", "Target", "GeneralResult");
+            AddOptionalNestedList(sections, root["LK_ViceBoss"], "ViceBoss_Tasks",
+                "TaskName", "ReportAboutTask", "MarkAboutTask");
+            AddOptionalList(sections, root["AdvancedTrainingCourses"], "ProgramName",
+                "Organization", "DateFrom", "DateTo", "DurationHours", "AcquiredSkills",
+                "ApplicationInWork", "Result", "Certificate");
+            AddOptionalList(sections, root["LanguageTrainings"], "Language",
+                "Organization", "Format", "DateFrom", "DateTo", "CurrentLevel",
+                "TargetLevel", "Result");
+            AddOptionalList(sections, root["TeachingActivities"], "ActivityType",
+                "Topic", "Audience", "Role", "DateFrom", "DateTo", "DurationHours",
+                "PracticalUse", "Effect", "WhatBetter", "WhatHelped", "WhatHindered");
+            AddOptionalList(sections, root["Mentorships"], "MenteePosition",
+                "OrderNumber", "OrderDate", "Goal", "DateFrom", "DateTo",
+                "Activities", "Result", "SupervisorFeedback");
+            AddOptionalList(sections, root["ProfessionalRetrainings"], "ProgramName",
+                "Organization", "DateFrom", "DateTo", "Qualification", "Result", "Certificate");
+            AddOptionalList(sections, root["ProjectActivities"], "ProjectName", "Role",
+                "DateFrom", "DateTo", "Goal", "Tasks", "PracticalUse", "Effect",
+                "WhatBetter", "WhatHelped", "WhatHindered", "Result", "Difficulties");
+            AddOptionalList(sections, root["ConferencesAndCompetitions"], "EventType",
+                "EventName", "Organizer", "Date", "Role", "PracticalUse", "Effect",
+                "WhatBetter", "WhatHelped", "WhatHindered", "Result");
+            AddOptionalList(sections, root["PsychologicalConsultations"], "DateFrom",
+                "DateTo", "DurationMinutes", "Format");
+
+            var mapScore = ScoreMap(root["DevelopmentalActionMaproperty"]);
+            if (mapScore.HasValue) sections.Add(mapScore.Value);
+
+            var motivationScore = ScoreObject(root["PersonnelMotivation"],
+                "WorkSignificanceAction1", "WorkSignificanceAction2",
+                "WorkVarietyAction1", "WorkVarietyAction2",
+                "WorkIdentityAction1", "WorkIdentityAction2",
+                "WorkAutonomyAction1", "WorkAutonomyAction2",
+                "FeedbackAction1", "FeedbackAction2");
+            if (motivationScore.HasValue) sections.Add(motivationScore.Value);
+
+            return sections.Count == 0 ? 0 : sections.Average() * 100.0;
         }
 
-        private static double ScoreMap(JsonNode? node)
+        private static void AddOptionalList(
+            List<double> scores, JsonNode? node, params string[] fields)
         {
-            if (node is not JsonObject map) return 0;
+            if (node is JsonArray arr && arr.Count > 0)
+                scores.Add(ScoreList(node, fields));
+        }
+
+        private static void AddOptionalNestedList(
+            List<double> scores, JsonNode? parentNode, string childKey, params string[] fields)
+        {
+            if (parentNode is not JsonArray parents) return;
+            var records = parents.OfType<JsonObject>()
+                .SelectMany(parent => parent[childKey] is JsonArray children
+                    ? children.OfType<JsonObject>() : Enumerable.Empty<JsonObject>())
+                .ToArray();
+            if (records.Length > 0)
+                scores.Add(records.Average(x =>
+                    fields.Count(field => Filled(x[field])) / (double)fields.Length));
+        }
+
+        private static double? ScoreMap(JsonNode? node)
+        {
+            if (node is not JsonObject map) return null;
+            var sections = new List<double>();
+
             double dates = (Filled(map["DateFrom"]) + Filled(map["DateTo"])) / 2.0;
-            double[] sections =
-            {
-                dates,
-                ScoreList(map["ProfessionalDevelopment"], "CommentToT19",
-                    "RecomendationToT19", "DialogResultToT19"),
-                ScoreList(map["ProfessionalDevelopment_T19"], "Header", "Description"),
-                ScoreList(map["ProfessionalDevelopment_T20"], "Theme", "Format",
-                    "Date", "Interes", "PracticalUse", "Quality", "Comment",
-                    "Recomendation", "Effect", "WhatBetter"),
-                ScoreList(map["ResultOrientation_T09"], "TypeOfActivity", "Processes",
-                    "OrderDocument", "AdjustmentOfOrderDocument",
-                    "MissindOrderDocument", "BossRecomendation"),
-                ScoreList(map["ResultOrientation_T10"], "Type",
-                    "NonOrderedProcess_OldDocument",
-                    "DevelopmentPlanOf_Order_Old_Document_Task",
-                    "DevelopmentPlanOfOrder_Old_Document_Date", "MarkOfComplete"),
-                ScoreList(map["LK_Map_ResultOrientation_T11"], "Task",
-                    "PlanResult_S_M_A_R_T", "FactResult", "DeviationOfFactResult",
-                    "DeviationReason", "MeasuresOfDeviationOfFactResult",
-                    "FeedBack", "Conclusion")
-            };
-            return sections.Average();
+            if (dates > 0) sections.Add(dates);
+
+            AddOptionalList(sections, map["ProfessionalDevelopment"], "CommentToT19",
+                "RecomendationToT19", "DialogResultToT19");
+            AddOptionalList(sections, map["ProfessionalDevelopment_T19"], "Header", "Description");
+            AddOptionalList(sections, map["ProfessionalDevelopment_T20"], "Theme", "Format",
+                "Date", "Interes", "PracticalUse", "Quality", "Comment",
+                "Recomendation", "Effect", "WhatBetter");
+            AddOptionalList(sections, map["ResultOrientation_T09"], "TypeOfActivity", "Processes",
+                "OrderDocument", "AdjustmentOfOrderDocument",
+                "MissindOrderDocument", "BossRecomendation");
+            AddOptionalList(sections, map["ResultOrientation_T10"], "Type",
+                "NonOrderedProcess_OldDocument",
+                "DevelopmentPlanOf_Order_Old_Document_Task",
+                "DevelopmentPlanOfOrder_Old_Document_Date", "MarkOfComplete");
+            AddOptionalList(sections, map["LK_Map_ResultOrientation_T11"], "Task",
+                "PlanResult_S_M_A_R_T", "FactResult", "DeviationOfFactResult",
+                "DeviationReason", "MeasuresOfDeviationOfFactResult",
+                "FeedBack", "Conclusion");
+            AddOptionalList(sections, map["CompetenceDevelopment"], "CompetenceName",
+                "CurrentLevel", "TargetLevel", "DevelopmentActions", "Deadline", "ExpectedResult");
+
+            return sections.Count == 0 ? null : sections.Average();
+        }
+
+        private static double? ScoreObject(JsonNode? node, params string[] fields)
+        {
+            if (node is not JsonObject obj ||
+                !fields.Any(field => Filled(obj[field]) == 1))
+                return null;
+            return fields.Count(field => Filled(obj[field])) / (double)fields.Length;
+        }
+
+        private static double ScoreBooksRequired(JsonNode? node)
+        {
+            var books = node is JsonArray array
+                ? array.OfType<JsonObject>().ToArray()
+                : Array.Empty<JsonObject>();
+
+            const string professional = "Профессиональные компетенции";
+            const string personal = "Личностно-деловые и управленческие компетенции";
+            string[] fields =
+                { "BookName", "Author", "DateFrom", "DateTo", "Gold", "PractiсeSkills" };
+
+            double professionalScore = ScoreBookCategory(books, professional, 1, fields);
+            double personalScore = ScoreBookCategory(books, personal, 2, fields);
+            return (professionalScore + personalScore * 2.0) / 3.0;
+        }
+
+        private static double ScoreBookCategory(
+            JsonObject[] books, string category, int requiredCount, string[] fields)
+        {
+            var selected = books.Where(book =>
+                string.Equals(book["BookCategory"]?.ToString(), category,
+                    StringComparison.OrdinalIgnoreCase)).ToArray();
+            int denominator = Math.Max(selected.Length, requiredCount);
+            if (denominator == 0) return 0;
+            double completed = selected.Sum(book =>
+                fields.Count(field => Filled(book[field])) / (double)fields.Length);
+            return completed / denominator;
+        }
+
+        private static double ScorePlannedListRequired(
+            JsonNode? node, int requiredRows, params string[] fields)
+        {
+            var records = node is JsonArray array
+                ? array.OfType<JsonObject>()
+                    .Where(item => bool.TryParse(item["IsPlanned"]?.ToString(), out var planned)
+                        && planned).ToArray()
+                : Array.Empty<JsonObject>();
+            int denominator = Math.Max(records.Length, requiredRows);
+            if (denominator == 0 || fields.Length == 0) return 0;
+
+            double completed = records.Sum(record =>
+                fields.Count(field => Filled(record[field])) / (double)fields.Length);
+            return completed / denominator;
+        }
+
+        private static double ScoreListRequired(
+            JsonNode? node, int requiredRows, params string[] fields)
+        {
+            var records = node is JsonArray arr
+                ? arr.OfType<JsonObject>().ToArray()
+                : Array.Empty<JsonObject>();
+            int denominator = Math.Max(records.Length, requiredRows);
+            if (denominator == 0 || fields.Length == 0) return 0;
+
+            double completed = records.Sum(record =>
+                fields.Count(field => Filled(record[field])) / (double)fields.Length);
+            return completed / denominator;
         }
 
         private static double ScoreList(JsonNode? node, params string[] fields)
         {
-            if (node is not JsonArray arr || arr.Count == 0) return 0;
+            if (node is not JsonArray arr || arr.Count == 0 || fields.Length == 0) return 0;
             var records = arr.OfType<JsonObject>().ToArray();
             if (records.Length == 0) return 0;
             return records.Average(x => fields.Count(field => FilledBool(x[field])) / (double)fields.Length);

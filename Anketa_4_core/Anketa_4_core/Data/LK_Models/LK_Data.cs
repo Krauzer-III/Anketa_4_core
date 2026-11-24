@@ -6,27 +6,48 @@ namespace Anketa_4_core.Data.LK_Models
         /// <summary>
         /// Список профессиональных задач
         /// </summary>
-        public List<LK_ProfTask> ProfTasks { get; set; }
+        public List<LK_ProfTask> ProfTasks { get; set; } = new();
         /// <summary>
         /// Стажировка
         /// </summary>
-        public List<LK_Internship> Internships { get; set; }
+        public List<LK_Internship> Internships { get; set; } = new();
         /// <summary>
         /// Замещение начальника
         /// </summary>
-        public List<LK_ViceBoss> LK_ViceBoss { get; set; }
+        public List<LK_ViceBoss> LK_ViceBoss { get; set; } = new();
         /// <summary>
         /// Отчёты по прочитанным книгам (ранее класс существовал отдельно от корневого JSON)
         /// </summary>
-        public List<LK_ReportBook> ReportBooks { get; set; }
+        public List<LK_ReportBook> ReportBooks { get; set; } = new();
         /// <summary>
         /// Отчёты по тренинговым программам
         /// </summary>
-        public List<LK_TrainingProgramm> TrainingProgramms { get; set; }
+        public List<LK_TrainingProgramm> TrainingProgramms { get; set; } = new();
         /// <summary>
         /// Карта развивающих действий
         /// </summary>
-        public LK_DevelopmentalActionMap DevelopmentalActionMaproperty { get; set; }
+        public LK_DevelopmentalActionMap DevelopmentalActionMaproperty { get; set; } = new();
+
+        /// <summary>Курсы повышения квалификации.</summary>
+        public List<LK_AdvancedTrainingCourse> AdvancedTrainingCourses { get; set; } = new();
+        /// <summary>Языковая подготовка.</summary>
+        public List<LK_LanguageTraining> LanguageTrainings { get; set; } = new();
+        /// <summary>Техническая учёба и преподавательская деятельность.</summary>
+        public List<LK_TeachingActivity> TeachingActivities { get; set; } = new();
+        /// <summary>Кураторство и наставничество.</summary>
+        public List<LK_Mentorship> Mentorships { get; set; } = new();
+        /// <summary>Дистанционные курсы, вебинары и практические кейсы.</summary>
+        public List<LK_DistanceLearning> DistanceLearning { get; set; } = new();
+        /// <summary>Профессиональная переподготовка.</summary>
+        public List<LK_ProfessionalRetraining> ProfessionalRetrainings { get; set; } = new();
+        /// <summary>Проектная деятельность.</summary>
+        public List<LK_ProjectActivity> ProjectActivities { get; set; } = new();
+        /// <summary>Конференции и конкурсы.</summary>
+        public List<LK_ConferenceCompetition> ConferencesAndCompetitions { get; set; } = new();
+        /// <summary>Психологическое консультирование. Не хранить содержание личных консультаций.</summary>
+        public List<LK_PsychologicalConsultation> PsychologicalConsultations { get; set; } = new();
+        /// <summary>Практическое задание «Мотивация персонала».</summary>
+        public LK_PersonnelMotivation PersonnelMotivation { get; set; } = new();
     }
 
     /// <summary>
@@ -34,19 +55,17 @@ namespace Anketa_4_core.Data.LK_Models
     /// </summary>
     public class LK_ProfTask
     {
-        /// <summary>
-        /// Номер задачи
-        /// </summary>                         
+        /// <summary>Номер задачи по ИПП.</summary>
         public int Number { get; set; }
-        /// <summary>
-        /// Название задачи
-        /// </summary>                              
-        public string ProfTaskName { get; set; }
+        /// <summary>Название профессиональной задачи.</summary>
+        public string ProfTaskName { get; set; } = string.Empty;
+        public string CompetenceZone { get; set; } = string.Empty;
         public DateTime DateFrom { get; set; }
         public DateTime DateTo { get; set; }
-        public string AnalisEffect { get; set; }
-        public string Difficult { get; set; }
-        public string BossComment { get; set; }
+        public string AnalisEffect { get; set; } = string.Empty;
+        public string WhatCouldBeDoneDifferently { get; set; } = string.Empty;
+        public string Difficult { get; set; } = string.Empty;
+        public string BossComment { get; set; } = string.Empty;
         public int Status { get; set; }
     }
 
@@ -57,7 +76,19 @@ namespace Anketa_4_core.Data.LK_Models
     {
         public DateTime DateFrom { get; set; }
         public DateTime DateTo { get; set; }
+        public List<LK_InternshipTask> Tasks { get; set; } = new();
         public int Status { get; set; }
+    }
+
+    /// <summary>Строка отчётной формы №3: период, цель, мероприятия, отчёт и оценка руководителя.</summary>
+    public class LK_InternshipTask
+    {
+        public DateTime DateFrom { get; set; }
+        public DateTime DateTo { get; set; }
+        public string Goal { get; set; } = string.Empty;
+        public string Activities { get; set; } = string.Empty;
+        public string Report { get; set; } = string.Empty;
+        public string SupervisorAssessment { get; set; } = string.Empty;
     }
     /// <summary>
     /// Замещение
@@ -66,20 +97,21 @@ namespace Anketa_4_core.Data.LK_Models
     {
         public DateTime DateFrom { get; set; }
         public DateTime DateTo { get; set; }
-        public string Target { get; set; }
-        /// <summary>
-        /// Задачи замещения
-        /// </summary>
-        public List<LK_ViceBoss_Task> ViceBoss_Tasks { get; set; }
+        public string Position { get; set; } = string.Empty;
+        public string Target { get; set; } = string.Empty;
+        public List<LK_ViceBoss_Task> ViceBoss_Tasks { get; set; } = new();
+        public string GeneralResult { get; set; } = string.Empty;
+        public string SupervisorComment { get; set; } = string.Empty;
+        public int Status { get; set; }
     }
     /// <summary>
     /// Задачи замещения
     /// </summary>
     public class LK_ViceBoss_Task
     {
-        public string TaskName { get; set; }
-        public string ReportAboutTask { get; set; }
-        public string MarkAboutTask { get; set; }
+        public string TaskName { get; set; } = string.Empty;
+        public string ReportAboutTask { get; set; } = string.Empty;
+        public string MarkAboutTask { get; set; } = string.Empty;
         public int Status { get; set; }
     }
     /// <summary>
@@ -87,8 +119,11 @@ namespace Anketa_4_core.Data.LK_Models
     /// </summary>
     public class LK_ReportBook
     {
-        public string BookName { get; set; }
-        public string Author { get; set; }
+        public string BookCategory { get; set; } = string.Empty;
+        public string BookName { get; set; } = string.Empty;
+        public string Author { get; set; } = string.Empty;
+        public DateTime DateFrom { get; set; }
+        public DateTime DateTo { get; set; }
         /// <summary>
         /// Ценность книги
         /// </summary>              
@@ -104,22 +139,15 @@ namespace Anketa_4_core.Data.LK_Models
     /// </summary>
     public class LK_TrainingProgramm
     {
-        /// <summary>
-        /// Что из предложенного на тренинге материала Вы применили на практике? Приведите примеры данных ситуаций.
-        /// </summary>
-        public string LiveSityations { get; set; }
-        /// <summary>
-        /// Какие сложности возникали в ходе применения нового материала?
-        /// </summary>
-        public string Difficult { get; set; }
-        /// <summary>
-        /// Какое влияние оказало участие в тренинге на ваши результаты деятельности
-        /// </summary>
-        public string InfluenceAsWorker { get; set; }
-        /// <summary>
-        /// Какое влияние оказало участие в тренинге на результаты деятельности вашего филиала
-        /// </summary>
-        public string InfluenceAsFilial { get; set; }
+        public string Theme { get; set; } = string.Empty;
+        public string Organizer { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+        public string Format { get; set; } = string.Empty;
+        public int DurationHours { get; set; }
+        public string LiveSityations { get; set; } = string.Empty;
+        public string Difficult { get; set; } = string.Empty;
+        public string InfluenceAsWorker { get; set; } = string.Empty;
+        public string InfluenceAsFilial { get; set; } = string.Empty;
         public int Status { get; set; }
     }
 
@@ -155,6 +183,8 @@ namespace Anketa_4_core.Data.LK_Models
         /// Ориентация на результат. Таблица 11
         /// </summary>
         public List<LK_Map_ResultOrientation_T11> LK_Map_ResultOrientation_T11 { get; set; }
+        /// <summary>Планируемые действия по развитию компетенций КРД; пока не связаны автоматически с тестом компетенций.</summary>
+        public List<LK_Map_CompetenceDevelopment> CompetenceDevelopment { get; set; } = new();
     }
 
     /// <summary>
@@ -326,4 +356,174 @@ namespace Anketa_4_core.Data.LK_Models
         public string Conclusion { get; set; }
     }
     #endregion
+
+    /// <summary>Курс повышения квалификации.</summary>
+    public class LK_AdvancedTrainingCourse
+    {
+        public string ProgramName { get; set; } = string.Empty;
+        public string Organization { get; set; } = string.Empty;
+        public DateTime DateFrom { get; set; }
+        public DateTime DateTo { get; set; }
+        public int DurationHours { get; set; }
+        public string AcquiredSkills { get; set; } = string.Empty;
+        public string ApplicationInWork { get; set; } = string.Empty;
+        public string Result { get; set; } = string.Empty;
+        public string Certificate { get; set; } = string.Empty;
+        public int Status { get; set; }
+    }
+
+    /// <summary>Языковая подготовка.</summary>
+    public class LK_LanguageTraining
+    {
+        public string Language { get; set; } = string.Empty;
+        public string Organization { get; set; } = string.Empty;
+        public string Format { get; set; } = string.Empty;
+        public DateTime DateFrom { get; set; }
+        public DateTime DateTo { get; set; }
+        public string CurrentLevel { get; set; } = string.Empty;
+        public string TargetLevel { get; set; } = string.Empty;
+        public string Result { get; set; } = string.Empty;
+        public int Status { get; set; }
+    }
+
+    /// <summary>Техническая учёба и преподавательская деятельность.</summary>
+    public class LK_TeachingActivity
+    {
+        public string ActivityType { get; set; } = string.Empty;
+        public string Topic { get; set; } = string.Empty;
+        public string Audience { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public DateTime DateFrom { get; set; }
+        public DateTime DateTo { get; set; }
+        public int DurationHours { get; set; }
+        public string PracticalUse { get; set; } = string.Empty;
+        public string Effect { get; set; } = string.Empty;
+        public string WhatBetter { get; set; } = string.Empty;
+        public string WhatHelped { get; set; } = string.Empty;
+        public string WhatHindered { get; set; } = string.Empty;
+        public string Result { get; set; } = string.Empty;
+        public int Status { get; set; }
+    }
+
+    /// <summary>Кураторство и наставничество.</summary>
+    public class LK_Mentorship
+    {
+        public string MenteePosition { get; set; } = string.Empty;
+        public string OrderNumber { get; set; } = string.Empty;
+        public DateTime OrderDate { get; set; }
+        public string Goal { get; set; } = string.Empty;
+        public DateTime DateFrom { get; set; }
+        public DateTime DateTo { get; set; }
+        public string Activities { get; set; } = string.Empty;
+        public string Result { get; set; } = string.Empty;
+        public string SupervisorFeedback { get; set; } = string.Empty;
+        public int Status { get; set; }
+    }
+
+    /// <summary>Дистанционные курсы, вебинары и практические кейсы.</summary>
+    public class LK_DistanceLearning
+    {
+        public bool IsPlanned { get; set; }
+        public string ActivityType { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Platform { get; set; } = string.Empty;
+        public DateTime DateFrom { get; set; }
+        public DateTime DateTo { get; set; }
+        public int DurationHours { get; set; }
+        public string MainIdeas { get; set; } = string.Empty;
+        public string ApplicationInWork { get; set; } = string.Empty;
+        public string Certificate { get; set; } = string.Empty;
+        public int Status { get; set; }
+    }
+
+    /// <summary>Профессиональная переподготовка.</summary>
+    public class LK_ProfessionalRetraining
+    {
+        public string ProgramName { get; set; } = string.Empty;
+        public string Organization { get; set; } = string.Empty;
+        public DateTime DateFrom { get; set; }
+        public DateTime DateTo { get; set; }
+        public string Qualification { get; set; } = string.Empty;
+        public string Result { get; set; } = string.Empty;
+        public string Certificate { get; set; } = string.Empty;
+        public int Status { get; set; }
+    }
+
+    /// <summary>Проектная деятельность.</summary>
+    public class LK_ProjectActivity
+    {
+        public string ProjectName { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public DateTime DateFrom { get; set; }
+        public DateTime DateTo { get; set; }
+        public string Goal { get; set; } = string.Empty;
+        public string Tasks { get; set; } = string.Empty;
+        public string PracticalUse { get; set; } = string.Empty;
+        public string Effect { get; set; } = string.Empty;
+        public string WhatBetter { get; set; } = string.Empty;
+        public string WhatHelped { get; set; } = string.Empty;
+        public string WhatHindered { get; set; } = string.Empty;
+        public string Result { get; set; } = string.Empty;
+        public string Difficulties { get; set; } = string.Empty;
+        public int Status { get; set; }
+    }
+
+    /// <summary>Участие в конференциях и конкурсах.</summary>
+    public class LK_ConferenceCompetition
+    {
+        public string EventType { get; set; } = string.Empty;
+        public string EventName { get; set; } = string.Empty;
+        public string Organizer { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+        public string Role { get; set; } = string.Empty;
+        public string PracticalUse { get; set; } = string.Empty;
+        public string Effect { get; set; } = string.Empty;
+        public string WhatBetter { get; set; } = string.Empty;
+        public string WhatHelped { get; set; } = string.Empty;
+        public string WhatHindered { get; set; } = string.Empty;
+        public string Result { get; set; } = string.Empty;
+        public int Status { get; set; }
+    }
+
+    /// <summary>
+    /// Учёт участия в психологическом консультировании.
+    /// Содержимое консультаций и личные сведения в личном кабинете не сохраняются.
+    /// </summary>
+    public class LK_PsychologicalConsultation
+    {
+        public DateTime DateFrom { get; set; }
+        public DateTime DateTo { get; set; }
+        public int DurationMinutes { get; set; }
+        public string Format { get; set; } = string.Empty;
+        public string GeneralResult { get; set; } = string.Empty;
+        public int Status { get; set; }
+    }
+
+    /// <summary>Пять характеристик работы и по два конкретных действия для каждой.</summary>
+    public class LK_PersonnelMotivation
+    {
+        public string WorkSignificanceAction1 { get; set; } = string.Empty;
+        public string WorkSignificanceAction2 { get; set; } = string.Empty;
+        public string WorkVarietyAction1 { get; set; } = string.Empty;
+        public string WorkVarietyAction2 { get; set; } = string.Empty;
+        public string WorkIdentityAction1 { get; set; } = string.Empty;
+        public string WorkIdentityAction2 { get; set; } = string.Empty;
+        public string WorkAutonomyAction1 { get; set; } = string.Empty;
+        public string WorkAutonomyAction2 { get; set; } = string.Empty;
+        public string FeedbackAction1 { get; set; } = string.Empty;
+        public string FeedbackAction2 { get; set; } = string.Empty;
+        public string AdditionalComment { get; set; } = string.Empty;
+    }
+
+    /// <summary>План развития одной компетенции в КРД.</summary>
+    public class LK_Map_CompetenceDevelopment
+    {
+        public string CompetenceName { get; set; } = string.Empty;
+        public string CurrentLevel { get; set; } = string.Empty;
+        public string TargetLevel { get; set; } = string.Empty;
+        public string DevelopmentActions { get; set; } = string.Empty;
+        public DateTime Deadline { get; set; }
+        public string ExpectedResult { get; set; } = string.Empty;
+        public int Status { get; set; }
+    }
 }
