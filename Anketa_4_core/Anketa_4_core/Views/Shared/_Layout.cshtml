@@ -1,113 +1,55 @@
-@{
-    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-    bool authenticated = User.Identity?.IsAuthenticated == true;
-    bool isPersonal = User.IsInRole("testable_user");
-    bool isFilial = User.IsInRole("filial_user");
-    bool canManage = User.IsInRole("admin") || User.IsInRole("moderator");
-    bool canReview = canManage || User.IsInRole("verificator");
-    string navigationClass(string controller) =>
-        currentController.Equals(controller, StringComparison.OrdinalIgnoreCase)
-            ? "app-nav__link is-active" : "app-nav__link";
-}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#123a66" />
     <title>@ViewData["Title"] — Оценка персонала</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/icons/icons.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Anketa_4_core.styles.css" asp-append-version="true" />
 </head>
-<body class="app-body">
-    <header class="app-header">
-        <div class="app-header__inner">
-            <a class="app-brand" asp-controller="Home" asp-action="Index" aria-label="Оценка персонала — главная">
-                <span class="app-brand__icon" aria-hidden="true">О</span>
-                <span class="app-brand__text">
-                    <strong>Оценка персонала</strong>
-                    <small>Автоматизированная система</small>
-                </span>
-            </a>
-
-            <nav class="app-nav d-none d-xxl-flex" aria-label="Основные разделы">
-                @if (isPersonal)
-                {
-                    <a class="@navigationClass("PersonalCabinet")" asp-controller="PersonalCabinet" asp-action="Index">Мой кабинет</a>
-                    <a class="@navigationClass("Test360")" asp-controller="Test360" asp-action="StartTest">Оценка 360°</a>
-                    <a class="@navigationClass("Motivation")" asp-controller="Motivation" asp-action="Index">Мотивация</a>
-                    <a class="@navigationClass("Kettel")" asp-controller="Kettel" asp-action="Index">Психологическое тестирование</a>
-                    <a class="@navigationClass("Competention")" asp-controller="Competention" asp-action="Index">Компетенции</a>
-                }
-                else if (isFilial)
-                {
-                    <a class="@navigationClass("Home")" asp-controller="Home" asp-action="Index">Главная</a>
-                    <a class="@navigationClass("Test360")" asp-controller="Test360" asp-action="StartTest">Оценка 360°</a>
-                    <a class="@navigationClass("Motivation")" asp-controller="Motivation" asp-action="Index">Мотивация</a>
-                    <a class="@navigationClass("Kettel")" asp-controller="Kettel" asp-action="Index">Кеттел</a>
-                    <a class="@navigationClass("Competention")" asp-controller="Competention" asp-action="Index" asp-route-year="1">Компетенции</a>
-                }
-                else if (canReview)
-                {
-                    <a class="@navigationClass("Home")" asp-controller="Home" asp-action="Index">Главная</a>
-                    <a class="@navigationClass("Result")" asp-controller="Result" asp-action="IndexModerator">Результаты</a>
-                    <a class="@navigationClass("Period")" asp-controller="Period" asp-action="Index">Периоды</a>
-                    @if (canManage)
-                    {
-                        <a class="@navigationClass("Testable")" asp-controller="Testable" asp-action="Index">Тестируемые</a>
-                        <a class="@navigationClass("Registration")" asp-controller="Registration" asp-action="Index">Регистрация</a>
-                    }
-                }
-                else
-                {
-                    <a class="@navigationClass("Home")" asp-controller="Home" asp-action="Index">Главная</a>
-                }
-            </nav>
-
-            <div class="app-header__actions">
-                <div class="d-none d-md-flex">
-                    <partial name="_LoginPartial" />
-                </div>
-                <button class="app-menu-button" type="button" data-bs-toggle="offcanvas"
-                        data-bs-target="#appNavigation" aria-controls="appNavigation" aria-label="Открыть меню">
-                    <span class="app-menu-button__bars" aria-hidden="true"><span></span><span></span><span></span></span>
-                    <span class="d-none d-sm-inline">Меню</span>
+<body>
+    <header>
+        @* Авторская заставка сохранена из исходного интерфейса системы. *@
+        <div class="banner">
+            <p>Автоматизированная система "Оценка персонала"</p>
+        </div>
+        <nav class="navbar bg-body-tertiary" aria-label="Основная навигация">
+            <div class="container-fluid">
+                @* Привычное меню слева на любом устройстве. *@
+                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas"
+                        data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar"
+                        aria-label="Открыть навигационное меню">
+                    <span class="icon-menu" aria-hidden="true"></span>
                 </button>
-            </div>
-        </div>
-    </header>
-
-    <div class="offcanvas offcanvas-start app-offcanvas" tabindex="-1" id="appNavigation"
-         aria-labelledby="appNavigationTitle">
-        <div class="offcanvas-header app-offcanvas__header">
-            <div>
-                <div class="app-offcanvas__eyebrow">Оценка персонала</div>
-                <h2 class="offcanvas-title h5 mb-0" id="appNavigationTitle">Разделы системы</h2>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Закрыть меню"></button>
-        </div>
-        <div class="offcanvas-body app-offcanvas__body">
-            <partial name="_RoleMenu" />
-            <div class="d-md-none app-offcanvas__account">
+                <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar"
+                     aria-labelledby="offcanvasNavbarLabel">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Навигационное меню</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
+                                aria-label="Закрыть меню"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <partial name="_RoleMenu" />
+                    </div>
+                </div>
                 <partial name="_LoginPartial" />
             </div>
-        </div>
-    </div>
+        </nav>
+    </header>
 
-    <div class="app-shell">
-        <main class="app-main" role="main">
+    <div class="container">
+        <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="app-footer">
-        <div class="app-footer__inner">
-            <span>Автоматизированная система «Оценка персонала»</span>
-            <span>© @DateTime.Now.Year</span>
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; @DateTime.Now.Year — Оценка персонала
         </div>
     </footer>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
