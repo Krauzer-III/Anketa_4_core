@@ -96,7 +96,7 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
 
 
         [Display(Name = "Период доступа (TestPeriod)")]
-        public int? SelectedTestPeriodId { get; set; } = new();
+        public int? SelectedTestPeriodId { get; set; }
 
 
         public List<(int id, string name)>? Filials { get; set; } = new();
@@ -145,7 +145,7 @@ namespace Anketa_4_core.Models.AnketaModels.MVC_Models
 
 
         [Display(Name = "Год по умолчанию для импорта")]
-        public int DefaultYear { get; set; } = DateTime.UtcNow.Year;
+        public int DefaultYear { get; set; } = 1;
     }
 
     public class MVC_TestableAddPageVM

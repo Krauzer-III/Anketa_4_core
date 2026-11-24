@@ -28,14 +28,14 @@
                 <li><b>code</b> — уникальный текстовый код (ошибка при повторе)</li>
                 <li><b>filial</b> — название филиала (ищется в AnketaContext.Filials.FilialName)</li>
                 <li><b>rezerv_level</b> — ID из ReservLevels</li>
-                <li><b>testperiod</b> — название периода (ищется в TestPeriods.GroupName); если пусто — привяжется последний период</li>
+                <li><b>testperiod</b> — обязательный ID существующего периода из TestPeriods</li>
                 <li><b>username</b> — логин из ApplicationDbContext, роль <code>testable_user</code>, и не привязан к другому тестируемому (может быть пустым)</li>
             </ul>
         </div>
     </div>
     <div class="mb-3">
         <label asp-for="DefaultYear" class="form-label"></label>
-        <input asp-for="DefaultYear" class="form-control" />
+        <select asp-for="DefaultYear" class="form-select"><option value="1">1 год обучения</option><option value="2">2 год обучения</option></select>
     </div>
     <button class="btn btn-primary" type="submit">Загрузить</button>
     <a class="btn btn-secondary" asp-action="Index">Назад</a>

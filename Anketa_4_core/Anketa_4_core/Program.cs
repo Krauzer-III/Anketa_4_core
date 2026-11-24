@@ -1,6 +1,7 @@
 using Anketa_4_core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Anketa_4_core.Helpers;
 
 // ...
 
@@ -29,26 +30,35 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
+// Личное управление учётной записью отключено для всех ролей.
+builder.Services.AddAuthorization(options =>
+    options.AddPolicy("NoAccountManagement", policy => policy.RequireAssertion(_ => false)));
+builder.Services.AddRazorPages(options =>
+    options.Conventions.AuthorizeAreaFolder("Identity", "/Account/Manage", "NoAccountManagement"));
 
 var app = builder.Build();
 
-// ��������� �������� � ����� ������
+// Ïðèìåíÿåì ìèãðàöèè è ñèäèì äàííûå
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    // ��������� �������� ��� Identity
+    // Ïðèìåíÿåì ìèãðàöèè äëÿ Identity
     var identityDb = services.GetRequiredService<ApplicationDbContext>();
     await identityDb.Database.MigrateAsync();
 
-    // ����� ���� � �������������
+    // Миграции базы Анкеты включают исходные справочники, тесты и ключи.
+    // EF применяет каждую миграцию только один раз; повторный запуск не дублирует данные.
+    var anketaDb = services.GetRequiredService<AnketaContext>();
+    await anketaDb.Database.MigrateAsync();
+
+    // Ñèäèì ðîëè è ïîëüçîâàòåëåé
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
     await ApplicationDbContext_Initializer.InitializeAsync(userManager, roleManager);
 }
 
-// ����� ��� ��������:
+// äàëåå âàø êîíâåéåð:
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();

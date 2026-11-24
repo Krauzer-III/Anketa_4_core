@@ -15,6 +15,8 @@
 <div class="tab-content border border-top-0 p-3 rounded-bottom" id="addTabsContent">
     <div class="tab-pane fade show active" id="single-pane" role="tabpanel" aria-labelledby="single-tab">
         <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
             <div class="row g-3">
                 <div class="col-md-4">
                     <label asp-for="Single.Code" class="form-label"></label>
@@ -26,18 +28,22 @@
                 </div>
                 <div class="col-md-4">
                     <label asp-for="Single.Year" class="form-label"></label>
-                    <input asp-for="Single.Year" class="form-control" />
+                    <select asp-for="Single.Year" class="form-select">
+                        <option value="1">1 год обучения</option>
+                        <option value="2">2 год обучения</option>
+                    </select>
                     <span asp-validation-for="Single.Year" class="text-danger"></span>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Пользователь (testable_user)</label>
-                    <select name="UserName" class="form-select">
+                    <select asp-for="Single.UserName" class="form-select">
                         <option value="">— без привязки —</option>
                         @foreach (var u in Model.FreeUsers)
                         {
                             <option value="@u">@u</option>
                         }
                     </select>
+                    <span asp-validation-for="Single.UserName" class="text-danger"></span>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Филиал</label>
@@ -48,6 +54,7 @@
                             <option value="@f.id">@f.name</option>
                         }
                     </select>
+                    <span asp-validation-for="Single.Filial" class="text-danger"></span>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Уровень резерва</label>
@@ -58,20 +65,34 @@
                             <option value="@r.id">@r.name</option>
                         }
                     </select>
+                    <span asp-validation-for="Single.RezervLevel" class="text-danger"></span>
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Периоды доступа (TestPeriod)</label>
-                    <select asp-for="Single.SelectedTestPeriodId" multiple class="form-select" size="8">
+                    <label asp-for="Single.SelectedTestPeriodId" class="form-label">Период тестирования</label>
+                    <select asp-for="Single.SelectedTestPeriodId" class="form-select" required>
+                        <option value="">— Выберите период из справочника —</option>
                         @foreach (var p in Model.Single.TestPeriods)
                         {
                             <option value="@p.id">@p.name</option>
                         }
                     </select>
-                    <div class="form-text">Если ничего не выбрано — автоматически привяжется последний период.</div>
+                    <span asp-validation-for="Single.SelectedTestPeriodId" class="text-danger"></span>
+                    <div class="form-text">Список загружается из таблицы периодов тестирования. Можно выбрать один период.</div>
+                    @if (Model.Single.TestPeriods == null || Model.Single.TestPeriods.Count == 0)
+                    {
+                        <p class="text-danger mt-2">Периоды тестирования ещё не созданы. Сначала добавьте период.</p>
+                    }
                 </div>
             </div>
             <div class="mt-4 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Создать</button>
+                @if (Model.Single.TestPeriods?.Count > 0)
+                {
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                }
+                else
+                {
+                    <button type="submit" class="btn btn-primary" disabled>Создать</button>
+                }
                 <a class="btn btn-secondary" asp-action="Index">Назад</a>
             </div>
         </form>
@@ -84,12 +105,12 @@
         <form asp-action="Import" method="post" enctype="multipart/form-data">
             <div class="mb-3">
                 <label asp-for="Import.File" class="form-label"></label>
-                <input asp-for="Import.File" class="form-control" type="file" />
-                <div class="form-text">Формат CSV: <code>code,filial,rezerv_level,testperiod,username</code></div>
+                <input type="file" name="File" id="Import_File" class="form-control" />
+                <div class="form-text">Формат CSV: <code>code,filial,rezerv_level,testperiod,username</code>. Поле <code>testperiod</code> — ID существующего периода.</div>
             </div>
             <div class="mb-3">
                 <label asp-for="Import.DefaultYear" class="form-label"></label>
-                <input asp-for="Import.DefaultYear" class="form-control" />
+                <select name="DefaultYear" id="Import_DefaultYear" class="form-select"><option value="1">1 год обучения</option><option value="2">2 год обучения</option></select>
             </div>
             <button class="btn btn-primary" type="submit">Загрузить</button>
             <a class="btn btn-secondary" asp-action="Index">Назад</a>
@@ -182,7 +203,7 @@
                     10001,@f1,@rlId,@tpId,ivanov
                     10002,@f2,1,@tpId,petrova
                 </pre>
-                <p class="text-muted">Если <code>testperiod</code> оставить пустым, система привяжет сотрудника к последнему периоду из базы.</p>
+                <p class="text-muted">Поле <code>testperiod</code> обязательно; его значение должно соответствовать ID периода из справочника.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>

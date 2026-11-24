@@ -59,7 +59,10 @@
             <div class="app-sidebar__group">
                 <div class="app-sidebar__label">Управление</div>
                 <a class="@linkClass("Testable")" asp-controller="Testable" asp-action="Index">Тестируемые</a>
-                <a class="@linkClass("Registration")" asp-controller="Registration" asp-action="Index">Регистрация учётных записей</a>
+                @if (User.IsInRole("admin"))
+                {
+                    <a class="@linkClass("Registration")" asp-controller="Registration" asp-action="Index">Регистрация учётных записей</a>
+                }
                 <a class="@linkClass("NewsAdmin")" asp-controller="NewsAdmin" asp-action="Index">Управление новостями</a>
                 @if (User.IsInRole("admin"))
                 {
@@ -75,13 +78,6 @@
             <div class="app-sidebar__label">Доступные разделы</div>
             <a class="@linkClass("Home")" asp-controller="Home" asp-action="Index">Главная</a>
             <p class="app-sidebar__hint">Для этой учётной записи рабочие разделы не назначены.</p>
-        </div>
-    }
-    @if (User.Identity?.IsAuthenticated == true)
-    {
-        <div class="app-sidebar__group">
-            <div class="app-sidebar__label">Учётная запись</div>
-            <a class="app-sidebar__link" asp-area="Identity" asp-page="/Account/Manage/Index">Настройки аккаунта</a>
         </div>
     }
 </nav>

@@ -1,11 +1,10 @@
 @{
     ViewData["Title"] = "Первичная настройка";
 }
-<div class="portal-public-note">
-    <h1 class="h3">Первичная настройка справочников</h1>
-    <p class="mb-3">Этот раздел предназначен только для администратора. Заполнение справочников может изменить исходные данные системы. Перед повторным запуском проверьте, выполнялась ли инициализация ранее.</p>
-    <form asp-controller="DefaultValues" asp-action="AddDefaultValues" method="post">
-        @Html.AntiForgeryToken()
-        <button class="btn btn-primary" type="submit">Заполнить справочники</button>
-    </form>
-</div>
+<h1 class="h3">Первичная настройка справочников</h1>
+<p>Справочники, вопросы и ключи тестов загружаются автоматически при применении миграций базы Анкеты.</p>
+<p class="text-muted">Повторная проверка миграций безопасна: уже применённая миграция не запускается повторно.</p>
+<form asp-controller="DefaultValues" asp-action="AddDefaultValues" method="post">
+    @Html.AntiForgeryToken()
+    <button class="btn btn-outline-primary" type="submit">Проверить и применить миграции</button>
+</form>

@@ -14,7 +14,7 @@ namespace Anketa_4_core.Controllers
     /// Создание учётных записей и связанных с ними бизнес-сущностей.
     /// Самостоятельной регистрации пользователей в системе нет.
     /// </summary>
-    [Authorize(Roles = "admin,moderator")]
+    [Authorize(Roles = "admin")]
     public class RegistrationController : Controller
     {
         private readonly ApplicationDbContext _identityDb;
