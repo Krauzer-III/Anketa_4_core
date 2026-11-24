@@ -33,7 +33,10 @@ else if (review)
         @if (manage)
         {
             <a class="list-group-item list-group-item-action" asp-controller="Testable" asp-action="Index">Тестируемые</a>
-            <a class="list-group-item list-group-item-action" asp-controller="Registration" asp-action="Index">Регистрация пользователей</a>
+            @if (User.IsInRole("admin"))
+            {
+                <a class="list-group-item list-group-item-action" asp-controller="Registration" asp-action="Index">Регистрация пользователей</a>
+            }
             <a class="list-group-item list-group-item-action" asp-controller="NewsAdmin" asp-action="Index">Управление новостями</a>
         }
         @if (User.IsInRole("admin"))

@@ -4,8 +4,7 @@
 @if (SignInManager.IsSignedIn(User))
 {
     <div class="d-flex flex-wrap align-items-center gap-2">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index"
-           title="Настройки учётной записи">@User.Identity?.Name</a>
+        <span class="text-dark">@User.Identity?.Name</span>
         <form method="post" asp-area="Identity" asp-page="/Account/Logout"
               asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
             @Html.AntiForgeryToken()
