@@ -249,7 +249,7 @@ namespace Anketa_4_core.Services
                 .ToArray();
             if (records.Length > 0)
                 scores.Add(records.Average(x =>
-                    fields.Count(field => Filled(x[field])) / (double)fields.Length));
+                    fields.Count(field => FilledBool(x[field])) / (double)fields.Length));
         }
 
         private static double? ScoreMap(JsonNode? node)
@@ -288,7 +288,7 @@ namespace Anketa_4_core.Services
             if (node is not JsonObject obj ||
                 !fields.Any(field => Filled(obj[field]) == 1))
                 return null;
-            return fields.Count(field => Filled(obj[field])) / (double)fields.Length;
+            return fields.Count(field => FilledBool(obj[field])) / (double)fields.Length;
         }
 
         private static double ScoreBooksRequired(JsonNode? node)
@@ -316,7 +316,7 @@ namespace Anketa_4_core.Services
             int denominator = Math.Max(selected.Length, requiredCount);
             if (denominator == 0) return 0;
             double completed = selected.Sum(book =>
-                fields.Count(field => Filled(book[field])) / (double)fields.Length);
+                fields.Count(field => FilledBool(book[field])) / (double)fields.Length);
             return completed / denominator;
         }
 
@@ -332,7 +332,7 @@ namespace Anketa_4_core.Services
             if (denominator == 0 || fields.Length == 0) return 0;
 
             double completed = records.Sum(record =>
-                fields.Count(field => Filled(record[field])) / (double)fields.Length);
+                fields.Count(field => FilledBool(record[field])) / (double)fields.Length);
             return completed / denominator;
         }
 
@@ -346,7 +346,7 @@ namespace Anketa_4_core.Services
             if (denominator == 0 || fields.Length == 0) return 0;
 
             double completed = records.Sum(record =>
-                fields.Count(field => Filled(record[field])) / (double)fields.Length);
+                fields.Count(field => FilledBool(record[field])) / (double)fields.Length);
             return completed / denominator;
         }
 
